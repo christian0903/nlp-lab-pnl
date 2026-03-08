@@ -10,6 +10,9 @@ import Library from "./pages/Library";
 import ModelDetail from "./pages/ModelDetail";
 import Community from "./pages/Community";
 import Auth from "./pages/Auth";
+import Resources from "./pages/Resources";
+import Contribute from "./pages/Contribute";
+import NotFound from "./pages/NotFound";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

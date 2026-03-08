@@ -53,7 +53,23 @@ const Header = () => {
               </Link>
             );
           })}
-        </nav>
+          <div className="ml-3 flex items-center gap-2 border-l border-border pl-3">
+            {user ? (
+              <button
+                onClick={() => signOut()}
+                className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                className="flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground"
+              >
+                <User className="h-4 w-4" /> Connexion
+              </Link>
+            )}
+          </div>
 
         <button
           onClick={() => setMobileOpen(!mobileOpen)}

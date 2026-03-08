@@ -70,6 +70,7 @@ const Header = () => {
               </Link>
             )}
           </div>
+        </nav>
 
         <button
           onClick={() => setMobileOpen(!mobileOpen)}

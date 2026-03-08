@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface Profile {
+  user_id: string;
   display_name: string;
   avatar_url: string | null;
 }
@@ -21,7 +22,6 @@ interface Post {
   comments_count: number;
   created_at: string;
   user_id: string;
-  profiles: Profile;
 }
 
 interface Comment {
@@ -29,7 +29,6 @@ interface Comment {
   content: string;
   created_at: string;
   user_id: string;
-  profiles: Profile;
 }
 
 const CATEGORIES = [
@@ -43,25 +42,24 @@ const CATEGORIES = [
 const Community = () => {
   const { user, signOut } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [expandedPost, setExpandedPost] = useState<string | null>(null);
 
-  // New post form
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
   const [newCategory, setNewCategory] = useState('general');
 
-  // Comment form
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
 
   const fetchPosts = async () => {
     const query = supabase
       .from('forum_posts')
-      .select('*, profiles!forum_posts_user_id_fkey(display_name, avatar_url)')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (categoryFilter !== 'all') {
@@ -71,9 +69,25 @@ const Community = () => {
     const { data, error } = await query;
     if (error) {
       toast.error('Erreur chargement des posts');
+      setLoading(false);
       return;
     }
-    setPosts((data as any) || []);
+    const postsData = data || [];
+    setPosts(postsData);
+
+    // Fetch profiles for all unique user_ids
+    const userIds = [...new Set(postsData.map((p) => p.user_id))];
+    if (userIds.length > 0) {
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', userIds);
+      if (profilesData) {
+        const map: Record<string, Profile> = {};
+        profilesData.forEach((p) => { map[p.user_id] = p; });
+        setProfiles((prev) => ({ ...prev, ...map }));
+      }
+    }
     setLoading(false);
   };
 
@@ -147,6 +161,21 @@ const Community = () => {
     }
   };
 
+  const fetchCommentProfiles = async (commentsData: Comment[]) => {
+    const userIds = [...new Set(commentsData.map((c) => c.user_id))];
+    if (userIds.length > 0) {
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', userIds);
+      if (profilesData) {
+        const map: Record<string, Profile> = {};
+        profilesData.forEach((p) => { map[p.user_id] = p; });
+        setProfiles((prev) => ({ ...prev, ...map }));
+      }
+    }
+  };
+
   const loadComments = async (postId: string) => {
     if (expandedPost === postId) {
       setExpandedPost(null);
@@ -156,12 +185,13 @@ const Community = () => {
 
     const { data } = await supabase
       .from('post_comments')
-      .select('*, profiles!post_comments_user_id_fkey(display_name, avatar_url)')
+      .select('*')
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
 
     if (data) {
-      setComments((prev) => ({ ...prev, [postId]: data as any }));
+      setComments((prev) => ({ ...prev, [postId]: data }));
+      await fetchCommentProfiles(data);
     }
   };
 
@@ -185,18 +215,20 @@ const Community = () => {
     }
 
     setCommentText('');
-    // Reload comments
     const { data } = await supabase
       .from('post_comments')
-      .select('*, profiles!post_comments_user_id_fkey(display_name, avatar_url)')
+      .select('*')
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
 
     if (data) {
-      setComments((prev) => ({ ...prev, [postId]: data as any }));
+      setComments((prev) => ({ ...prev, [postId]: data }));
+      await fetchCommentProfiles(data);
     }
     setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p)));
   };
+
+  const getProfile = (userId: string) => profiles[userId];
 
   const timeAgo = (date: string) =>
     formatDistanceToNow(new Date(date), { addSuffix: true, locale: fr });
@@ -327,93 +359,95 @@ const Community = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {posts.map((post) => (
-            <div key={post.id} className="rounded-xl border border-border bg-card p-5 shadow-sm">
-              {/* Post header */}
-              <div className="mb-3 flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                  {post.profiles?.display_name?.[0]?.toUpperCase() || '?'}
+          {posts.map((post) => {
+            const profile = getProfile(post.user_id);
+            return (
+              <div key={post.id} className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                    {profile?.display_name?.[0]?.toUpperCase() || '?'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{profile?.display_name || 'Anonyme'}</p>
+                    <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
+                  </div>
+                  <span className="ml-auto rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
+                    {CATEGORIES.find((c) => c.value === post.category)?.label || post.category}
+                  </span>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{post.profiles?.display_name || 'Anonyme'}</p>
-                  <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
+
+                <h3 className="mb-2 font-display text-lg font-semibold text-foreground">{post.title}</h3>
+                <p className="mb-4 whitespace-pre-line text-sm text-muted-foreground leading-relaxed">{post.content}</p>
+
+                <div className="flex items-center gap-4 border-t border-border pt-3">
+                  <button
+                    onClick={() => toggleLike(post.id)}
+                    className={`flex items-center gap-1.5 text-sm transition-colors ${
+                      likedPosts.has(post.id)
+                        ? 'font-medium text-destructive'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Heart className={`h-4 w-4 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
+                    {post.likes_count}
+                  </button>
+                  <button
+                    onClick={() => loadComments(post.id)}
+                    className={`flex items-center gap-1.5 text-sm transition-colors ${
+                      expandedPost === post.id
+                        ? 'font-medium text-secondary'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    {post.comments_count} commentaire{post.comments_count !== 1 ? 's' : ''}
+                  </button>
                 </div>
-                <span className="ml-auto rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
-                  {CATEGORIES.find((c) => c.value === post.category)?.label || post.category}
-                </span>
-              </div>
 
-              {/* Post content */}
-              <h3 className="mb-2 font-display text-lg font-semibold text-foreground">{post.title}</h3>
-              <p className="mb-4 whitespace-pre-line text-sm text-muted-foreground leading-relaxed">{post.content}</p>
-
-              {/* Actions */}
-              <div className="flex items-center gap-4 border-t border-border pt-3">
-                <button
-                  onClick={() => toggleLike(post.id)}
-                  className={`flex items-center gap-1.5 text-sm transition-colors ${
-                    likedPosts.has(post.id)
-                      ? 'font-medium text-destructive'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Heart className={`h-4 w-4 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
-                  {post.likes_count}
-                </button>
-                <button
-                  onClick={() => loadComments(post.id)}
-                  className={`flex items-center gap-1.5 text-sm transition-colors ${
-                    expandedPost === post.id
-                      ? 'font-medium text-secondary'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  {post.comments_count} commentaire{post.comments_count !== 1 ? 's' : ''}
-                </button>
-              </div>
-
-              {/* Comments section */}
-              {expandedPost === post.id && (
-                <div className="mt-4 space-y-3 border-t border-border pt-4">
-                  {(comments[post.id] || []).map((comment) => (
-                    <div key={comment.id} className="flex gap-3">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
-                        {comment.profiles?.display_name?.[0]?.toUpperCase() || '?'}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm font-medium text-foreground">{comment.profiles?.display_name}</span>
-                          <span className="text-xs text-muted-foreground">{timeAgo(comment.created_at)}</span>
+                {expandedPost === post.id && (
+                  <div className="mt-4 space-y-3 border-t border-border pt-4">
+                    {(comments[post.id] || []).map((comment) => {
+                      const cProfile = getProfile(comment.user_id);
+                      return (
+                        <div key={comment.id} className="flex gap-3">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                            {cProfile?.display_name?.[0]?.toUpperCase() || '?'}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-sm font-medium text-foreground">{cProfile?.display_name || 'Anonyme'}</span>
+                              <span className="text-xs text-muted-foreground">{timeAgo(comment.created_at)}</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{comment.content}</p>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">{comment.content}</p>
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })}
 
-                  {user && (
-                    <div className="flex gap-2 pt-2">
-                      <input
-                        type="text"
-                        value={commentText}
-                        onChange={(e) => setCommentText(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleComment(post.id)}
-                        placeholder="Ajouter un commentaire..."
-                        maxLength={1000}
-                        className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
-                      />
-                      <button
-                        onClick={() => handleComment(post.id)}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-secondary-foreground hover:brightness-110"
-                      >
-                        <Send className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
+                    {user && (
+                      <div className="flex gap-2 pt-2">
+                        <input
+                          type="text"
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleComment(post.id)}
+                          placeholder="Ajouter un commentaire..."
+                          maxLength={1000}
+                          className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
+                        />
+                        <button
+                          onClick={() => handleComment(post.id)}
+                          className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-secondary-foreground hover:brightness-110"
+                        >
+                          <Send className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

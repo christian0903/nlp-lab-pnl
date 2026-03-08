@@ -1,95 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 220 20% 97%;
+    --foreground: 220 30% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 30% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 30% 10%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 220 60% 20%;
+    --primary-foreground: 180 40% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 180 50% 35%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 170 60% 40%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 180 50% 35%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
+
+    /* Custom tokens */
+    --lab-navy: 220 60% 20%;
+    --lab-navy-light: 220 40% 30%;
+    --lab-teal: 180 50% 35%;
+    --lab-teal-light: 175 45% 55%;
+    --lab-cyan: 190 70% 50%;
+    --lab-warm: 35 80% 55%;
+    --lab-success: 155 60% 40%;
+    --lab-surface: 220 20% 98%;
+    --lab-surface-elevated: 0 0% 100%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(220 60% 20%), hsl(220 40% 30%), hsl(180 50% 35%));
+    --gradient-accent: linear-gradient(135deg, hsl(180 50% 35%), hsl(170 60% 40%));
+    --gradient-warm: linear-gradient(135deg, hsl(35 80% 55%), hsl(20 75% 50%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 20% 98%));
+
+    --shadow-sm: 0 1px 3px hsl(220 30% 10% / 0.04), 0 1px 2px hsl(220 30% 10% / 0.06);
+    --shadow-md: 0 4px 12px hsl(220 30% 10% / 0.06), 0 2px 4px hsl(220 30% 10% / 0.04);
+    --shadow-lg: 0 12px 40px hsl(220 30% 10% / 0.08), 0 4px 12px hsl(220 30% 10% / 0.04);
+    --shadow-glow: 0 0 30px hsl(180 50% 35% / 0.15);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -98,8 +72,74 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+@layer components {
+  .lab-gradient-text {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .lab-card {
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+  }
+  .lab-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .lab-hero-section {
+    background: var(--gradient-hero);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .lab-status-draft {
+    background: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+  }
+  .lab-status-review {
+    background: hsl(35 80% 92%);
+    color: hsl(35 70% 30%);
+  }
+  .lab-status-testing {
+    background: hsl(190 60% 90%);
+    color: hsl(190 60% 25%);
+  }
+  .lab-status-published {
+    background: hsl(155 50% 90%);
+    color: hsl(155 50% 25%);
+  }
+  .lab-status-evolving {
+    background: hsl(270 50% 92%);
+    color: hsl(270 40% 35%);
+  }
+
+  .lab-type-problematique {
+    background: hsl(0 60% 93%);
+    color: hsl(0 50% 35%);
+    border: 1px solid hsl(0 40% 85%);
+  }
+  .lab-type-outil {
+    background: hsl(210 60% 93%);
+    color: hsl(210 50% 30%);
+    border: 1px solid hsl(210 40% 85%);
+  }
+  .lab-type-approche {
+    background: hsl(145 50% 92%);
+    color: hsl(145 40% 25%);
+    border: 1px solid hsl(145 35% 82%);
   }
 }

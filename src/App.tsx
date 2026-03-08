@@ -32,6 +32,7 @@ const App = () => (
             <Route path="/community" element={<Community />} />
             <Route path="/contribute" element={<Contribute />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

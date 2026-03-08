@@ -58,12 +58,24 @@ const Header = () => {
           })}
           <div className="ml-3 flex items-center gap-2 border-l border-border pl-3">
             {user ? (
-              <button
-                onClick={() => signOut()}
-                className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
+              <>
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      location.pathname === '/admin' ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <ShieldCheck className="h-4 w-4" /> Admin
+                  </Link>
+                )}
+                <button
+                  onClick={() => signOut()}
+                  className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </>
             ) : (
               <Link
                 to="/auth"

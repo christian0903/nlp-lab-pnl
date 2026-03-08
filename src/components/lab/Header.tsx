@@ -3,8 +3,8 @@ import { FlaskConical, Menu, X, User, LogOut, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-
 import { useAdmin } from '@/hooks/useAdmin';
+import NotificationBell from './NotificationBell';
 
 const navItems = [
   { label: 'Accueil', path: '/' },

@@ -30,6 +30,8 @@ const App = () => (
             <Route path="/library" element={<Library />} />
             <Route path="/model/:id" element={<ModelDetail />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/contribute" element={<Contribute />} />
+            <Route path="/resources" element={<Resources />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

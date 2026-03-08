@@ -1,0 +1,1 @@
+ALTER TABLE public.forum_posts ADD COLUMN model_id uuid REFERENCES public.models(id) ON DELETE SET NULL DEFAULT NULL;

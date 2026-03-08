@@ -59,7 +59,7 @@ const Header = () => {
           })}
           <div className="ml-3 flex items-center gap-2 border-l border-border pl-3">
             {user ? (
-              <>
+              <NotificationBell />
                 {isAdmin && (
                   <Link
                     to="/admin"

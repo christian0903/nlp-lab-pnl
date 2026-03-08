@@ -15,7 +15,7 @@ const Index = () => {
       {/* Hero */}
       <section className="lab-hero-section relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(180_50%_35%/0.15),transparent_60%)]" />
-        <div className="container relative mx-auto px-4 py-20 md:py-28">
+        <div className="container relative mx-auto px-4 py-16 pb-24 md:py-20 md:pb-28">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

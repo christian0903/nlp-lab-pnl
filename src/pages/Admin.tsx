@@ -109,6 +109,36 @@ const Admin = () => {
     }
   };
 
+  const downloadCSV = (filename: string, headers: string[], rows: string[][]) => {
+    const csvContent = [headers.join(','), ...rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${filename} exporté !`);
+  };
+
+  const exportModels = () => {
+    const headers = ['ID', 'Titre', 'Type', 'Statut', 'Version', 'Complexité', 'Approuvé', 'Auteur', 'Vues', 'Feedbacks', 'Variations', 'Tags', 'Créé le', 'Mis à jour'];
+    const rows = models.map(m => [m.id, m.title, m.type, m.status, m.version, m.complexity, m.approved ? 'Oui' : 'Non', m.author_name || '', String(m.views_count), String(m.feedback_count), String(m.variations_count), m.tags.join('; '), m.created_at, m.updated_at]);
+    downloadCSV('models_export.csv', headers, rows);
+  };
+
+  const exportUsers = () => {
+    const headers = ['User ID', 'Nom', 'Inscrit le', 'Rôle'];
+    const rows = allProfiles.map(p => [p.user_id, p.display_name, p.created_at, roles.some(r => r.user_id === p.user_id && r.role === 'admin') ? 'Admin' : 'Utilisateur']);
+    downloadCSV('users_export.csv', headers, rows);
+  };
+
+  const exportPosts = async () => {
+    const { data } = await supabase.from('forum_posts').select('*').order('created_at', { ascending: false });
+    if (!data || data.length === 0) { toast.error('Aucun post à exporter'); return; }
+    const headers = ['ID', 'Titre', 'Catégorie', 'Contenu', 'Likes', 'Commentaires', 'User ID', 'Créé le'];
+    const rows = data.map((p: any) => [p.id, p.title, p.category, p.content, String(p.likes_count), String(p.comments_count), p.user_id, p.created_at]);
+    downloadCSV('posts_export.csv', headers, rows);
+  };
+
   if (adminLoading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
   if (!user || !isAdmin) return <Navigate to="/" replace />;
 
@@ -121,13 +151,29 @@ const Admin = () => {
   return (
     <div className="container mx-auto px-4 py-10">
       {/* Header */}
-      <div className="mb-8 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10">
-          <ShieldCheck className="h-5 w-5 text-secondary" />
+      <div className="mb-8 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10">
+            <ShieldCheck className="h-5 w-5 text-secondary" />
+          </div>
+          <div>
+            <h1 className="font-display text-3xl font-bold text-foreground">Administration</h1>
+            <p className="text-sm text-muted-foreground">Vue d'ensemble et gestion de la plateforme</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-display text-3xl font-bold text-foreground">Administration</h1>
-          <p className="text-sm text-muted-foreground">Vue d'ensemble et gestion de la plateforme</p>
+        <div className="flex items-center gap-2">
+          <button onClick={exportModels}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <Download className="h-3.5 w-3.5" /> Modèles CSV
+          </button>
+          <button onClick={exportUsers}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <Download className="h-3.5 w-3.5" /> Utilisateurs CSV
+          </button>
+          <button onClick={exportPosts}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <Download className="h-3.5 w-3.5" /> Posts CSV
+          </button>
         </div>
       </div>
 

@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FlaskConical, Menu, X } from 'lucide-react';
+import { FlaskConical, Menu, X, User, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
   { label: 'Accueil', path: '/' },
@@ -14,6 +15,7 @@ const navItems = [
 const Header = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
@@ -51,6 +53,23 @@ const Header = () => {
               </Link>
             );
           })}
+          <div className="ml-3 flex items-center gap-2 border-l border-border pl-3">
+            {user ? (
+              <button
+                onClick={() => signOut()}
+                className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                className="flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground"
+              >
+                <User className="h-4 w-4" /> Connexion
+              </Link>
+            )}
+          </div>
         </nav>
 
         <button

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
+import { useAdmin } from '@/hooks/useAdmin';
+
 const navItems = [
   { label: 'Accueil', path: '/' },
   { label: 'Bibliothèque', path: '/library' },

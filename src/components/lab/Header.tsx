@@ -9,6 +9,7 @@ import { useAdmin } from '@/hooks/useAdmin';
 const navItems = [
   { label: 'Accueil', path: '/' },
   { label: 'Bibliothèque', path: '/library' },
+  { label: 'Événements', path: '/events' },
   { label: 'Contribuer', path: '/contribute' },
   { label: 'Communauté', path: '/community' },
   { label: 'Ressources', path: '/resources' },

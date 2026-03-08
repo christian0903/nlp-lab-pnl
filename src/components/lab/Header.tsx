@@ -69,6 +69,14 @@ const Header = () => {
                     <ShieldCheck className="h-4 w-4" /> Admin
                   </Link>
                 )}
+                <Link
+                  to="/profile"
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    location.pathname === '/profile' ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <User className="h-4 w-4" /> Profil
+                </Link>
                 <button
                   onClick={() => signOut()}
                   className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground hover:text-foreground"

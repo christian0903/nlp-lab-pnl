@@ -12,6 +12,7 @@ import Community from "./pages/Community";
 import Auth from "./pages/Auth";
 import Resources from "./pages/Resources";
 import Contribute from "./pages/Contribute";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/community" element={<Community />} />
             <Route path="/contribute" element={<Contribute />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

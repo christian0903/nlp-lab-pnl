@@ -22,6 +22,7 @@ export type Database = {
           created_at: string
           id: string
           likes_count: number
+          model_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -33,6 +34,7 @@ export type Database = {
           created_at?: string
           id?: string
           likes_count?: number
+          model_id?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -44,11 +46,20 @@ export type Database = {
           created_at?: string
           id?: string
           likes_count?: number
+          model_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "forum_posts_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       model_feedbacks: {
         Row: {

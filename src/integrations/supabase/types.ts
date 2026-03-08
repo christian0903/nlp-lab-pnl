@@ -167,6 +167,47 @@ export type Database = {
           },
         ]
       }
+      model_notifications: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          id: string
+          message: string
+          model_id: string
+          read: boolean
+          type: string
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          model_id: string
+          read?: boolean
+          type: string
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          model_id?: string
+          read?: boolean
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_notifications_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       model_variations: {
         Row: {
           created_at: string

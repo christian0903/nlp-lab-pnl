@@ -87,6 +87,9 @@ const ModelDetail = () => {
   const [editSections, setEditSections] = useState<Record<string, string>>({});
   const [editLinks, setEditLinks] = useState<ModelLink[]>([]);
   const [editChangelog, setEditChangelog] = useState('');
+  const [editChangelogAuthor, setEditChangelogAuthor] = useState('');
+  const [editOwnerId, setEditOwnerId] = useState('');
+  const [allUsers, setAllUsers] = useState<{ user_id: string; display_name: string }[]>([]);
   const [editSubmitting, setEditSubmitting] = useState(false);
 
   useEffect(() => {
@@ -176,6 +179,13 @@ const ModelDetail = () => {
     fetchAll();
   }, [id]);
 
+  // Load all users for admin selectors
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase.from('profiles').select('user_id, display_name').order('display_name')
+      .then(({ data }) => { if (data) setAllUsers(data as any); });
+  }, [isAdmin]);
+
   const handleStatusChange = async (newStatus: string) => {
     if (!model) return;
     await supabase.from('models').update({ status: newStatus } as any).eq('id', model.id);
@@ -264,6 +274,8 @@ const ModelDetail = () => {
     setEditSections((model.sections || {}) as Record<string, string>);
     setEditLinks((model.links || []) as ModelLink[]);
     setEditChangelog('');
+    setEditChangelogAuthor(profiles[user?.id || ''] || 'Anonyme');
+    setEditOwnerId(model.user_id);
     setEditing(true);
   };
 
@@ -284,17 +296,16 @@ const ModelDetail = () => {
     const existingChangelog = model.changelog || [];
     let updatedChangelog = existingChangelog;
     if (editChangelog.trim()) {
-      const authorName = profiles[user?.id || ''] || 'Anonyme';
       const newEntry = {
         version: editVersion.trim() || model.version,
         date: new Date().toISOString().split('T')[0],
         changes: editChangelog.trim(),
-        author: authorName,
+        author: editChangelogAuthor || profiles[user?.id || ''] || 'Anonyme',
       };
       updatedChangelog = [newEntry, ...existingChangelog];
     }
 
-    const { error } = await supabase.from('models').update({
+    const updateData: any = {
       title: editTitle.trim(),
       description: editDescription.trim(),
       type: editType,
@@ -304,7 +315,12 @@ const ModelDetail = () => {
       sections: editSections,
       links: savedLinks,
       changelog: updatedChangelog,
-    } as any).eq('id', model.id);
+    };
+    if (isAdmin && editOwnerId && editOwnerId !== model.user_id) {
+      updateData.user_id = editOwnerId;
+    }
+
+    const { error } = await supabase.from('models').update(updateData).eq('id', model.id);
 
     setEditSubmitting(false);
     if (error) {
@@ -323,7 +339,11 @@ const ModelDetail = () => {
       sections: editSections,
       links: savedLinks,
       changelog: updatedChangelog,
+      user_id: isAdmin && editOwnerId ? editOwnerId : model.user_id,
     });
+    if (isAdmin && editOwnerId && editOwnerId !== model.user_id) {
+      setAuthorName(allUsers.find(u => u.user_id === editOwnerId)?.display_name || '');
+    }
     setEditing(false);
     toast.success('Modèle mis à jour !');
   };
@@ -523,6 +543,17 @@ const ModelDetail = () => {
                   placeholder="1.0.0" maxLength={20}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
               </div>
+              {isAdmin && allUsers.length > 0 && (
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Propriétaire</label>
+                  <select value={editOwnerId} onChange={e => setEditOwnerId(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
+                    {allUsers.map(u => (
+                      <option key={u.user_id} value={u.user_id}>{u.display_name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <MarkdownField
@@ -591,13 +622,24 @@ const ModelDetail = () => {
             </div>
 
             {/* Note de changement */}
-            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 space-y-2">
               <label className="mb-1.5 block text-sm font-medium text-foreground">Note de changement</label>
-              <p className="mb-2 text-xs text-muted-foreground">Décrivez brièvement ce qui a changé. Cette note sera ajoutée au journal des modifications (onglet Historique).</p>
+              <p className="text-xs text-muted-foreground">Décrivez brièvement ce qui a changé. Cette note sera ajoutée au journal des modifications (onglet Historique).</p>
               <textarea value={editChangelog} onChange={e => setEditChangelog(e.target.value)}
                 placeholder="Ex: Ajout du protocole détaillé, correction des prérequis..."
                 rows={2} maxLength={1000}
                 className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
+              {isAdmin && allUsers.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-muted-foreground">Auteur de la note :</label>
+                  <select value={editChangelogAuthor} onChange={e => setEditChangelogAuthor(e.target.value)}
+                    className="rounded border border-input bg-background px-2 py-1 text-xs outline-none ring-ring focus:ring-2">
+                    {allUsers.map(u => (
+                      <option key={u.user_id} value={u.display_name}>{u.display_name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 border-t border-border pt-4">
@@ -800,7 +842,26 @@ const ModelDetail = () => {
                       <span className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleDateString('fr-FR')}</span>
                     </div>
                     <p className="mb-2 whitespace-pre-line text-sm text-muted-foreground leading-relaxed">{v.description}</p>
-                    <span className="text-xs text-muted-foreground">par {v.author_name || 'Anonyme'}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">par {v.author_name || 'Anonyme'}</span>
+                      {isAdmin && (
+                        <select
+                          value={v.user_id}
+                          onChange={async (e) => {
+                            const newUserId = e.target.value;
+                            const { error } = await supabase.from('model_variations').update({ user_id: newUserId } as any).eq('id', v.id);
+                            if (error) { toast.error('Erreur'); return; }
+                            const newName = allUsers.find(u => u.user_id === newUserId)?.display_name || profiles[newUserId] || 'Anonyme';
+                            setVariations(prev => prev.map(vr => vr.id === v.id ? { ...vr, user_id: newUserId, author_name: newName } : vr));
+                            toast.success('Auteur de la variation modifié');
+                          }}
+                          className="rounded border border-input bg-background px-1.5 py-0.5 text-[10px] outline-none ring-ring focus:ring-2">
+                          {(allUsers.length > 0 ? allUsers : [{ user_id: v.user_id, display_name: v.author_name || 'Anonyme' }]).map(u => (
+                            <option key={u.user_id} value={u.user_id}>{u.display_name}</option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
 
                     {/* Replies */}
                     {replies.length > 0 && (

@@ -10,16 +10,16 @@
 2. [Navigation](#2-navigation)
 3. [Accueil](#3-accueil)
 4. [Bibliothèque de modèles](#4-bibliothèque-de-modèles)
-5. [Détail d'un modèle](#5-détail-dun-modèle) — édition, suppression, liens, images, markdown
-6. [Contribuer un modèle](#6-contribuer-un-modèle)
+5. [Détail d'un modèle](#5-détail-dun-modèle) — édition, suppression, liens, images, markdown, filiation, changelog
+6. [Contribuer un modèle](#6-contribuer-un-modèle) — modèle dérivé
 7. [Importer un modèle (admin)](#7-importer-un-modèle-admin)
 8. [Communauté](#8-communauté)
 9. [Événements](#9-événements)
-10. [Ressources](#10-ressources)
+10. [Ressources](#10-ressources) — articles markdown dynamiques
 11. [Profil](#11-profil)
 12. [Notifications](#12-notifications)
-13. [Administration](#13-administration) — images, paramètres
-14. [Rôles et permissions](#14-rôles-et-permissions)
+13. [Administration](#13-administration) — images, paramètres, gestion utilisateurs
+14. [Rôles et permissions](#14-rôles-et-permissions) — modérateur, admin, gestion users
 15. [Format des fiches d'import](#15-format-des-fiches-dimport)
 
 ---
@@ -146,7 +146,7 @@ Affiche le titre, la description, les badges (type, statut, version), les tags, 
 
 #### Bouton Modifier
 
-Si vous êtes **administrateur** ou **auteur du modèle**, un bouton **Modifier** apparaît en haut à droite. Il ouvre un formulaire d'édition inline permettant de modifier :
+Si vous êtes **administrateur**, **modérateur** ou **auteur du modèle**, un bouton **Modifier** apparaît en haut à droite. Il ouvre un formulaire d'édition inline permettant de modifier :
 - Titre
 - Type (Problématique / Outil / Approche)
 - Complexité (Débutant / Intermédiaire / Avancé)
@@ -155,6 +155,7 @@ Si vous êtes **administrateur** ou **auteur du modèle**, un bouton **Modifier*
 - Sections (dynamiques selon le type)
 - Tags
 - Liens & ressources (voir ci-dessous)
+- **Propriétaire** (admin uniquement) — permet de réassigner le modèle à un autre utilisateur
 
 Tous les champs descriptifs (description, sections) supportent le **format Markdown**. En mode lecture, le markdown est rendu visuellement (titres, listes, gras, tableaux, images...). En mode édition, vous voyez et éditez le code markdown brut.
 
@@ -162,7 +163,7 @@ Tous les champs descriptifs (description, sections) supportent le **format Markd
 
 Sous chaque champ texte en mode édition, un bouton **Image** permet d'uploader une image (PNG, JPG, JPEG). L'image est automatiquement stockée sur le serveur et le code markdown correspondant (`![nom](url)`) est inséré dans le texte. La taille maximale des images est configurable dans les paramètres admin.
 
-Avant d'enregistrer, un champ **"Note de changement"** (encadré doré) permet de décrire brièvement ce qui a changé (ex: "Ajout du protocole détaillé"). Si rempli, une entrée est automatiquement ajoutée au **journal des modifications** (onglet Historique) avec la version, la date et le nom de l'auteur. Ce champ est optionnel.
+Avant d'enregistrer, un champ **"Note de changement"** (encadré doré) permet de décrire brièvement ce qui a changé (ex: "Ajout du protocole détaillé"). Si rempli, une entrée est automatiquement ajoutée au **journal des modifications** (onglet Historique) avec la version, la date et le nom de l'auteur. Ce champ est optionnel. Les administrateurs peuvent choisir l'**auteur de la note** via un sélecteur dédié.
 
 Cliquez sur **Enregistrer** pour sauvegarder ou **Annuler** pour revenir à l'affichage.
 
@@ -237,6 +238,10 @@ Chaque variation dispose d'un **fil de discussion**. Tout utilisateur connecté 
 #### Promouvoir une variation en modèle
 
 Les administrateurs, modérateurs ou l'auteur de la variation voient un bouton **"Créer comme modèle"** à côté de chaque variation. Un clic redirige vers le formulaire de contribution, pré-rempli avec le titre et la description de la variation, et un lien de filiation vers le modèle d'origine. Le nouveau modèle apparaîtra dans l'onglet Historique du parent comme "modèle dérivé".
+
+#### Changer l'auteur d'une variation (admin)
+
+Les administrateurs voient un sélecteur à côté du nom de l'auteur de chaque variation, permettant de réassigner la variation à un autre utilisateur.
 
 ### Onglet Feedback
 
@@ -400,37 +405,34 @@ Les administrateurs peuvent envoyer un email à tous les inscrits d'un événeme
 
 ## 10. Ressources
 
-La section Ressources contient trois onglets.
+La section Ressources est un espace de publication d'**articles en Markdown** stockés en base de données.
 
-### Guide du Modélisateur
+### Consultation
 
-Un guide en 5 étapes pour créer un modèle PNL :
+- Les articles sont listés à gauche (ou en haut sur mobile) avec leur catégorie
+- Cliquez sur un article pour afficher son contenu en markdown rendu
+- Filtrez par catégorie : Guide, Glossaire, Technique, Article
 
-1. **Identifier le phénomène** — Observer une compétence ou un comportement remarquable
-2. **Observer et collecter** — Recueillir des données sensorielles précises (VAKOG)
-3. **Structurer** — Organiser les patterns dans un modèle cohérent
-4. **Tester et itérer** — Valider avec d'autres praticiens, ajuster
-5. **Documenter** — Rédiger une fiche complète et partageable
+### Articles pré-installés
 
-### Glossaire PNL
+Trois articles sont fournis par défaut :
+- **Guide du Modélisateur** — Les 5 étapes pour créer un modèle PNL
+- **Glossaire PNL** — Définitions des termes clés, organisés par catégorie
+- **Critères de qualité** — 8 critères d'évaluation des modèles
 
-Un glossaire de **33+ termes** PNL avec :
-- **Recherche** par nom de terme ou contenu de définition
-- **Filtre par catégorie**
-- Définition détaillée pour chaque terme (cliquez pour déplier)
+### Gestion des articles (admin / modérateur)
 
-### Critères de qualité
+Les administrateurs et modérateurs peuvent :
 
-8 critères pour évaluer la qualité d'un modèle PNL :
+| Action | Description |
+|--------|-------------|
+| **Nouvel article** | Créer un article avec titre, slug, catégorie, contenu markdown |
+| **Modifier** | Éditer le contenu avec prévisualisation markdown en temps réel |
+| **Supprimer** | Supprimer un article (avec confirmation) |
+| **Publier / Brouillon** | Un article en brouillon n'est visible que par les admin/modérateurs |
+| **Ordre d'affichage** | Numéro pour trier les articles dans la liste |
 
-1. Basé sur l'observation (pas seulement théorique)
-2. Protocole détaillé permettant la réplication
-3. Prérequis et contre-indications clairement établis
-4. Au moins 3 cas d'usage documentés
-5. Respect de l'éthique PNL
-6. Validation écologique intégrée
-7. Variations contextuelles mentionnées
-8. Description honnête des limites
+Le contenu est rédigé en **Markdown** avec support des titres, listes, tableaux, gras, liens, images, etc.
 
 ---
 

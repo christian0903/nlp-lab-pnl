@@ -365,6 +365,45 @@ export type Database = {
           },
         ]
       }
+      resources: {
+        Row: {
+          id: string
+          title: string
+          slug: string
+          content: string
+          category: string
+          sort_order: number
+          published: boolean
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          slug: string
+          content: string
+          category?: string
+          sort_order?: number
+          published?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          slug?: string
+          content?: string
+          category?: string
+          sort_order?: number
+          published?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string

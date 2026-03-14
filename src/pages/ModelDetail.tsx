@@ -1,8 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Eye, GitBranch, MessageSquare, Clock, User, ShieldCheck, Star, Plus, Send } from 'lucide-react';
+import { ArrowLeft, Eye, GitBranch, MessageSquare, Clock, User, ShieldCheck, Star, Plus, Send, Pencil, X, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { DBModel, MODEL_STATUS_LABELS } from '@/types/model';
+import { DBModel, MODEL_STATUS_LABELS, MODEL_TYPE_LABELS, ModelType } from '@/types/model';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
 import StatusBadge from '@/components/lab/StatusBadge';
@@ -53,6 +53,17 @@ const ModelDetail = () => {
   const [fbSubmitting, setFbSubmitting] = useState(false);
 
   const [profiles, setProfiles] = useState<Record<string, string>>({});
+
+  // Edit mode
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editType, setEditType] = useState<ModelType>('outil');
+  const [editComplexity, setEditComplexity] = useState('');
+  const [editTagsInput, setEditTagsInput] = useState('');
+  const [editVersion, setEditVersion] = useState('');
+  const [editSections, setEditSections] = useState<Record<string, string>>({});
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -149,6 +160,83 @@ const ModelDetail = () => {
     toast.success('Feedback ajouté !');
   };
 
+  const startEditing = () => {
+    if (!model) return;
+    setEditTitle(model.title);
+    setEditDescription(model.description);
+    setEditType(model.type as ModelType);
+    setEditComplexity(model.complexity);
+    setEditTagsInput(model.tags.join(', '));
+    setEditVersion(model.version);
+    setEditSections((model.sections || {}) as Record<string, string>);
+    setEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setEditing(false);
+  };
+
+  const saveEditing = async () => {
+    if (!model || !editTitle.trim() || !editDescription.trim()) {
+      toast.error('Le titre et la description sont requis');
+      return;
+    }
+    setEditSubmitting(true);
+    const tags = editTagsInput.split(',').map(t => t.trim()).filter(Boolean);
+    const { error } = await supabase.from('models').update({
+      title: editTitle.trim(),
+      description: editDescription.trim(),
+      type: editType,
+      complexity: editComplexity,
+      tags,
+      version: editVersion.trim(),
+      sections: editSections,
+    } as any).eq('id', model.id);
+
+    setEditSubmitting(false);
+    if (error) {
+      toast.error('Erreur lors de la sauvegarde');
+      console.error(error);
+      return;
+    }
+    setModel({
+      ...model,
+      title: editTitle.trim(),
+      description: editDescription.trim(),
+      type: editType,
+      complexity: editComplexity,
+      tags,
+      version: editVersion.trim(),
+      sections: editSections,
+    });
+    setEditing(false);
+    toast.success('Modèle mis à jour !');
+  };
+
+  const complexityOptions = [
+    { value: 'débutant', label: 'Débutant' },
+    { value: 'intermédiaire', label: 'Intermédiaire' },
+    { value: 'avancé', label: 'Avancé' },
+  ];
+
+  const sectionsByType: Record<ModelType, { label: string; key: string; placeholder: string }[]> = {
+    problematique: [
+      { label: 'Description du phénomène', key: 'description', placeholder: 'Décrivez le phénomène observé...' },
+      { label: 'Patterns identifiés', key: 'patterns', placeholder: 'Décrivez les patterns comportementaux observés...' },
+      { label: 'Prérequis', key: 'prerequisites', placeholder: 'Connaissances ou compétences nécessaires...' },
+    ],
+    outil: [
+      { label: 'Structure du modèle', key: 'structure', placeholder: 'Décrivez la structure du modèle...' },
+      { label: 'Protocole détaillé', key: 'protocol', placeholder: 'Décrivez les étapes du protocole...' },
+      { label: 'Prérequis', key: 'prerequisites', placeholder: 'Rapport, état de ressource, calibration...' },
+    ],
+    approche: [
+      { label: 'Philosophie et principes', key: 'philosophy', placeholder: 'Décrivez les fondements philosophiques...' },
+      { label: 'Boîte à outils', key: 'toolkit', placeholder: 'Les outils associés à cette approche...' },
+      { label: 'Prérequis', key: 'prerequisites', placeholder: 'Formations ou expériences recommandées...' },
+    ],
+  };
+
   if (loading) {
     return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
   }
@@ -185,28 +273,114 @@ const ModelDetail = () => {
 
       {/* Header */}
       <div className="mb-8 rounded-xl border border-border bg-card p-6 shadow-sm">
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <TypeBadge type={model.type as any} />
-          <StatusBadge status={model.status as any} />
-          {!model.approved && (
-            <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-600">En attente</span>
-          )}
-          <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-mono font-medium text-muted-foreground">v{model.version}</span>
-        </div>
-        <h1 className="mb-2 font-display text-3xl font-bold text-foreground">{model.title}</h1>
-        <p className="mb-5 text-muted-foreground leading-relaxed">{model.description}</p>
-        <div className="flex flex-wrap gap-5 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1.5"><User className="h-4 w-4" /> {authorName || 'Anonyme'}</span>
-          <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {new Date(model.updated_at).toLocaleDateString('fr-FR')}</span>
-          <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> {model.views_count}</span>
-          <span className="flex items-center gap-1.5"><GitBranch className="h-4 w-4" /> {model.variations_count} variations</span>
-          <span className="flex items-center gap-1.5"><MessageSquare className="h-4 w-4" /> {model.feedback_count} feedbacks</span>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {model.tags.map(tag => (
-            <span key={tag} className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">{tag}</span>
-          ))}
-        </div>
+        {!editing ? (
+          <>
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <TypeBadge type={model.type as any} />
+              <StatusBadge status={model.status as any} />
+              {!model.approved && (
+                <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-600">En attente</span>
+              )}
+              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-mono font-medium text-muted-foreground">v{model.version}</span>
+              {canManage && (
+                <button onClick={startEditing}
+                  className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
+                  <Pencil className="h-3.5 w-3.5" /> Modifier
+                </button>
+              )}
+            </div>
+            <h1 className="mb-2 font-display text-3xl font-bold text-foreground">{model.title}</h1>
+            <p className="mb-5 text-muted-foreground leading-relaxed">{model.description}</p>
+            <div className="flex flex-wrap gap-5 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5"><User className="h-4 w-4" /> {authorName || 'Anonyme'}</span>
+              <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {new Date(model.updated_at).toLocaleDateString('fr-FR')}</span>
+              <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> {model.views_count}</span>
+              <span className="flex items-center gap-1.5"><GitBranch className="h-4 w-4" /> {model.variations_count} variations</span>
+              <span className="flex items-center gap-1.5"><MessageSquare className="h-4 w-4" /> {model.feedback_count} feedbacks</span>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {model.tags.map(tag => (
+                <span key={tag} className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">{tag}</span>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-lg font-bold text-foreground">Modifier le modèle</h2>
+              <button onClick={cancelEditing} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">Titre *</label>
+              <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
+                maxLength={200} className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">Type</label>
+                <select value={editType} onChange={e => setEditType(e.target.value as ModelType)}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
+                  {(Object.entries(MODEL_TYPE_LABELS) as [ModelType, string][]).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">Complexité</label>
+                <select value={editComplexity} onChange={e => setEditComplexity(e.target.value)}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
+                  {complexityOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">Version</label>
+                <input type="text" value={editVersion} onChange={e => setEditVersion(e.target.value)}
+                  placeholder="1.0.0" maxLength={20}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">Description *</label>
+              <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
+                rows={4} maxLength={5000}
+                className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
+            </div>
+
+            {sectionsByType[editType].map(section => (
+              <div key={section.key}>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">{section.label}</label>
+                <textarea value={editSections[section.key] || ''} onChange={e => setEditSections(prev => ({ ...prev, [section.key]: e.target.value }))}
+                  placeholder={section.placeholder} rows={4} maxLength={3000}
+                  className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
+              </div>
+            ))}
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">Tags (séparés par des virgules)</label>
+              <input type="text" value={editTagsInput} onChange={e => setEditTagsInput(e.target.value)}
+                placeholder="ancrage, somatique, dissociation" maxLength={200}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-border pt-4">
+              <button onClick={cancelEditing}
+                className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
+                Annuler
+              </button>
+              <button onClick={saveEditing} disabled={editSubmitting}
+                className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
+                <Save className="h-4 w-4" /> {editSubmitting ? 'Sauvegarde...' : 'Enregistrer'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Status management */}

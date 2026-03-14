@@ -16,6 +16,8 @@ import Admin from "./pages/Admin";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import Events from "./pages/Events";
+import ImportModel from "./pages/ImportModel";
+import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,10 +38,12 @@ const App = () => (
             <Route path="/contribute" element={<Contribute />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/import" element={<ImportModel />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/events" element={<Events />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/aide" element={<Help />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

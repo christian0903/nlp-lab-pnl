@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FlaskConical, Menu, X, User, LogOut, ShieldCheck } from 'lucide-react';
+import { FlaskConical, Menu, X, User, LogOut, ShieldCheck, HelpCircle } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +13,7 @@ const navItems = [
   { label: 'Contribuer', path: '/contribute' },
   { label: 'Communauté', path: '/community' },
   { label: 'Ressources', path: '/resources' },
+  { label: 'Aide', path: '/aide' },
 ];
 
 const Header = () => {

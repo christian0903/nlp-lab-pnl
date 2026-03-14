@@ -434,6 +434,8 @@ Les administrateurs et modérateurs peuvent :
 
 Le contenu est rédigé en **Markdown** avec support des titres, listes, tableaux, gras, liens, images, etc.
 
+Un bouton **Image** sous l'éditeur permet d'uploader des images (PNG, JPG, JPEG) directement dans l'article. Le code markdown `![nom](url)` est inséré automatiquement. La taille maximale est celle définie dans les paramètres admin.
+
 ---
 
 ## 11. Profil

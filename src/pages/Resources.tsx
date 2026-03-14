@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Pencil, Trash2, Save, X, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,6 +6,7 @@ import { useAdmin } from '@/hooks/useAdmin';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
+import ImageUploader from '@/components/lab/ImageUploader';
 
 interface Resource {
   id: string;
@@ -48,6 +49,16 @@ const Resources = () => {
 
   // Delete
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const handleImageInsert = useCallback((markdown: string) => {
+    const ta = contentRef.current;
+    if (ta) {
+      const start = ta.selectionStart ?? editContent.length;
+      setEditContent(editContent.slice(0, start) + '\n' + markdown + '\n' + editContent.slice(start));
+    } else {
+      setEditContent(editContent + '\n' + markdown);
+    }
+  }, [editContent]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -227,8 +238,14 @@ const Resources = () => {
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{editContent}</ReactMarkdown>
               </div>
             ) : (
-              <textarea value={editContent} onChange={e => setEditContent(e.target.value)}
-                rows={20} className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm font-mono outline-none ring-ring focus:ring-2" />
+              <>
+                <textarea ref={contentRef} value={editContent} onChange={e => setEditContent(e.target.value)}
+                  rows={20} className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm font-mono outline-none ring-ring focus:ring-2" />
+                <div className="mt-1 flex items-center gap-2">
+                  <ImageUploader modelId="resources" textareaRef={contentRef} onInsert={handleImageInsert} />
+                  <span className="text-[10px] text-muted-foreground">Markdown supporté</span>
+                </div>
+              </>
             )}
           </div>
 

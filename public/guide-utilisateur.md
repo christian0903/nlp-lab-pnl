@@ -599,16 +599,33 @@ Tout ce qu'un modérateur peut faire, plus :
 
 ### Page de gestion des utilisateurs (admin)
 
-Accessible via le bouton **Gérer les utilisateurs** sur la page Admin. Permet de :
+Accessible via le bouton **Gérer les utilisateurs** sur la page Admin.
+
+#### Informations affichées pour chaque utilisateur
+
+| Champ | Description |
+|-------|-------------|
+| **Avatar** | Photo de profil ou initiale |
+| **Nom d'affichage** | Modifiable inline par l'admin (cliquer sur le crayon) |
+| **Email** | Adresse email du compte, modifiable inline par l'admin |
+| **Date d'inscription** | Depuis quand l'utilisateur est inscrit |
+| **Dernière connexion** | Date de la dernière connexion (ou "jamais") |
+| **Bio** | Courte présentation (ou "non renseignée") |
+| **Expertise** | Tags de compétences (ou "non renseignée") |
+| **UUID** | Identifiant technique unique |
+
+#### Actions disponibles
 
 | Action | Description |
 |--------|-------------|
 | **Ajouter un utilisateur** | Créer un compte avec nom, email et mot de passe initial |
 | **Changer le rôle** | Sélecteur : Utilisateur / Modérateur / Administrateur |
-| **Reset mot de passe** | Envoie un email de réinitialisation à l'utilisateur |
+| **Modifier le nom** | Cliquer sur le crayon à côté du nom, Entrée pour sauvegarder |
+| **Modifier l'email** | Cliquer sur le crayon à côté de l'email, Entrée pour sauvegarder |
+| **Reset mot de passe** | Envoie un email de réinitialisation à l'adresse de l'utilisateur |
 | **Supprimer** | Supprime le profil et les rôles (avec confirmation) |
 
-Note : il est impossible de modifier son propre rôle.
+Note : il est impossible de modifier son propre rôle, nom ou email depuis cette page (utilisez la page Profil).
 
 ---
 

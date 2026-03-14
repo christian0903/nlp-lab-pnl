@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Link, useNavigate } from 'react-router-dom';
-import { Send, User, FileText, Lightbulb } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Send, User, FileText, Lightbulb, GitBranch } from 'lucide-react';
 import { MODEL_TYPE_LABELS, ModelType } from '@/types/model';
 
 const complexityOptions = [
@@ -30,14 +30,27 @@ const sectionsByType: Record<ModelType, { label: string; key: string; placeholde
 const Contribute = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [title, setTitle] = useState('');
+  const parentId = searchParams.get('parent');
+  const fromVariationTitle = searchParams.get('title');
+  const fromVariationDesc = searchParams.get('description');
+
+  const [title, setTitle] = useState(fromVariationTitle || '');
   const [type, setType] = useState<ModelType>('outil');
   const [complexity, setComplexity] = useState('intermédiaire');
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(fromVariationDesc || '');
   const [tagsInput, setTagsInput] = useState('');
   const [sectionValues, setSectionValues] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [parentTitle, setParentTitle] = useState('');
+
+  useEffect(() => {
+    if (parentId) {
+      supabase.from('models').select('title').eq('id', parentId).single()
+        .then(({ data }) => { if (data) setParentTitle(data.title); });
+    }
+  }, [parentId]);
 
   if (!user) {
     return (
@@ -67,7 +80,7 @@ const Contribute = () => {
     setSubmitting(true);
     const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
 
-    const { error } = await supabase.from('models').insert({
+    const insertData: any = {
       user_id: user.id,
       title: trimmedTitle,
       type,
@@ -77,7 +90,12 @@ const Contribute = () => {
       sections: sectionValues,
       status: 'brouillon',
       approved: false,
-    } as any);
+    };
+    if (parentId) {
+      insertData.parent_model_id = parentId;
+    }
+
+    const { error } = await supabase.from('models').insert(insertData);
 
     setSubmitting(false);
 
@@ -99,6 +117,17 @@ const Contribute = () => {
           Votre modèle sera soumis à validation par un administrateur avant d'être visible dans la bibliothèque.
         </p>
       </div>
+
+      {/* Parent model banner */}
+      {parentId && parentTitle && (
+        <div className="mb-6 flex items-center gap-2 rounded-xl border border-secondary/20 bg-secondary/5 p-4">
+          <GitBranch className="h-5 w-5 text-secondary" />
+          <div className="text-sm">
+            <span className="text-foreground">Ce modèle sera dérivé de </span>
+            <Link to={`/model/${parentId}`} className="font-medium text-secondary hover:underline">{parentTitle}</Link>
+          </div>
+        </div>
+      )}
 
       <div className="mb-8 flex items-start gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
         <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-lab-warm" />

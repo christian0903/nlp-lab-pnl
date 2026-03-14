@@ -43,7 +43,7 @@ Prérequis pour utiliser ce modèle.`;
 
 const ImportModel = () => {
   const { user } = useAuth();
-  const { isAdmin } = useAdmin();
+  const { canManage } = useAdmin();
   const navigate = useNavigate();
 
   const [markdown, setMarkdown] = useState('');
@@ -54,7 +54,7 @@ const ImportModel = () => {
   const [matchedModelId, setMatchedModelId] = useState<string | null>(null);
   const [matchedModelTitle, setMatchedModelTitle] = useState('');
 
-  if (!user || !isAdmin) {
+  if (!user || !canManage) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <p className="text-muted-foreground">Accès réservé aux administrateurs.</p>

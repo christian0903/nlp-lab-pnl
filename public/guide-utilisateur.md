@@ -10,7 +10,7 @@
 2. [Navigation](#2-navigation)
 3. [Accueil](#3-accueil)
 4. [Bibliothèque de modèles](#4-bibliothèque-de-modèles)
-5. [Détail d'un modèle](#5-détail-dun-modèle)
+5. [Détail d'un modèle](#5-détail-dun-modèle) — édition, suppression, liens, images, markdown
 6. [Contribuer un modèle](#6-contribuer-un-modèle)
 7. [Importer un modèle (admin)](#7-importer-un-modèle-admin)
 8. [Communauté](#8-communauté)
@@ -18,7 +18,7 @@
 10. [Ressources](#10-ressources)
 11. [Profil](#11-profil)
 12. [Notifications](#12-notifications)
-13. [Administration](#13-administration)
+13. [Administration](#13-administration) — images, paramètres
 14. [Rôles et permissions](#14-rôles-et-permissions)
 15. [Format des fiches d'import](#15-format-des-fiches-dimport)
 
@@ -154,8 +154,37 @@ Si vous êtes **administrateur** ou **auteur du modèle**, un bouton **Modifier*
 - Description
 - Sections (dynamiques selon le type)
 - Tags
+- Liens & ressources (voir ci-dessous)
+
+Tous les champs descriptifs (description, sections) supportent le **format Markdown**. En mode lecture, le markdown est rendu visuellement (titres, listes, gras, tableaux, images...). En mode édition, vous voyez et éditez le code markdown brut.
+
+#### Insérer des images dans les champs
+
+Sous chaque champ texte en mode édition, un bouton **Image** permet d'uploader une image (PNG, JPG, JPEG). L'image est automatiquement stockée sur le serveur et le code markdown correspondant (`![nom](url)`) est inséré dans le texte. La taille maximale des images est configurable dans les paramètres admin.
 
 Cliquez sur **Enregistrer** pour sauvegarder ou **Annuler** pour revenir à l'affichage.
+
+#### Bouton Supprimer (admin)
+
+Les **administrateurs** voient un bouton **Supprimer** (rouge) à côté du bouton Modifier. Un clic ouvre une modale de confirmation. La suppression est **définitive** et inclut les variations et feedbacks associés.
+
+#### Liens & ressources
+
+Chaque modèle peut avoir une liste de liens vers des ressources externes. En mode édition, cliquez sur **Ajouter un lien** pour ajouter une entrée avec :
+
+| Champ | Description |
+|-------|-------------|
+| **Type** | Vidéo, Document ou Formation |
+| **Titre** | Nom du lien |
+| **URL** | Adresse web de la ressource |
+| **Description** | Note courte (optionnel) |
+
+En mode lecture, les liens sont affichés sous les sections avec une icône par type :
+- **Vidéo** (rouge) : vidéos YouTube ou autres
+- **Document** (bleu) : articles, PDF, pages web
+- **Formation** (violet) : formations en ligne
+
+Cliquez sur un lien pour l'ouvrir dans un nouvel onglet.
 
 #### Gestion du statut
 
@@ -167,15 +196,28 @@ Brouillon → En révision → En test → Publié → En évolution
 
 #### Validation admin
 
-Pour les modèles en attente, les administrateurs voient un bandeau de validation avec un bouton **Valider**.
+- Pour les modèles **en attente**, les administrateurs voient un bandeau orange avec un bouton **Valider**.
+- Pour les modèles **déjà validés**, un bandeau vert propose un bouton **Remettre en attente** pour retirer temporairement la validation.
 
 ### Onglet Présentation
 
-Affiche les sections du modèle (structure, protocole, prérequis, etc.) dans des blocs distincts. Les sections affichées dépendent de ce qui a été renseigné.
+Affiche les sections du modèle (structure, protocole, prérequis, etc.) dans des blocs distincts avec **rendu Markdown** (titres, listes, images, tableaux, etc.). Les sections affichées dépendent de ce qui a été renseigné.
+
+Si des liens & ressources ont été ajoutés, ils sont affichés sous les sections dans une grille de cartes cliquables.
+
+#### Filiation parent / dérivé
+
+Si un modèle a été créé à partir d'une variation d'un autre modèle, un bandeau **"Dérivé de [Modèle parent]"** s'affiche sous le header avec un lien cliquable vers le parent.
 
 ### Onglet Historique
 
-Affiche le changelog du modèle : version, date et description des changements pour chaque entrée.
+L'onglet Historique affiche trois sections :
+
+1. **Origine** — Si le modèle est dérivé d'un autre, un lien vers le modèle parent est affiché
+2. **Journal des modifications** — Le changelog avec version, date et description des changements
+3. **Modèles dérivés** — La liste des modèles qui ont été créés à partir de celui-ci (avec auteur, date et lien cliquable)
+
+Cela crée un **arbre de filiation navigable** dans les deux sens : du parent vers ses dérivés et de chaque dérivé vers son parent.
 
 ### Onglet Variations
 
@@ -185,6 +227,14 @@ Les utilisateurs connectés peuvent **proposer une variation** du modèle :
 3. Cliquez sur **Soumettre**
 
 Toutes les variations sont listées avec leur auteur et date.
+
+#### Réponses aux variations
+
+Chaque variation dispose d'un **fil de discussion**. Tout utilisateur connecté peut cliquer sur **Répondre** pour poster une réponse. Les réponses de l'auteur du modèle sont identifiées par un badge "Auteur". Le propriétaire peut ainsi indiquer si la variation sera intégrée, discuter des améliorations, etc.
+
+#### Promouvoir une variation en modèle
+
+Les administrateurs, modérateurs ou l'auteur de la variation voient un bouton **"Créer comme modèle"** à côté de chaque variation. Un clic redirige vers le formulaire de contribution, pré-rempli avec le titre et la description de la variation, et un lien de filiation vers le modèle d'origine. Le nouveau modèle apparaîtra dans l'onglet Historique du parent comme "modèle dérivé".
 
 ### Onglet Feedback
 
@@ -220,6 +270,10 @@ Accessible via le menu **Contribuer** (nécessite d'être connecté).
 | **Problématique** | Patterns identifiés, Prérequis |
 | **Outil** | Protocole détaillé, Prérequis |
 | **Approche** | Philosophie et principes, Prérequis |
+
+### Modèle dérivé
+
+Si vous créez un modèle à partir d'une variation (via le bouton "Créer comme modèle"), le formulaire est pré-rempli et un bandeau indique le modèle parent. Le lien de filiation est automatiquement enregistré.
 
 ### Workflow de publication
 
@@ -460,6 +514,28 @@ Tableau de tous les utilisateurs avec :
 - Rôle actuel (Admin ou Utilisateur)
 - Bouton **Promouvoir admin** / **Retirer admin** (impossible de modifier son propre rôle)
 
+#### Images
+
+Galerie de toutes les images uploadées dans les modèles. Pour chaque image :
+- Miniature de prévisualisation
+- Nom du fichier et chemin
+- Taille et date
+- **Remplacer** : uploader une nouvelle image au même emplacement (les liens existants dans les modèles continueront de fonctionner)
+- **Supprimer** : retirer l'image du serveur
+- **Copier URL** : copier l'adresse publique de l'image dans le presse-papier
+
+Le bouton **Actualiser** recharge la liste des images.
+
+#### Paramètres
+
+Page de configuration de l'application :
+
+| Paramètre | Description | Défaut |
+|-----------|-------------|:------:|
+| **Taille max des images** | Les images uploadées qui dépassent cette taille sont rejetées | 2 Mo |
+
+Cliquez sur **Enregistrer** pour sauvegarder les modifications.
+
 ### Export de données
 
 Trois boutons permettent d'exporter les données en CSV :
@@ -493,17 +569,44 @@ Tout ce qu'un visiteur peut faire, plus :
 - Gérer son profil
 - Recevoir des notifications
 
-### Administrateur
+### Modérateur
 
 Tout ce qu'un utilisateur peut faire, plus :
 - Valider ou rejeter les modèles en attente
-- Modifier n'importe quel modèle
+- Remettre un modèle validé en attente
+- Modifier et supprimer n'importe quel modèle
+- Ajouter des liens & ressources aux modèles
+- Uploader des images dans les champs des modèles
+- Gérer la galerie d'images (remplacer, supprimer)
 - Créer et supprimer des événements
 - Envoyer des emails aux participants
-- Gérer les rôles des utilisateurs
 - Importer des modèles via fiche markdown
 - Exporter les données en CSV
 - Accéder au tableau de bord admin
+
+**Le modérateur ne peut PAS** :
+- Gérer les utilisateurs (ajouter, supprimer, changer les rôles)
+- Modifier les paramètres de l'application
+
+### Administrateur
+
+Tout ce qu'un modérateur peut faire, plus :
+- **Gérer les utilisateurs** : ajouter, supprimer des comptes, changer les rôles (Utilisateur / Modérateur / Admin)
+- **Réinitialiser les mots de passe** : envoyer un email de réinitialisation à un utilisateur
+- **Configurer les paramètres** de l'application (taille max images)
+
+### Page de gestion des utilisateurs (admin)
+
+Accessible via le bouton **Gérer les utilisateurs** sur la page Admin. Permet de :
+
+| Action | Description |
+|--------|-------------|
+| **Ajouter un utilisateur** | Créer un compte avec nom, email et mot de passe initial |
+| **Changer le rôle** | Sélecteur : Utilisateur / Modérateur / Administrateur |
+| **Reset mot de passe** | Envoie un email de réinitialisation à l'utilisateur |
+| **Supprimer** | Supprime le profil et les rôles (avec confirmation) |
+
+Note : il est impossible de modifier son propre rôle.
 
 ---
 

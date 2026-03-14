@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FlaskConical, Menu, X, User, LogOut, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Menu, X, User, LogOut, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,19 +20,14 @@ const Header = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { isAdmin } = useAdmin();
+  const { isAdmin, canManage } = useAdmin();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <FlaskConical className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-display text-lg font-bold leading-tight text-foreground">Lab R&D</span>
-            <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Atelier PNL</span>
-          </div>
+        <Link to="/" className="flex items-center gap-2">
+          <img src="/images/logo-lab-atelierpnl.png" alt="Lab R&D Atelier PNL" className="h-10 w-10 rounded-full object-cover" />
+          <span className="font-display text-lg font-bold leading-tight text-foreground">Lab R&D</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -62,11 +57,11 @@ const Header = () => {
             {user ? (
               <>
                 <NotificationBell />
-                {isAdmin && (
+                {canManage && (
                   <Link
                     to="/admin"
                     className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                      location.pathname === '/admin' ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
+                      location.pathname.startsWith('/admin') ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <ShieldCheck className="h-4 w-4" /> Admin

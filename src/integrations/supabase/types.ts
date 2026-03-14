@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          key: string
+          value: Json
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          value: Json
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          value?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_registrations: {
         Row: {
           created_at: string
@@ -255,6 +273,8 @@ export type Database = {
           description: string
           feedback_count: number
           id: string
+          links: Json | null
+          parent_model_id: string | null
           sections: Json | null
           status: string
           tags: string[]
@@ -274,6 +294,8 @@ export type Database = {
           description?: string
           feedback_count?: number
           id?: string
+          links?: Json | null
+          parent_model_id?: string | null
           sections?: Json | null
           status?: string
           tags?: string[]
@@ -293,6 +315,8 @@ export type Database = {
           description?: string
           feedback_count?: number
           id?: string
+          links?: Json | null
+          parent_model_id?: string | null
           sections?: Json | null
           status?: string
           tags?: string[]
@@ -305,6 +329,41 @@ export type Database = {
           views_count?: number
         }
         Relationships: []
+      }
+      variation_replies: {
+        Row: {
+          id: string
+          variation_id: string
+          user_id: string
+          content: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          variation_id: string
+          user_id: string
+          content: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          variation_id?: string
+          user_id?: string
+          content?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "variation_replies_variation_id_fkey"
+            columns: ["variation_id"]
+            isOneToOne: false
+            referencedRelation: "model_variations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_comments: {
         Row: {

@@ -1,5 +1,13 @@
 export type ModelType = 'problematique' | 'outil' | 'approche';
 export type ModelStatus = 'brouillon' | 'en_revision' | 'en_test' | 'publie' | 'en_evolution';
+export type ModelLinkType = 'video' | 'doc' | 'formation';
+
+export interface ModelLink {
+  type: ModelLinkType;
+  title: string;
+  url: string;
+  description?: string;
+}
 
 export interface DBModel {
   id: string;
@@ -12,6 +20,8 @@ export interface DBModel {
   complexity: string;
   tags: string[];
   sections: Record<string, string> | null;
+  links: ModelLink[] | null;
+  parent_model_id: string | null;
   changelog: { version: string; date: string; changes: string; author: string }[] | null;
   approved: boolean;
   views_count: number;

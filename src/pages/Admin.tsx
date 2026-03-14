@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ShieldCheck, Check, X, Eye, Users, BarChart3, Clock, UserCog, Activity, GitBranch, MessageSquare, FileText, Download, Upload } from 'lucide-react';
+import { ShieldCheck, Check, X, Eye, Users, BarChart3, Clock, UserCog, Activity, GitBranch, MessageSquare, FileText, Download, Upload, ImageIcon, Settings, Trash2, RefreshCw, Save, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -26,7 +26,7 @@ const STATUS_ORDER: ModelStatus[] = ['brouillon', 'en_revision', 'en_test', 'pub
 
 const Admin = () => {
   const { user } = useAuth();
-  const { isAdmin, loading: adminLoading } = useAdmin();
+  const { isAdmin, canManage, loading: adminLoading } = useAdmin();
   const [models, setModels] = useState<(DBModel & { author_name?: string })[]>([]);
   const [profileMap, setProfileMap] = useState<Record<string, string>>({});
   const [allProfiles, setAllProfiles] = useState<ProfileRow[]>([]);
@@ -34,6 +34,16 @@ const Admin = () => {
   const [postsCount, setPostsCount] = useState(0);
   const [usersCount, setUsersCount] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // Images
+  const [images, setImages] = useState<{ name: string; path: string; size: number; updated_at: string; url: string }[]>([]);
+  const [imagesLoading, setImagesLoading] = useState(false);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
+  const [replacingPath, setReplacingPath] = useState<string | null>(null);
+
+  // Settings
+  const [maxImageSizeMb, setMaxImageSizeMb] = useState(2);
+  const [settingsSaving, setSettingsSaving] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -77,6 +87,74 @@ const Admin = () => {
     fetchAll();
   }, [isAdmin]);
 
+  const loadImages = async () => {
+    setImagesLoading(true);
+    const { data: folders } = await supabase.storage.from('model-images').list('', { limit: 100 });
+    const allFiles: typeof images = [];
+    if (folders) {
+      for (const folder of folders) {
+        if (folder.id) {
+          // It's a file at root
+          const { data: { publicUrl } } = supabase.storage.from('model-images').getPublicUrl(folder.name);
+          allFiles.push({ name: folder.name, path: folder.name, size: (folder.metadata as any)?.size || 0, updated_at: folder.updated_at || '', url: publicUrl });
+        } else {
+          // It's a folder, list its contents
+          const { data: files } = await supabase.storage.from('model-images').list(folder.name, { limit: 200 });
+          if (files) {
+            for (const f of files) {
+              if (!f.id) continue;
+              const filePath = `${folder.name}/${f.name}`;
+              const { data: { publicUrl } } = supabase.storage.from('model-images').getPublicUrl(filePath);
+              allFiles.push({ name: f.name, path: filePath, size: (f.metadata as any)?.size || 0, updated_at: f.updated_at || '', url: publicUrl });
+            }
+          }
+        }
+      }
+    }
+    setImages(allFiles);
+    setImagesLoading(false);
+  };
+
+  const loadSettings = async () => {
+    const { data } = await supabase.from('app_settings').select('value').eq('key', 'max_image_size_mb').single();
+    if (data?.value != null) setMaxImageSizeMb(Number(data.value));
+  };
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    loadImages();
+    loadSettings();
+  }, [isAdmin]);
+
+  const handleDeleteImage = async (path: string) => {
+    const { error } = await supabase.storage.from('model-images').remove([path]);
+    if (error) { toast.error('Erreur de suppression'); return; }
+    setImages(prev => prev.filter(i => i.path !== path));
+    toast.success('Image supprimée');
+  };
+
+  const handleReplaceImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !replacingPath) return;
+    if (!file.type.startsWith('image/')) { toast.error('Seules les images sont acceptées'); return; }
+    if (file.size > maxImageSizeMb * 1024 * 1024) { toast.error(`Max ${maxImageSizeMb} Mo`); return; }
+
+    const { error } = await supabase.storage.from('model-images').update(replacingPath, file, { upsert: true });
+    if (error) { toast.error('Erreur de remplacement'); console.error(error); return; }
+    toast.success('Image remplacée');
+    setReplacingPath(null);
+    loadImages();
+    if (replaceInputRef.current) replaceInputRef.current.value = '';
+  };
+
+  const saveSettings = async () => {
+    setSettingsSaving(true);
+    const { error } = await supabase.from('app_settings').update({ value: maxImageSizeMb, updated_at: new Date().toISOString() } as any).eq('key', 'max_image_size_mb');
+    setSettingsSaving(false);
+    if (error) { toast.error('Erreur de sauvegarde'); return; }
+    toast.success('Paramètres sauvegardés');
+  };
+
   const handleApprove = async (id: string) => {
     const { error } = await supabase.from('models').update({ approved: true } as any).eq('id', id);
     if (error) { toast.error('Erreur'); return; }
@@ -89,24 +167,6 @@ const Admin = () => {
     if (error) { toast.error('Erreur'); return; }
     setModels(prev => prev.filter(m => m.id !== id));
     toast.success('Modèle rejeté et supprimé.');
-  };
-
-  const toggleRole = async (userId: string, currentlyAdmin: boolean) => {
-    if (userId === user?.id) {
-      toast.error('Vous ne pouvez pas modifier votre propre rôle');
-      return;
-    }
-    if (currentlyAdmin) {
-      const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', 'admin');
-      if (error) { toast.error('Erreur'); return; }
-      setRoles(prev => prev.filter(r => !(r.user_id === userId && r.role === 'admin')));
-      toast.success('Rôle admin retiré');
-    } else {
-      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' } as any);
-      if (error) { toast.error('Erreur'); return; }
-      setRoles(prev => [...prev, { user_id: userId, role: 'admin' }]);
-      toast.success('Rôle admin ajouté');
-    }
   };
 
   const downloadCSV = (filename: string, headers: string[], rows: string[][]) => {
@@ -140,7 +200,7 @@ const Admin = () => {
   };
 
   if (adminLoading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
-  if (!user || !isAdmin) return <Navigate to="/" replace />;
+  if (!user || !canManage) return <Navigate to="/" replace />;
 
   const pending = models.filter(m => !m.approved);
   const approved = models.filter(m => m.approved);
@@ -162,6 +222,12 @@ const Admin = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Link to="/admin/users"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:brightness-110 transition-all">
+              <Users className="h-3.5 w-3.5" /> Gérer les utilisateurs
+            </Link>
+          )}
           <Link to="/admin/import"
             className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground hover:brightness-110 transition-all">
             <Upload className="h-3.5 w-3.5" /> Importer un modèle
@@ -215,9 +281,14 @@ const Admin = () => {
           <TabsTrigger value="activity" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             <Activity className="mr-1.5 inline h-3.5 w-3.5" /> Activité récente
           </TabsTrigger>
-          <TabsTrigger value="users" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            <UserCog className="mr-1.5 inline h-3.5 w-3.5" /> Utilisateurs
+          <TabsTrigger value="images" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+            <ImageIcon className="mr-1.5 inline h-3.5 w-3.5" /> Images ({images.length})
           </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="settings" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+              <Settings className="mr-1.5 inline h-3.5 w-3.5" /> Paramètres
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* PENDING */}
@@ -278,69 +349,78 @@ const Admin = () => {
           )}
         </TabsContent>
 
-        {/* USERS */}
-        <TabsContent value="users">
-          {allProfiles.length === 0 ? (
-            <EmptyState icon={<Users className="h-10 w-10" />} text="Aucun utilisateur inscrit" />
+
+
+        {/* IMAGES */}
+        <TabsContent value="images">
+          <input ref={replaceInputRef} type="file" accept=".png,.jpg,.jpeg" className="hidden" onChange={handleReplaceImage} />
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{images.length} image(s) stockée(s)</p>
+            <button onClick={loadImages} disabled={imagesLoading}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
+              <RefreshCw className={`h-3.5 w-3.5 ${imagesLoading ? 'animate-spin' : ''}`} /> Actualiser
+            </button>
+          </div>
+          {imagesLoading ? (
+            <div className="py-10 text-center text-muted-foreground">Chargement...</div>
+          ) : images.length === 0 ? (
+            <EmptyState icon={<ImageIcon className="h-10 w-10" />} text="Aucune image uploadée" />
           ) : (
-            <div className="overflow-hidden rounded-xl border border-border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Utilisateur</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Inscrit</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Rôle</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allProfiles.map(p => {
-                    const isUserAdmin = roles.some(r => r.user_id === p.user_id && r.role === 'admin');
-                    const isSelf = p.user_id === user?.id;
-                    return (
-                      <tr key={p.user_id} className="border-b border-border last:border-0">
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                              {p.display_name?.[0]?.toUpperCase() || '?'}
-                            </div>
-                            <span className="font-medium text-foreground">{p.display_name}</span>
-                            {isSelf && <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">Vous</span>}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {formatDistanceToNow(new Date(p.created_at), { addSuffix: true, locale: fr })}
-                        </td>
-                        <td className="px-4 py-3">
-                          {isUserAdmin ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-secondary/10 px-2 py-0.5 text-xs font-medium text-secondary">
-                              <ShieldCheck className="h-3 w-3" /> Admin
-                            </span>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">Utilisateur</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          {!isSelf && (
-                            <button
-                              onClick={() => toggleRole(p.user_id, isUserAdmin)}
-                              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                                isUserAdmin
-                                  ? 'border border-destructive/30 text-destructive hover:bg-destructive/5'
-                                  : 'border border-secondary/30 text-secondary hover:bg-secondary/5'
-                              }`}
-                            >
-                              {isUserAdmin ? 'Retirer admin' : 'Promouvoir admin'}
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {images.map(img => (
+                <div key={img.path} className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+                  <div className="aspect-video bg-muted flex items-center justify-center overflow-hidden">
+                    <img src={`${img.url}?t=${Date.now()}`} alt={img.name} className="h-full w-full object-contain" />
+                  </div>
+                  <div className="p-3">
+                    <p className="text-xs font-medium text-foreground truncate" title={img.path}>{img.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{img.path}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {img.size > 0 ? `${(img.size / 1024).toFixed(0)} Ko` : ''}{img.updated_at ? ` · ${new Date(img.updated_at).toLocaleDateString('fr-FR')}` : ''}
+                    </p>
+                    <div className="mt-2 flex gap-2">
+                      <button onClick={() => { setReplacingPath(img.path); replaceInputRef.current?.click(); }}
+                        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground">
+                        <RefreshCw className="h-3 w-3" /> Remplacer
+                      </button>
+                      <button onClick={() => handleDeleteImage(img.path)}
+                        className="inline-flex items-center gap-1 rounded-md border border-red-300 px-2 py-1 text-[10px] font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30">
+                        <Trash2 className="h-3 w-3" /> Supprimer
+                      </button>
+                      <button onClick={() => { navigator.clipboard.writeText(img.url); toast.success('URL copiée'); }}
+                        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground">
+                        Copier URL
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
+        </TabsContent>
+
+        {/* PARAMÈTRES */}
+        <TabsContent value="settings">
+          <div className="max-w-lg rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h3 className="mb-4 font-display text-lg font-semibold text-foreground">Paramètres de l'application</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">Taille maximale des images (Mo)</label>
+                <p className="mb-2 text-xs text-muted-foreground">Les images uploadées dans les modèles qui dépassent cette taille seront rejetées.</p>
+                <input type="number" value={maxImageSizeMb} onChange={e => setMaxImageSizeMb(Math.max(0.1, Number(e.target.value)))}
+                  min={0.1} max={50} step={0.5}
+                  className="w-32 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
+                <span className="ml-2 text-sm text-muted-foreground">Mo</span>
+              </div>
+              <div className="border-t border-border pt-4">
+                <button onClick={saveSettings} disabled={settingsSaving}
+                  className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
+                  {settingsSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  {settingsSaving ? 'Sauvegarde...' : 'Enregistrer'}
+                </button>
+              </div>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

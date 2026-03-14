@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { DBModel, ModelType, ModelStatus, MODEL_TYPE_LABELS, MODEL_STATUS_LABELS } from '@/types/model';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAdmin } from '@/hooks/useAdmin';
+import { useRole } from '@/hooks/useAdmin';
 import StatusBadge from '@/components/lab/StatusBadge';
 import TypeBadge from '@/components/lab/TypeBadge';
 import { Eye, GitBranch, MessageSquare } from 'lucide-react';
@@ -17,7 +17,7 @@ const Library = () => {
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { isAdmin } = useAdmin();
+  const { canManage } = useRole();
   const [showPending, setShowPending] = useState(false);
 
   useEffect(() => {
@@ -52,7 +52,7 @@ const Library = () => {
     return models.filter((m) => {
       // Visibility: approved models for everyone, pending only for admin when toggled or for owner
       if (!m.approved) {
-        if (isAdmin && showPending) {
+        if (canManage && showPending) {
           // show
         } else if (user && m.user_id === user.id) {
           // owner can see own
@@ -60,14 +60,14 @@ const Library = () => {
           return false;
         }
       }
-      if (showPending && isAdmin && m.approved) return false;
+      if (showPending && canManage && m.approved) return false;
 
       const matchSearch = !search || m.title.toLowerCase().includes(search.toLowerCase()) || m.tags.some(t => t.toLowerCase().includes(search.toLowerCase()));
       const matchType = typeFilter === 'all' || m.type === typeFilter;
       const matchStatus = statusFilter === 'all' || m.status === statusFilter;
       return matchSearch && matchType && matchStatus;
     });
-  }, [search, typeFilter, statusFilter, models, isAdmin, showPending, user]);
+  }, [search, typeFilter, statusFilter, models, canManage, showPending, user]);
 
   return (
     <div className="container mx-auto px-4 py-10">
@@ -78,7 +78,7 @@ const Library = () => {
             {showPending ? 'Modèles en attente de validation' : `Explorez les modèles PNL validés`}
           </p>
         </div>
-        {isAdmin && (
+        {canManage && (
           <button
             onClick={() => setShowPending(!showPending)}
             className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
@@ -135,7 +135,7 @@ const Library = () => {
       ) : filtered.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((model, i) => (
-            <ModelCardDB key={model.id} model={model} authorName={profiles[model.user_id]} index={i} isAdmin={isAdmin} onApprove={async (id) => {
+            <ModelCardDB key={model.id} model={model} authorName={profiles[model.user_id]} index={i} canManage={canManage} onApprove={async (id) => {
               await supabase.from('models').update({ approved: true } as any).eq('id', id);
               setModels(prev => prev.map(m => m.id === id ? { ...m, approved: true } : m));
             }} />
@@ -151,11 +151,11 @@ const Library = () => {
   );
 };
 
-const ModelCardDB = ({ model, authorName, index = 0, isAdmin, onApprove }: {
+const ModelCardDB = ({ model, authorName, index = 0, canManage, onApprove }: {
   model: DBModel;
   authorName?: string;
   index?: number;
-  isAdmin: boolean;
+  canManage: boolean;
   onApprove: (id: string) => void;
 }) => {
   return (
@@ -210,7 +210,7 @@ const ModelCardDB = ({ model, authorName, index = 0, isAdmin, onApprove }: {
         </div>
       </Link>
 
-      {isAdmin && !model.approved && (
+      {canManage && !model.approved && (
         <button
           onClick={(e) => { e.stopPropagation(); onApprove(model.id); }}
           className="mt-3 w-full rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"

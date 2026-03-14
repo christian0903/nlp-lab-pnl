@@ -17,6 +17,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import Events from "./pages/Events";
 import ImportModel from "./pages/ImportModel";
+import AdminUsers from "./pages/AdminUsers";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/resources" element={<Resources />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/import" element={<ImportModel />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/events" element={<Events />} />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAdmin } from '@/hooks/useAdmin';
+import { useRole } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
@@ -27,7 +27,7 @@ interface Registration {
 
 const Events = () => {
   const { user } = useAuth();
-  const { isAdmin } = useAdmin();
+  const { canManage } = useRole();
   const [events, setEvents] = useState<EventRow[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [myRegistrations, setMyRegistrations] = useState<Set<string>>(new Set());
@@ -158,7 +158,7 @@ const Events = () => {
           <h1 className="font-display text-3xl font-bold text-foreground">Événements</h1>
           <p className="mt-1 text-muted-foreground">Sessions de travail, meetings et ateliers PNL</p>
         </div>
-        {isAdmin && (
+        {canManage && (
           <button onClick={() => setShowForm(!showForm)}
             className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-secondary-foreground hover:brightness-110">
             <Plus className="h-4 w-4" /> Créer un événement
@@ -167,7 +167,7 @@ const Events = () => {
       </div>
 
       {/* Create event form (admin only) */}
-      {showForm && isAdmin && (
+      {showForm && canManage && (
         <form onSubmit={handleCreateEvent} className="mb-8 rounded-xl border border-border bg-card p-5 shadow-sm">
           <h3 className="mb-4 font-display text-lg font-semibold text-foreground">Nouvel événement</h3>
           <div className="space-y-3">
@@ -236,7 +236,7 @@ const Events = () => {
               <div className="space-y-4">
                 {upcomingEvents.map(event => (
                   <EventCard key={event.id} event={event} regCount={getRegCount(event.id)}
-                    isRegistered={myRegistrations.has(event.id)} isAdmin={isAdmin} user={user}
+                    isRegistered={myRegistrations.has(event.id)} canManage={canManage} user={user}
                     onRegister={handleRegister} onUnregister={handleUnregister} onDelete={handleDeleteEvent}
                     showEmailForm={showEmailForm} setShowEmailForm={setShowEmailForm}
                     emailSubject={emailSubject} setEmailSubject={setEmailSubject}
@@ -254,7 +254,7 @@ const Events = () => {
               <div className="space-y-3 opacity-60">
                 {pastEvents.map(event => (
                   <EventCard key={event.id} event={event} regCount={getRegCount(event.id)}
-                    isRegistered={myRegistrations.has(event.id)} isAdmin={isAdmin} user={user}
+                    isRegistered={myRegistrations.has(event.id)} canManage={canManage} user={user}
                     onRegister={handleRegister} onUnregister={handleUnregister} onDelete={handleDeleteEvent}
                     showEmailForm={showEmailForm} setShowEmailForm={setShowEmailForm}
                     emailSubject={emailSubject} setEmailSubject={setEmailSubject}
@@ -274,7 +274,7 @@ interface EventCardProps {
   event: EventRow;
   regCount: number;
   isRegistered: boolean;
-  isAdmin: boolean;
+  canManage: boolean;
   user: any;
   onRegister: (id: string) => void;
   onUnregister: (id: string) => void;
@@ -291,7 +291,7 @@ interface EventCardProps {
 }
 
 const EventCard = ({
-  event, regCount, isRegistered, isAdmin, user,
+  event, regCount, isRegistered, canManage, user,
   onRegister, onUnregister, onDelete,
   showEmailForm, setShowEmailForm, emailSubject, setEmailSubject, emailBody, setEmailBody,
   sendingEmail, onSendEmail, past,
@@ -324,7 +324,7 @@ const EventCard = ({
         <span className="inline-flex items-center gap-1.5">
           <Users className="h-4 w-4" /> {regCount}{event.max_participants ? `/${event.max_participants}` : ''} inscrits
         </span>
-        {(isRegistered || isAdmin) && event.zoom_link && (
+        {(isRegistered || canManage) && event.zoom_link && (
           <a href={event.zoom_link} target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-secondary hover:underline">
             <Video className="h-4 w-4" /> Rejoindre Zoom
@@ -352,7 +352,7 @@ const EventCard = ({
           </Link>
         )}
 
-        {isAdmin && (
+        {canManage && (
           <>
             <button onClick={() => setShowEmailForm(showEmailForm === event.id ? null : event.id)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
@@ -367,7 +367,7 @@ const EventCard = ({
       </div>
 
       {/* Email form */}
-      {showEmailForm === event.id && isAdmin && (
+      {showEmailForm === event.id && canManage && (
         <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
           <h4 className="mb-3 text-sm font-semibold text-foreground">Envoyer un email aux inscrits</h4>
           <input type="text" value={emailSubject} onChange={e => setEmailSubject(e.target.value)}

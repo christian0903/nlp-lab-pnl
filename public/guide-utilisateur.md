@@ -162,6 +162,8 @@ Tous les champs descriptifs (description, sections) supportent le **format Markd
 
 Sous chaque champ texte en mode édition, un bouton **Image** permet d'uploader une image (PNG, JPG, JPEG). L'image est automatiquement stockée sur le serveur et le code markdown correspondant (`![nom](url)`) est inséré dans le texte. La taille maximale des images est configurable dans les paramètres admin.
 
+Avant d'enregistrer, un champ **"Note de changement"** (encadré doré) permet de décrire brièvement ce qui a changé (ex: "Ajout du protocole détaillé"). Si rempli, une entrée est automatiquement ajoutée au **journal des modifications** (onglet Historique) avec la version, la date et le nom de l'auteur. Ce champ est optionnel.
+
 Cliquez sur **Enregistrer** pour sauvegarder ou **Annuler** pour revenir à l'affichage.
 
 #### Bouton Supprimer (admin)

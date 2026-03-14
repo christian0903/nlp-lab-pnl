@@ -86,6 +86,7 @@ const ModelDetail = () => {
   const [editVersion, setEditVersion] = useState('');
   const [editSections, setEditSections] = useState<Record<string, string>>({});
   const [editLinks, setEditLinks] = useState<ModelLink[]>([]);
+  const [editChangelog, setEditChangelog] = useState('');
   const [editSubmitting, setEditSubmitting] = useState(false);
 
   useEffect(() => {
@@ -262,6 +263,7 @@ const ModelDetail = () => {
     setEditVersion(model.version);
     setEditSections((model.sections || {}) as Record<string, string>);
     setEditLinks((model.links || []) as ModelLink[]);
+    setEditChangelog('');
     setEditing(true);
   };
 
@@ -276,6 +278,22 @@ const ModelDetail = () => {
     }
     setEditSubmitting(true);
     const tags = editTagsInput.split(',').map(t => t.trim()).filter(Boolean);
+    const savedLinks = editLinks.filter(l => l.url.trim() && l.title.trim());
+
+    // Build updated changelog
+    const existingChangelog = model.changelog || [];
+    let updatedChangelog = existingChangelog;
+    if (editChangelog.trim()) {
+      const authorName = profiles[user?.id || ''] || 'Anonyme';
+      const newEntry = {
+        version: editVersion.trim() || model.version,
+        date: new Date().toISOString().split('T')[0],
+        changes: editChangelog.trim(),
+        author: authorName,
+      };
+      updatedChangelog = [newEntry, ...existingChangelog];
+    }
+
     const { error } = await supabase.from('models').update({
       title: editTitle.trim(),
       description: editDescription.trim(),
@@ -284,7 +302,8 @@ const ModelDetail = () => {
       tags,
       version: editVersion.trim(),
       sections: editSections,
-      links: editLinks.filter(l => l.url.trim() && l.title.trim()),
+      links: savedLinks,
+      changelog: updatedChangelog,
     } as any).eq('id', model.id);
 
     setEditSubmitting(false);
@@ -293,7 +312,6 @@ const ModelDetail = () => {
       console.error(error);
       return;
     }
-    const savedLinks = editLinks.filter(l => l.url.trim() && l.title.trim());
     setModel({
       ...model,
       title: editTitle.trim(),
@@ -304,6 +322,7 @@ const ModelDetail = () => {
       version: editVersion.trim(),
       sections: editSections,
       links: savedLinks,
+      changelog: updatedChangelog,
     });
     setEditing(false);
     toast.success('Modèle mis à jour !');
@@ -571,6 +590,16 @@ const ModelDetail = () => {
               </div>
             </div>
 
+            {/* Note de changement */}
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+              <label className="mb-1.5 block text-sm font-medium text-foreground">Note de changement</label>
+              <p className="mb-2 text-xs text-muted-foreground">Décrivez brièvement ce qui a changé. Cette note sera ajoutée au journal des modifications (onglet Historique).</p>
+              <textarea value={editChangelog} onChange={e => setEditChangelog(e.target.value)}
+                placeholder="Ex: Ajout du protocole détaillé, correction des prérequis..."
+                rows={2} maxLength={1000}
+                className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
+            </div>
+
             <div className="flex justify-end gap-3 border-t border-border pt-4">
               <button onClick={cancelEditing}
                 className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
@@ -695,6 +724,7 @@ const ModelDetail = () => {
                       <div className="mb-2 flex items-center gap-3">
                         <span className="rounded-full bg-secondary/10 px-2.5 py-0.5 font-mono text-xs font-semibold text-secondary">v{entry.version}</span>
                         <span className="text-xs text-muted-foreground">{entry.date}</span>
+                        {entry.author && <span className="text-xs text-muted-foreground">par {entry.author}</span>}
                       </div>
                       <p className="text-sm text-foreground">{entry.changes}</p>
                     </div>

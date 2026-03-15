@@ -4,7 +4,7 @@ import { ArrowLeft, Eye, GitBranch, MessageSquare, Clock, User, ShieldCheck, Sta
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from '@/integrations/supabase/client';
-import { DBModel, MODEL_STATUS_LABELS, MODEL_TYPE_LABELS, ModelType, ModelLink, ModelLinkType } from '@/types/model';
+import { DBModel, MODEL_STATUS_LABELS, MODEL_TYPE_LABELS, ModelType, ModelLink, ModelLinkType, JournalEntry, LegacyChangelogEntry } from '@/types/model';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
 import StatusBadge from '@/components/lab/StatusBadge';
@@ -86,8 +86,8 @@ const ModelDetail = () => {
   const [editVersion, setEditVersion] = useState('');
   const [editSections, setEditSections] = useState<Record<string, string>>({});
   const [editLinks, setEditLinks] = useState<ModelLink[]>([]);
-  const [editChangelog, setEditChangelog] = useState('');
-  const [editChangelogAuthor, setEditChangelogAuthor] = useState('');
+  const [editJournalNote, setEditJournalNote] = useState('');
+  const [editJournalAuthors, setEditJournalAuthors] = useState<string[]>([]);
   const [editOwnerId, setEditOwnerId] = useState('');
   const [allUsers, setAllUsers] = useState<{ user_id: string; display_name: string }[]>([]);
   const [editSubmitting, setEditSubmitting] = useState(false);
@@ -273,8 +273,8 @@ const ModelDetail = () => {
     setEditVersion(model.version);
     setEditSections((model.sections || {}) as Record<string, string>);
     setEditLinks((model.links || []) as ModelLink[]);
-    setEditChangelog('');
-    setEditChangelogAuthor(profiles[user?.id || ''] || 'Anonyme');
+    setEditJournalNote('');
+    setEditJournalAuthors([profiles[user?.id || ''] || 'Anonyme']);
     setEditOwnerId(model.user_id);
     setEditing(true);
   };
@@ -292,15 +292,15 @@ const ModelDetail = () => {
     const tags = editTagsInput.split(',').map(t => t.trim()).filter(Boolean);
     const savedLinks = editLinks.filter(l => l.url.trim() && l.title.trim());
 
-    // Build updated changelog
+    // Build updated journal/changelog
     const existingChangelog = model.changelog || [];
     let updatedChangelog = existingChangelog;
-    if (editChangelog.trim()) {
-      const newEntry = {
+    if (editJournalNote.trim()) {
+      const newEntry: JournalEntry = {
         version: editVersion.trim() || model.version,
         date: new Date().toISOString().split('T')[0],
-        changes: editChangelog.trim(),
-        author: editChangelogAuthor || profiles[user?.id || ''] || 'Anonyme',
+        authors: editJournalAuthors.filter(a => a.trim()),
+        note: editJournalNote.trim(),
       };
       updatedChangelog = [newEntry, ...existingChangelog];
     }
@@ -370,16 +370,22 @@ const ModelDetail = () => {
     problematique: [
       { label: 'Description du phénomène', key: 'description', placeholder: 'Décrivez le phénomène observé...' },
       { label: 'Patterns identifiés', key: 'patterns', placeholder: 'Décrivez les patterns comportementaux observés...' },
+      { label: 'Signaux reconnaissables', key: 'signals', placeholder: 'Quels signaux permettent de repérer cette expérience ? (corporels, verbaux, comportementaux...)' },
+      { label: 'Points d\'intervention', key: 'intervention_points', placeholder: 'À quels endroits peut-on intervenir pour modifier l\'expérience ?' },
       { label: 'Prérequis', key: 'prerequisites', placeholder: 'Connaissances ou compétences nécessaires...' },
     ],
     outil: [
       { label: 'Structure du modèle', key: 'structure', placeholder: 'Décrivez la structure du modèle...' },
       { label: 'Protocole détaillé', key: 'protocol', placeholder: 'Décrivez les étapes du protocole...' },
+      { label: 'Principe actif', key: 'active_principle', placeholder: 'Quel est le mécanisme central qui produit le changement ?' },
+      { label: 'Points de vigilance', key: 'vigilance', placeholder: 'Situations où l\'outil ne fonctionne pas bien, contre-indications, erreurs fréquentes...' },
+      { label: 'Variantes connues', key: 'variants', placeholder: 'Adaptations ou variantes de cet outil utilisées par d\'autres praticiens...' },
       { label: 'Prérequis', key: 'prerequisites', placeholder: 'Rapport, état de ressource, calibration...' },
     ],
     approche: [
       { label: 'Philosophie et principes', key: 'philosophy', placeholder: 'Décrivez les fondements philosophiques...' },
-      { label: 'Boîte à outils', key: 'toolkit', placeholder: 'Les outils associés à cette approche...' },
+      { label: 'Créateurs', key: 'creators', placeholder: 'Qui a créé ou développé cette approche ?' },
+      { label: 'Boîte à outils', key: 'toolkit', placeholder: 'Les outils et techniques associés à cette approche...' },
       { label: 'Prérequis', key: 'prerequisites', placeholder: 'Formations ou expériences recommandées...' },
     ],
   };
@@ -621,25 +627,44 @@ const ModelDetail = () => {
               </div>
             </div>
 
-            {/* Note de changement */}
-            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 space-y-2">
-              <label className="mb-1.5 block text-sm font-medium text-foreground">Note de changement</label>
-              <p className="text-xs text-muted-foreground">Décrivez brièvement ce qui a changé. Cette note sera ajoutée au journal des modifications (onglet Historique).</p>
-              <textarea value={editChangelog} onChange={e => setEditChangelog(e.target.value)}
-                placeholder="Ex: Ajout du protocole détaillé, correction des prérequis..."
+            {/* Journal d'évolution */}
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
+              <label className="block text-sm font-medium text-foreground">Journal d'évolution</label>
+              <p className="text-xs text-muted-foreground">Décrivez ce qui a changé. Cette entrée sera ajoutée au journal avec la version, la date et les contributeurs.</p>
+              <textarea value={editJournalNote} onChange={e => setEditJournalNote(e.target.value)}
+                placeholder="Ex: Ajout du principe actif, correction des prérequis, variante kinesthésique..."
                 rows={2} maxLength={1000}
                 className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
-              {isAdmin && allUsers.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <label className="text-xs text-muted-foreground">Auteur de la note :</label>
-                  <select value={editChangelogAuthor} onChange={e => setEditChangelogAuthor(e.target.value)}
-                    className="rounded border border-input bg-background px-2 py-1 text-xs outline-none ring-ring focus:ring-2">
-                    {allUsers.map(u => (
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">Contributeurs de cette modification</label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {editJournalAuthors.map((author, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 rounded-full bg-secondary/10 px-2.5 py-1 text-xs text-secondary">
+                      {author}
+                      <button type="button" onClick={() => setEditJournalAuthors(prev => prev.filter((_, j) => j !== i))}
+                        className="ml-0.5 text-secondary/60 hover:text-secondary"><X className="h-3 w-3" /></button>
+                    </span>
+                  ))}
+                </div>
+                {isAdmin && allUsers.length > 0 ? (
+                  <select
+                    value=""
+                    onChange={e => {
+                      const name = e.target.value;
+                      if (name && !editJournalAuthors.includes(name)) {
+                        setEditJournalAuthors(prev => [...prev, name]);
+                      }
+                    }}
+                    className="rounded border border-input bg-background px-2 py-1.5 text-xs outline-none ring-ring focus:ring-2">
+                    <option value="">+ Ajouter un contributeur</option>
+                    {allUsers.filter(u => !editJournalAuthors.includes(u.display_name)).map(u => (
                       <option key={u.user_id} value={u.display_name}>{u.display_name}</option>
                     ))}
                   </select>
-                </div>
-              )}
+                ) : (
+                  <p className="text-[10px] text-muted-foreground">Vous êtes listé comme contributeur de cette modification.</p>
+                )}
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 border-t border-border pt-4">
@@ -756,21 +781,56 @@ const ModelDetail = () => {
               </div>
             )}
 
-            {/* Changelog */}
+            {/* Contributeurs */}
+            {model.changelog && model.changelog.length > 0 && (() => {
+              const allContributors = new Set<string>();
+              model.changelog.forEach(entry => {
+                if ('authors' in entry && Array.isArray(entry.authors)) {
+                  entry.authors.forEach(a => allContributors.add(a));
+                } else if ('author' in entry && entry.author) {
+                  allContributors.add(entry.author);
+                }
+              });
+              return allContributors.size > 0 ? (
+                <div>
+                  <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">Contributeurs</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {[...allContributors].map(name => (
+                      <span key={name} className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-1.5 text-sm text-secondary">
+                        <User className="h-3.5 w-3.5" /> {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })()}
+
+            {/* Journal d'évolution */}
             {model.changelog && model.changelog.length > 0 && (
               <div>
-                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">Journal des modifications</h3>
+                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">Journal d'évolution</h3>
                 <div className="space-y-3">
-                  {model.changelog.map((entry, i) => (
-                    <div key={i} className="rounded-lg border border-border bg-card p-4">
-                      <div className="mb-2 flex items-center gap-3">
-                        <span className="rounded-full bg-secondary/10 px-2.5 py-0.5 font-mono text-xs font-semibold text-secondary">v{entry.version}</span>
-                        <span className="text-xs text-muted-foreground">{entry.date}</span>
-                        {entry.author && <span className="text-xs text-muted-foreground">par {entry.author}</span>}
+                  {model.changelog.map((entry, i) => {
+                    const isJournal = 'authors' in entry && Array.isArray((entry as JournalEntry).authors);
+                    const journalEntry = entry as JournalEntry;
+                    const legacyEntry = entry as LegacyChangelogEntry;
+                    return (
+                      <div key={i} className="rounded-lg border border-border bg-card p-4">
+                        <div className="mb-2 flex flex-wrap items-center gap-3">
+                          <span className="rounded-full bg-secondary/10 px-2.5 py-0.5 font-mono text-xs font-semibold text-secondary">v{entry.version}</span>
+                          <span className="text-xs text-muted-foreground">{entry.date}</span>
+                          {isJournal ? (
+                            journalEntry.authors.length > 0 && (
+                              <span className="text-xs text-muted-foreground">par {journalEntry.authors.join(', ')}</span>
+                            )
+                          ) : (
+                            legacyEntry.author && <span className="text-xs text-muted-foreground">par {legacyEntry.author}</span>
+                          )}
+                        </div>
+                        <p className="text-sm text-foreground">{isJournal ? journalEntry.note : legacyEntry.changes}</p>
                       </div>
-                      <p className="text-sm text-foreground">{entry.changes}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -993,6 +1053,9 @@ const sectionLabel = (key: string) => {
   const labels: Record<string, string> = {
     description: 'Description du phénomène', patterns: 'Patterns identifiés', structure: 'Structure du modèle',
     protocol: 'Protocole détaillé', prerequisites: 'Prérequis', philosophy: 'Philosophie et principes', toolkit: 'Boîte à outils',
+    signals: 'Signaux reconnaissables', intervention_points: 'Points d\'intervention',
+    active_principle: 'Principe actif', vigilance: 'Points de vigilance', variants: 'Variantes connues',
+    creators: 'Créateurs',
   };
   return labels[key] || key;
 };

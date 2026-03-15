@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Send, User, FileText, Lightbulb, GitBranch } from 'lucide-react';
+import { Send, User, FileText, Lightbulb, GitBranch, MessageSquare } from 'lucide-react';
 import { MODEL_TYPE_LABELS, ModelType } from '@/types/model';
 
 const complexityOptions = [
@@ -15,14 +15,21 @@ const complexityOptions = [
 const sectionsByType: Record<ModelType, { label: string; key: string; placeholder: string }[]> = {
   problematique: [
     { label: 'Patterns identifiés', key: 'patterns', placeholder: 'Décrivez les patterns comportementaux observés...' },
+    { label: 'Signaux reconnaissables', key: 'signals', placeholder: 'Quels signaux permettent de repérer cette expérience ? (corporels, verbaux, comportementaux...)' },
+    { label: 'Points d\'intervention', key: 'intervention_points', placeholder: 'À quels endroits peut-on intervenir pour modifier l\'expérience ?' },
     { label: 'Prérequis', key: 'prerequisites', placeholder: 'Connaissances ou compétences nécessaires...' },
   ],
   outil: [
     { label: 'Protocole détaillé', key: 'protocol', placeholder: 'Décrivez les étapes du protocole...' },
+    { label: 'Principe actif', key: 'active_principle', placeholder: 'Quel est le mécanisme central qui produit le changement ?' },
+    { label: 'Points de vigilance', key: 'vigilance', placeholder: 'Situations où l\'outil ne fonctionne pas bien, contre-indications, erreurs fréquentes...' },
+    { label: 'Variantes connues', key: 'variants', placeholder: 'Adaptations ou variantes de cet outil utilisées par d\'autres praticiens...' },
     { label: 'Prérequis', key: 'prerequisites', placeholder: 'Rapport, état de ressource, calibration...' },
   ],
   approche: [
     { label: 'Philosophie et principes', key: 'philosophy', placeholder: 'Décrivez les fondements philosophiques...' },
+    { label: 'Créateurs', key: 'creators', placeholder: 'Qui a créé ou développé cette approche ?' },
+    { label: 'Boîte à outils', key: 'toolkit', placeholder: 'Les outils et modèles associés à cette approche...' },
     { label: 'Prérequis', key: 'prerequisites', placeholder: 'Formations ou expériences recommandées...' },
   ],
 };
@@ -33,6 +40,7 @@ const Contribute = () => {
   const [searchParams] = useSearchParams();
 
   const parentId = searchParams.get('parent');
+  const fromPostId = searchParams.get('from_post');
   const fromVariationTitle = searchParams.get('title');
   const fromVariationDesc = searchParams.get('description');
 
@@ -44,13 +52,18 @@ const Contribute = () => {
   const [sectionValues, setSectionValues] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [parentTitle, setParentTitle] = useState('');
+  const [sourcePostTitle, setSourcePostTitle] = useState('');
 
   useEffect(() => {
     if (parentId) {
       supabase.from('models').select('title').eq('id', parentId).single()
         .then(({ data }) => { if (data) setParentTitle(data.title); });
     }
-  }, [parentId]);
+    if (fromPostId) {
+      supabase.from('forum_posts').select('title').eq('id', fromPostId).single()
+        .then(({ data }) => { if (data) setSourcePostTitle(data.title); });
+    }
+  }, [parentId, fromPostId]);
 
   if (!user) {
     return (
@@ -94,6 +107,9 @@ const Contribute = () => {
     if (parentId) {
       insertData.parent_model_id = parentId;
     }
+    if (fromPostId) {
+      insertData.source_post_id = fromPostId;
+    }
 
     const { error } = await supabase.from('models').insert(insertData);
 
@@ -125,6 +141,17 @@ const Contribute = () => {
           <div className="text-sm">
             <span className="text-foreground">Ce modèle sera dérivé de </span>
             <Link to={`/model/${parentId}`} className="font-medium text-secondary hover:underline">{parentTitle}</Link>
+          </div>
+        </div>
+      )}
+
+      {/* Source forum post banner */}
+      {fromPostId && (
+        <div className="mb-6 flex items-center gap-2 rounded-xl border border-purple-500/20 bg-purple-500/5 p-4">
+          <MessageSquare className="h-5 w-5 text-purple-500" />
+          <div className="text-sm">
+            <span className="text-foreground">Issu de la discussion communautaire : </span>
+            <span className="font-medium text-purple-600">{sourcePostTitle || 'Discussion forum'}</span>
           </div>
         </div>
       )}

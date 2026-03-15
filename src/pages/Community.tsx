@@ -3,7 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
-import { Heart, MessageSquare, Plus, Send, User, LogOut, Beaker } from 'lucide-react';
+import { Heart, MessageSquare, Plus, Send, User, LogOut, Beaker, FlaskConical } from 'lucide-react';
+import { useAdmin } from '@/hooks/useAdmin';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -47,6 +48,7 @@ const CATEGORIES = [
 
 const Community = () => {
   const { user, signOut } = useAuth();
+  const { canManage } = useAdmin();
   const [posts, setPosts] = useState<Post[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
@@ -366,6 +368,15 @@ const Community = () => {
                     <MessageSquare className="h-4 w-4" />
                     {post.comments_count} commentaire{post.comments_count !== 1 ? 's' : ''}
                   </button>
+                  {canManage && (
+                    <Link
+                      to={`/contribute?from_post=${post.id}&title=${encodeURIComponent(post.title)}&description=${encodeURIComponent(post.content)}`}
+                      className="ml-auto flex items-center gap-1.5 text-sm text-muted-foreground hover:text-secondary transition-colors"
+                    >
+                      <FlaskConical className="h-4 w-4" />
+                      Proposer comme modèle
+                    </Link>
+                  )}
                 </div>
 
                 {expandedPost === post.id && (

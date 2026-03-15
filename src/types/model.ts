@@ -9,6 +9,22 @@ export interface ModelLink {
   description?: string;
 }
 
+/** Entrée du journal d'évolution collaboratif */
+export interface JournalEntry {
+  version: string;
+  date: string;
+  authors: string[];   // noms des auteurs (display_name)
+  note: string;
+}
+
+/** Ancien format changelog (rétro-compatibilité) */
+export interface LegacyChangelogEntry {
+  version: string;
+  date: string;
+  changes: string;
+  author: string;
+}
+
 export interface DBModel {
   id: string;
   user_id: string;
@@ -22,7 +38,7 @@ export interface DBModel {
   sections: Record<string, string> | null;
   links: ModelLink[] | null;
   parent_model_id: string | null;
-  changelog: { version: string; date: string; changes: string; author: string }[] | null;
+  changelog: (JournalEntry | LegacyChangelogEntry)[] | null;
   approved: boolean;
   views_count: number;
   variations_count: number;
@@ -31,6 +47,8 @@ export interface DBModel {
   updated_at: string;
   // joined
   author_name?: string;
+  // lien vers un post forum d'origine
+  source_post_id?: string | null;
 }
 
 export const MODEL_TYPE_LABELS: Record<ModelType, string> = {

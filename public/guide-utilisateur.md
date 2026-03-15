@@ -10,10 +10,10 @@
 2. [Navigation](#2-navigation)
 3. [Accueil](#3-accueil)
 4. [Bibliothèque de modèles](#4-bibliothèque-de-modèles)
-5. [Détail d'un modèle](#5-détail-dun-modèle) — édition, suppression, liens, images, markdown, filiation, changelog
-6. [Contribuer un modèle](#6-contribuer-un-modèle) — modèle dérivé
+5. [Détail d'un modèle](#5-détail-dun-modèle) — édition, journal d'évolution, contributeurs, liens, images, markdown, filiation
+6. [Contribuer un modèle](#6-contribuer-un-modèle) — modèle dérivé, depuis le forum
 7. [Importer un modèle (admin)](#7-importer-un-modèle-admin)
-8. [Communauté](#8-communauté)
+8. [Communauté](#8-communauté) — forum, proposer comme modèle
 9. [Événements](#9-événements)
 10. [Ressources](#10-ressources) — articles markdown dynamiques
 11. [Profil](#11-profil)
@@ -163,7 +163,12 @@ Tous les champs descriptifs (description, sections) supportent le **format Markd
 
 Sous chaque champ texte en mode édition, un bouton **Image** permet d'uploader une image (PNG, JPG, JPEG). L'image est automatiquement stockée sur le serveur et le code markdown correspondant (`![nom](url)`) est inséré dans le texte. La taille maximale des images est configurable dans les paramètres admin.
 
-Avant d'enregistrer, un champ **"Note de changement"** (encadré doré) permet de décrire brièvement ce qui a changé (ex: "Ajout du protocole détaillé"). Si rempli, une entrée est automatiquement ajoutée au **journal des modifications** (onglet Historique) avec la version, la date et le nom de l'auteur. Ce champ est optionnel. Les administrateurs peuvent choisir l'**auteur de la note** via un sélecteur dédié.
+Avant d'enregistrer, la section **"Journal d'évolution"** (encadré doré) permet de :
+
+1. **Décrire ce qui a changé** : une note libre (ex: "Ajout du principe actif, variante kinesthésique")
+2. **Lister les contributeurs** de cette modification : plusieurs auteurs peuvent être crédités pour une même entrée
+
+Si remplie, une entrée est automatiquement ajoutée au **journal d'évolution** (onglet Historique) avec la version, la date et les noms des contributeurs. Les administrateurs peuvent ajouter n'importe quel utilisateur comme contributeur via un sélecteur dédié.
 
 Cliquez sur **Enregistrer** pour sauvegarder ou **Annuler** pour revenir à l'affichage.
 
@@ -214,11 +219,12 @@ Si un modèle a été créé à partir d'une variation d'un autre modèle, un ba
 
 ### Onglet Historique
 
-L'onglet Historique affiche trois sections :
+L'onglet Historique affiche quatre sections :
 
 1. **Origine** — Si le modèle est dérivé d'un autre, un lien vers le modèle parent est affiché
-2. **Journal des modifications** — Le changelog avec version, date et description des changements
-3. **Modèles dérivés** — La liste des modèles qui ont été créés à partir de celui-ci (avec auteur, date et lien cliquable)
+2. **Contributeurs** — Liste automatiquement calculée de tous les contributeurs du modèle, issus de l'union des auteurs de toutes les entrées du journal d'évolution
+3. **Journal d'évolution** — L'historique complet avec version, date, contributeurs et description de chaque changement. Chaque entrée peut créditer plusieurs contributeurs.
+4. **Modèles dérivés** — La liste des modèles qui ont été créés à partir de celui-ci (avec auteur, date et lien cliquable)
 
 Cela crée un **arbre de filiation navigable** dans les deux sens : du parent vers ses dérivés et de chaque dérivé vers son parent.
 
@@ -274,13 +280,17 @@ Accessible via le menu **Contribuer** (nécessite d'être connecté).
 
 | Type | Sections proposées |
 |------|-------------------|
-| **Problématique** | Patterns identifiés, Prérequis |
-| **Outil** | Protocole détaillé, Prérequis |
-| **Approche** | Philosophie et principes, Prérequis |
+| **Problématique** | Patterns identifiés, Signaux reconnaissables, Points d'intervention, Prérequis |
+| **Outil** | Protocole détaillé, Principe actif, Points de vigilance, Variantes connues, Prérequis |
+| **Approche** | Philosophie et principes, Créateurs, Boîte à outils, Prérequis |
 
 ### Modèle dérivé
 
 Si vous créez un modèle à partir d'une variation (via le bouton "Créer comme modèle"), le formulaire est pré-rempli et un bandeau indique le modèle parent. Le lien de filiation est automatiquement enregistré.
+
+### Modèle issu d'une discussion forum
+
+Les **administrateurs et modérateurs** peuvent créer un modèle directement depuis un post du forum en cliquant sur **"Proposer comme modèle"** sous le post. Le formulaire de contribution s'ouvre pré-rempli avec le titre et le contenu de la discussion. Un bandeau violet indique la discussion d'origine.
 
 ### Workflow de publication
 
@@ -357,6 +367,7 @@ Le forum communautaire permet aux membres de partager des discussions, questions
 - **Liker** un post : cliquez sur le bouton coeur (cliquez à nouveau pour retirer le like)
 - **Commenter** : cliquez sur l'icône commentaire, puis rédigez votre commentaire et cliquez sur envoyer
 - **Filtrer** : cliquez sur une catégorie pour ne voir que ses posts
+- **Proposer comme modèle** (admin/modérateur) : sous chaque post, un bouton permet de créer un modèle pré-rempli avec le contenu de la discussion. C'est le point d'entrée du [workflow de création collaborative](/resources) décrit dans les Ressources.
 
 ---
 
@@ -704,8 +715,14 @@ N'incluez que les sections pour lesquelles vous avez du contenu. Il n'est pas n�
 |---------|-----------------|
 | `structure` | Architecture ou composants du modèle |
 | `protocol` | Étapes d'exécution ou de mise en oeuvre |
+| `active_principle` | Mécanisme central qui produit le changement |
 | `patterns` | Patterns comportementaux ou linguistiques observés |
+| `signals` | Signaux reconnaissables (corporels, verbaux, comportementaux) |
+| `intervention_points` | Points d'intervention pour modifier l'expérience |
+| `vigilance` | Points de vigilance, contre-indications, erreurs fréquentes |
+| `variants` | Variantes connues et adaptations |
 | `philosophy` | Fondements théoriques, références aux auteurs |
+| `creators` | Créateurs ou développeurs de l'approche |
 | `prerequisites` | Connaissances, compétences ou conditions préalables |
 | `toolkit` | Outils et techniques associés à une approche |
 
@@ -715,8 +732,14 @@ N'incluez que les sections pour lesquelles vous avez du contenu. Il n'est pas n�
 |---------|:---:|:---:|:---:|
 | `structure` | Pertinent | Pertinent | Pertinent |
 | `protocol` | Rare | **Essentiel** | Optionnel |
+| `active_principle` | Rare | **Essentiel** | Optionnel |
 | `patterns` | **Essentiel** | Optionnel | Optionnel |
+| `signals` | **Essentiel** | Optionnel | Rare |
+| `intervention_points` | **Essentiel** | Optionnel | Rare |
+| `vigilance` | Optionnel | **Essentiel** | Optionnel |
+| `variants` | Optionnel | Pertinent | Optionnel |
 | `philosophy` | Optionnel | Rare | **Essentiel** |
+| `creators` | Rare | Rare | **Essentiel** |
 | `prerequisites` | Pertinent | Pertinent | Pertinent |
 | `toolkit` | Rare | Optionnel | **Essentiel** |
 

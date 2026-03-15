@@ -619,10 +619,15 @@ const ModelDetail = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="presentation" className="w-full">
-        <TabsList className="mb-6 w-full justify-start border-b border-border bg-transparent p-0">
+        <TabsList className="mb-6 w-full justify-start overflow-x-auto border-b border-border bg-transparent p-0">
           <TabsTrigger value="presentation" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Présentation
           </TabsTrigger>
+          {model.links && (model.links as ModelLink[]).length > 0 && (
+            <TabsTrigger value="liens" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+              Liens ({(model.links as ModelLink[]).length})
+            </TabsTrigger>
+          )}
           <TabsTrigger value="historique" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Historique
           </TabsTrigger>
@@ -634,54 +639,80 @@ const ModelDetail = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Présentation */}
+        {/* Présentation — chaque section dans son propre bloc navigable */}
         <TabsContent value="presentation">
-          <div className="grid gap-6 lg:grid-cols-2">
-            {Object.entries(sections).filter(([_, v]) => v).map(([key, content]) => (
-              <SectionBlock key={key} title={sectionLabel(key)} content={content} />
-            ))}
-            {Object.keys(sections).length === 0 && (
-              <div className="col-span-full rounded-lg border border-dashed border-border p-10 text-center text-muted-foreground">
-                Le contenu détaillé sera ajouté prochainement.
-              </div>
-            )}
-          </div>
-
-          {/* Liens & ressources */}
-          {model.links && (model.links as ModelLink[]).length > 0 && (
-            <div className="mt-8">
-              <h3 className="mb-4 font-display text-lg font-semibold text-foreground">Liens & ressources</h3>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {(model.links as ModelLink[]).map((link, i) => (
-                  <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
-                    className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-secondary/50 hover:bg-secondary/5">
-                    <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                      link.type === 'video' ? 'bg-red-500/10 text-red-500' :
-                      link.type === 'formation' ? 'bg-purple-500/10 text-purple-500' :
-                      'bg-blue-500/10 text-blue-500'
-                    }`}>
-                      {link.type === 'video' ? <Play className="h-4 w-4" /> :
-                       link.type === 'formation' ? <GraduationCap className="h-4 w-4" /> :
-                       <FileText className="h-4 w-4" />}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-medium text-foreground group-hover:text-secondary truncate">{link.title}</span>
-                        <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                      {link.description && (
-                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{link.description}</p>
-                      )}
-                      <span className="mt-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
-                        {link.type === 'video' ? 'Vidéo' : link.type === 'formation' ? 'Formation' : 'Document'}
-                      </span>
-                    </div>
-                  </a>
+          {(() => {
+            const filledSections = Object.entries(sections).filter(([_, v]) => v);
+            if (filledSections.length === 0) {
+              return (
+                <div className="rounded-lg border border-dashed border-border p-10 text-center text-muted-foreground">
+                  Le contenu détaillé sera ajouté prochainement.
+                </div>
+              );
+            }
+            if (filledSections.length <= 2) {
+              return (
+                <div className="space-y-6">
+                  {filledSections.map(([key, content]) => (
+                    <SectionBlock key={key} title={sectionLabel(key)} content={content} />
+                  ))}
+                </div>
+              );
+            }
+            // Plus de 2 sections → sous-tabs pour naviguer
+            return (
+              <Tabs defaultValue={filledSections[0][0]} className="w-full">
+                <TabsList className="mb-4 flex flex-wrap gap-1 bg-transparent p-0">
+                  {filledSections.map(([key]) => (
+                    <TabsTrigger key={key} value={key}
+                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:border-secondary">
+                      {sectionLabel(key)}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                {filledSections.map(([key, content]) => (
+                  <TabsContent key={key} value={key}>
+                    <SectionBlock title={sectionLabel(key)} content={content} />
+                  </TabsContent>
                 ))}
-              </div>
-            </div>
-          )}
+              </Tabs>
+            );
+          })()}
         </TabsContent>
+
+        {/* Liens & ressources */}
+        {model.links && (model.links as ModelLink[]).length > 0 && (
+          <TabsContent value="liens">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {(model.links as ModelLink[]).map((link, i) => (
+                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
+                  className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-secondary/50 hover:bg-secondary/5">
+                  <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                    link.type === 'video' ? 'bg-red-500/10 text-red-500' :
+                    link.type === 'formation' ? 'bg-purple-500/10 text-purple-500' :
+                    'bg-blue-500/10 text-blue-500'
+                  }`}>
+                    {link.type === 'video' ? <Play className="h-4 w-4" /> :
+                     link.type === 'formation' ? <GraduationCap className="h-4 w-4" /> :
+                     <FileText className="h-4 w-4" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-medium text-foreground group-hover:text-secondary truncate">{link.title}</span>
+                      <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    {link.description && (
+                      <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{link.description}</p>
+                    )}
+                    <span className="mt-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                      {link.type === 'video' ? 'Vidéo' : link.type === 'formation' ? 'Formation' : 'Document'}
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </TabsContent>
+        )}
 
         {/* Historique */}
         <TabsContent value="historique">

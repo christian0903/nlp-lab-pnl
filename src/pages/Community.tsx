@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
-import { Heart, MessageSquare, Plus, Send, User, LogOut, Beaker, FlaskConical } from 'lucide-react';
+import { Heart, MessageSquare, Plus, Send, User, LogOut, Beaker, FlaskConical, Pencil, X, Save, Trash2 } from 'lucide-react';
 import { useAdmin } from '@/hooks/useAdmin';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -65,10 +65,20 @@ const Community = () => {
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
 
+  // Edit post
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editPostTitle, setEditPostTitle] = useState('');
+  const [editPostContent, setEditPostContent] = useState('');
+  const [editPostCategory, setEditPostCategory] = useState('general');
+  const [editPostSaving, setEditPostSaving] = useState(false);
+  const [deletePostId, setDeletePostId] = useState<string | null>(null);
+
   // Approved models for the selector
   const [modelOptions, setModelOptions] = useState<ModelOption[]>([]);
   // Model names cache for display
   const [modelNames, setModelNames] = useState<Record<string, string>>({});
+  // M:N links post↔modèle
+  const [postModelLinks, setPostModelLinks] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -84,7 +94,19 @@ const Community = () => {
         setModelNames(names);
       }
     };
+    const fetchLinks = async () => {
+      const { data } = await supabase.from('post_model_links').select('post_id, model_id');
+      if (data) {
+        const map: Record<string, string[]> = {};
+        data.forEach((link: any) => {
+          if (!map[link.post_id]) map[link.post_id] = [];
+          map[link.post_id].push(link.model_id);
+        });
+        setPostModelLinks(map);
+      }
+    };
     fetchModels();
+    fetchLinks();
   }, []);
 
   const fetchPosts = async () => {
@@ -228,11 +250,78 @@ const Community = () => {
     setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p)));
   };
 
+  const startEditPost = (post: Post) => {
+    setEditingPostId(post.id);
+    setEditPostTitle(post.title);
+    setEditPostContent(post.content);
+    setEditPostCategory(post.category);
+  };
+
+  const cancelEditPost = () => {
+    setEditingPostId(null);
+  };
+
+  const saveEditPost = async () => {
+    if (!editingPostId) return;
+    const trimmedTitle = editPostTitle.trim();
+    const trimmedContent = editPostContent.trim();
+    if (!trimmedTitle || !trimmedContent) {
+      toast.error('Titre et contenu requis');
+      return;
+    }
+    setEditPostSaving(true);
+    const { error } = await supabase.from('forum_posts').update({
+      title: trimmedTitle,
+      content: trimmedContent,
+      category: editPostCategory,
+    } as any).eq('id', editingPostId);
+    setEditPostSaving(false);
+    if (error) {
+      toast.error('Erreur lors de la modification');
+      console.error(error);
+      return;
+    }
+    setPosts(prev => prev.map(p => p.id === editingPostId
+      ? { ...p, title: trimmedTitle, content: trimmedContent, category: editPostCategory }
+      : p
+    ));
+    setEditingPostId(null);
+    toast.success('Post modifié');
+  };
+
+  const handleDeletePost = async () => {
+    if (!deletePostId) return;
+    const { error } = await supabase.from('forum_posts').delete().eq('id', deletePostId);
+    if (error) {
+      toast.error('Erreur lors de la suppression');
+      console.error(error);
+      setDeletePostId(null);
+      return;
+    }
+    setPosts(prev => prev.filter(p => p.id !== deletePostId));
+    setDeletePostId(null);
+    toast.success('Post supprimé');
+  };
+
   const getProfile = (userId: string) => profiles[userId];
   const timeAgo = (date: string) => formatDistanceToNow(new Date(date), { addSuffix: true, locale: fr });
 
   return (
     <div className="container mx-auto px-4 py-10">
+      {/* Delete post confirmation modal */}
+      {deletePostId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setDeletePostId(null)}>
+          <div className="mx-4 w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg" onClick={e => e.stopPropagation()}>
+            <h3 className="mb-2 font-display text-lg font-bold text-foreground">Supprimer ce post ?</h3>
+            <p className="mb-6 text-sm text-muted-foreground">Le post et tous ses commentaires seront supprimés. Cette action est irréversible.</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setDeletePostId(null)} className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">Annuler</button>
+              <button onClick={handleDeletePost} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Supprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">Communauté</h1>
@@ -330,7 +419,10 @@ const Community = () => {
         <div className="space-y-4">
           {posts.map((post) => {
             const profile = getProfile(post.user_id);
-            const linkedModelName = post.model_id ? modelNames[post.model_id] : null;
+            // Collecter tous les modèles liés (legacy model_id + table M:N)
+            const linkedModelIds = new Set<string>();
+            if (post.model_id) linkedModelIds.add(post.model_id);
+            (postModelLinks[post.id] || []).forEach(id => linkedModelIds.add(id));
             return (
               <div key={post.id} className="rounded-xl border border-border bg-card p-5 shadow-sm">
                 <div className="mb-3 flex items-center gap-3">
@@ -341,21 +433,69 @@ const Community = () => {
                     <p className="text-sm font-medium text-foreground">{profile?.display_name || 'Anonyme'}</p>
                     <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
                   </div>
-                  <div className="ml-auto flex items-center gap-2">
-                    {linkedModelName && (
-                      <Link to={`/model/${post.model_id}`}
+                  <div className="ml-auto flex flex-wrap items-center gap-2">
+                    {[...linkedModelIds].map(modelId => modelNames[modelId] ? (
+                      <Link key={modelId} to={`/model/${modelId}`}
                         className="inline-flex items-center gap-1 rounded-full bg-secondary/10 px-2.5 py-0.5 text-xs font-medium text-secondary hover:bg-secondary/20 transition-colors">
-                        <Beaker className="h-3 w-3" /> {linkedModelName}
+                        <Beaker className="h-3 w-3" /> {modelNames[modelId]}
                       </Link>
-                    )}
+                    ) : null)}
                     <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
                       {CATEGORIES.find((c) => c.value === post.category)?.label || post.category}
                     </span>
                   </div>
                 </div>
 
-                <h3 className="mb-2 font-display text-lg font-semibold text-foreground">{post.title}</h3>
-                <p className="mb-4 whitespace-pre-line text-sm text-muted-foreground leading-relaxed">{post.content}</p>
+                {editingPostId === post.id ? (
+                  <div className="mb-4 space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+                    <div>
+                      <input type="text" value={editPostTitle} onChange={e => setEditPostTitle(e.target.value)}
+                        maxLength={200} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-semibold outline-none ring-ring focus:ring-2" />
+                    </div>
+                    <textarea value={editPostContent} onChange={e => setEditPostContent(e.target.value)}
+                      maxLength={5000} rows={4}
+                      className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
+                    <div className="flex items-center gap-3">
+                      <select value={editPostCategory} onChange={e => setEditPostCategory(e.target.value)}
+                        className="rounded-lg border border-input bg-background px-2 py-1.5 text-xs">
+                        {CATEGORIES.map(cat => (
+                          <option key={cat.value} value={cat.value}>{cat.label}</option>
+                        ))}
+                      </select>
+                      <div className="ml-auto flex gap-2">
+                        <button onClick={cancelEditPost}
+                          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+                          <X className="h-3.5 w-3.5" /> Annuler
+                        </button>
+                        <button onClick={saveEditPost} disabled={editPostSaving}
+                          className="inline-flex items-center gap-1 rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold text-secondary-foreground disabled:opacity-50">
+                          <Save className="h-3.5 w-3.5" /> {editPostSaving ? 'Sauvegarde...' : 'Enregistrer'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-2 flex items-center gap-2">
+                      <h3 className="font-display text-lg font-semibold text-foreground">{post.title}</h3>
+                      {user && (user.id === post.user_id || canManage) && (
+                        <>
+                          <button onClick={() => startEditPost(post)}
+                            className="rounded p-1 text-muted-foreground/40 hover:text-foreground transition-colors"
+                            title="Modifier">
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={() => setDeletePostId(post.id)}
+                            className="rounded p-1 text-muted-foreground/40 hover:text-red-500 transition-colors"
+                            title="Supprimer">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                    <p className="mb-4 whitespace-pre-line text-sm text-muted-foreground leading-relaxed">{post.content}</p>
+                  </>
+                )}
 
                 <div className="flex items-center gap-4 border-t border-border pt-3">
                   <button onClick={() => toggleLike(post.id)}

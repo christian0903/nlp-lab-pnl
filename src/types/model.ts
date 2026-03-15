@@ -47,8 +47,6 @@ export interface DBModel {
   updated_at: string;
   // joined
   author_name?: string;
-  // lien vers un post forum d'origine
-  source_post_id?: string | null;
 }
 
 export const MODEL_TYPE_LABELS: Record<ModelType, string> = {

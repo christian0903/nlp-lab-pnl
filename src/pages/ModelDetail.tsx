@@ -13,25 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import ImageUploader from '@/components/lab/ImageUploader';
 
-interface Variation {
-  id: string;
-  model_id: string;
-  user_id: string;
-  title: string;
-  description: string;
-  created_at: string;
-  author_name?: string;
-}
-
-interface VariationReply {
-  id: string;
-  variation_id: string;
-  user_id: string;
-  content: string;
-  created_at: string;
-  author_name?: string;
-}
-
 interface Feedback {
   id: string;
   model_id: string;
@@ -53,19 +34,8 @@ const ModelDetail = () => {
   const [loading, setLoading] = useState(true);
   const [parentModel, setParentModel] = useState<{ id: string; title: string } | null>(null);
   const [childModels, setChildModels] = useState<{ id: string; title: string; author_name: string; created_at: string }[]>([]);
+  const [linkedPosts, setLinkedPosts] = useState<{ id: string; title: string; created_at: string }[]>([]);
 
-  // Variations
-  const [variations, setVariations] = useState<Variation[]>([]);
-  const [showVarForm, setShowVarForm] = useState(false);
-  const [varTitle, setVarTitle] = useState('');
-  const [varDesc, setVarDesc] = useState('');
-  const [varSubmitting, setVarSubmitting] = useState(false);
-
-  // Variation replies
-  const [varReplies, setVarReplies] = useState<Record<string, VariationReply[]>>({});
-  const [replyFormId, setReplyFormId] = useState<string | null>(null);
-  const [replyContent, setReplyContent] = useState('');
-  const [replySubmitting, setReplySubmitting] = useState(false);
 
   // Feedbacks
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -104,9 +74,8 @@ const ModelDetail = () => {
       const m = data as unknown as DBModel;
       setModel(m);
 
-      // Fetch variations, feedbacks, and profiles in parallel
-      const [varsRes, fbsRes, profRes] = await Promise.all([
-        supabase.from('model_variations').select('*').eq('model_id', id!).order('created_at', { ascending: false }),
+      // Fetch feedbacks and profiles in parallel
+      const [fbsRes, profRes] = await Promise.all([
         supabase.from('model_feedbacks').select('*').eq('model_id', id!).order('created_at', { ascending: false }),
         supabase.from('profiles').select('user_id, display_name').eq('user_id', m.user_id),
       ]);
@@ -114,23 +83,8 @@ const ModelDetail = () => {
       if (profRes.data?.[0]) setAuthorName(profRes.data[0].display_name);
 
       const allUserIds = new Set<string>([m.user_id]);
-      const vars = (varsRes.data || []) as unknown as Variation[];
       const fbs = (fbsRes.data || []) as unknown as Feedback[];
-      vars.forEach(v => allUserIds.add(v.user_id));
       fbs.forEach(f => allUserIds.add(f.user_id));
-
-      // Fetch replies for all variations
-      const varIds = vars.map(v => v.id);
-      let repliesData: VariationReply[] = [];
-      if (varIds.length > 0) {
-        const { data: rData } = await supabase
-          .from('variation_replies')
-          .select('*')
-          .in('variation_id', varIds)
-          .order('created_at', { ascending: true });
-        repliesData = (rData || []) as unknown as VariationReply[];
-        repliesData.forEach(r => allUserIds.add(r.user_id));
-      }
 
       const { data: allProfs } = await supabase
         .from('profiles')
@@ -141,16 +95,6 @@ const ModelDetail = () => {
       allProfs?.forEach((p: any) => { profMap[p.user_id] = p.display_name; });
       setProfiles(profMap);
 
-      // Group replies by variation_id
-      const repliesMap: Record<string, VariationReply[]> = {};
-      repliesData.forEach(r => {
-        const list = repliesMap[r.variation_id] || [];
-        list.push({ ...r, author_name: profMap[r.user_id] });
-        repliesMap[r.variation_id] = list;
-      });
-      setVarReplies(repliesMap);
-
-      setVariations(vars.map(v => ({ ...v, author_name: profMap[v.user_id] })));
       setFeedbacks(fbs.map(f => ({ ...f, author_name: profMap[f.user_id] })));
 
       // Fetch parent model
@@ -172,6 +116,21 @@ const ModelDetail = () => {
         const childProfMap: Record<string, string> = {};
         childProfs?.forEach((p: any) => { childProfMap[p.user_id] = p.display_name; });
         setChildModels(childData.map((c: any) => ({ id: c.id, title: c.title, author_name: childProfMap[c.user_id] || 'Anonyme', created_at: c.created_at })));
+      }
+
+      // Fetch linked forum posts via M:N table
+      const { data: linkData } = await supabase
+        .from('post_model_links')
+        .select('post_id')
+        .eq('model_id', id!);
+      if (linkData && linkData.length > 0) {
+        const postIds = linkData.map((l: any) => l.post_id);
+        const { data: postsData } = await supabase
+          .from('forum_posts')
+          .select('id, title, created_at')
+          .in('id', postIds)
+          .order('created_at', { ascending: false });
+        if (postsData) setLinkedPosts(postsData as any);
       }
 
       setLoading(false);
@@ -205,44 +164,6 @@ const ModelDetail = () => {
     await supabase.from('models').update({ approved: false } as any).eq('id', model.id);
     setModel({ ...model, approved: false });
     toast.success('Modèle remis en attente');
-  };
-
-  const submitVariation = async () => {
-    if (!user || !model || !varTitle.trim()) return;
-    setVarSubmitting(true);
-    const { data, error } = await supabase.from('model_variations').insert({
-      model_id: model.id,
-      user_id: user.id,
-      title: varTitle.trim(),
-      description: varDesc.trim(),
-    } as any).select().single();
-
-    setVarSubmitting(false);
-    if (error) { toast.error('Erreur'); return; }
-    const newVar = { ...(data as unknown as Variation), author_name: profiles[user.id] || 'Vous' };
-    setVariations(prev => [newVar, ...prev]);
-    setVarTitle(''); setVarDesc(''); setShowVarForm(false);
-    toast.success('Variation ajoutée !');
-  };
-
-  const submitReply = async (variationId: string) => {
-    if (!user || !replyContent.trim()) return;
-    setReplySubmitting(true);
-    const { data, error } = await supabase.from('variation_replies').insert({
-      variation_id: variationId,
-      user_id: user.id,
-      content: replyContent.trim(),
-    } as any).select().single();
-
-    setReplySubmitting(false);
-    if (error) { toast.error('Erreur'); return; }
-    const newReply: VariationReply = { ...(data as unknown as VariationReply), author_name: profiles[user.id] || 'Vous' };
-    setVarReplies(prev => ({
-      ...prev,
-      [variationId]: [...(prev[variationId] || []), newReply],
-    }));
-    setReplyContent(''); setReplyFormId(null);
-    toast.success('Réponse ajoutée');
   };
 
   const submitFeedback = async () => {
@@ -500,7 +421,7 @@ const ModelDetail = () => {
               <span className="flex items-center gap-1.5"><User className="h-4 w-4" /> {authorName || 'Anonyme'}</span>
               <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {new Date(model.updated_at).toLocaleDateString('fr-FR')}</span>
               <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> {model.views_count}</span>
-              <span className="flex items-center gap-1.5"><GitBranch className="h-4 w-4" /> {variations.length} variations</span>
+              <span className="flex items-center gap-1.5"><GitBranch className="h-4 w-4" /> {childModels.length} variantes</span>
               <span className="flex items-center gap-1.5"><MessageSquare className="h-4 w-4" /> {feedbacks.length} feedbacks</span>
             </div>
             <div className="mt-4 flex flex-wrap gap-1.5">
@@ -706,7 +627,7 @@ const ModelDetail = () => {
             Historique
           </TabsTrigger>
           <TabsTrigger value="variations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            Variations ({variations.length})
+            Variantes ({childModels.length})
           </TabsTrigger>
           <TabsTrigger value="feedback" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Feedback ({feedbacks.length})
@@ -765,6 +686,25 @@ const ModelDetail = () => {
         {/* Historique */}
         <TabsContent value="historique">
           <div className="space-y-6">
+            {/* Discussions liées */}
+            {linkedPosts.length > 0 && (
+              <div>
+                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">Discussions communautaires</h3>
+                <div className="space-y-2">
+                  {linkedPosts.map(post => (
+                    <Link key={post.id} to={`/community`}
+                      className="flex items-center gap-3 rounded-lg border border-purple-500/20 bg-purple-500/5 p-4 hover:border-purple-500/40 transition-colors">
+                      <MessageSquare className="h-5 w-5 text-purple-500" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{post.title}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleDateString('fr-FR')}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Filiation parent */}
             {parentModel && (
               <div>
@@ -862,124 +802,38 @@ const ModelDetail = () => {
           </div>
         </TabsContent>
 
-        {/* Variations */}
+        {/* Variantes (modèles dérivés) */}
         <TabsContent value="variations">
           {user && (
             <div className="mb-6">
-              {!showVarForm ? (
-                <button onClick={() => setShowVarForm(true)}
-                  className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-                  <Plus className="h-4 w-4" /> Proposer une variation
-                </button>
-              ) : (
-                <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
-                  <h4 className="font-display text-sm font-semibold text-foreground">Nouvelle variation</h4>
-                  <input type="text" value={varTitle} onChange={e => setVarTitle(e.target.value)}
-                    placeholder="Titre de la variation" maxLength={200}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
-                  <textarea value={varDesc} onChange={e => setVarDesc(e.target.value)}
-                    placeholder="Décrivez en quoi cette variation diffère du modèle original..." rows={4} maxLength={3000}
-                    className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
-                  <div className="flex gap-2 justify-end">
-                    <button onClick={() => setShowVarForm(false)} className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">Annuler</button>
-                    <button onClick={submitVariation} disabled={varSubmitting || !varTitle.trim()}
-                      className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground disabled:opacity-50">
-                      <Send className="h-4 w-4" /> {varSubmitting ? 'Envoi...' : 'Soumettre'}
-                    </button>
-                  </div>
-                </div>
-              )}
+              <Link
+                to={`/contribute?parent=${model.id}`}
+                className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
+                <Plus className="h-4 w-4" /> Créer une variante
+              </Link>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Une variante est un modèle complet, dérivé de celui-ci, qui adapte ou enrichit le protocole pour un cas particulier.
+              </p>
             </div>
           )}
-          {variations.length > 0 ? (
-            <div className="space-y-4">
-              {variations.map(v => {
-                const replies = varReplies[v.id] || [];
-                return (
-                  <div key={v.id} className="rounded-lg border border-border bg-card p-5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <h4 className="font-display text-base font-semibold text-foreground">{v.title}</h4>
-                      <span className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleDateString('fr-FR')}</span>
-                    </div>
-                    <p className="mb-2 whitespace-pre-line text-sm text-muted-foreground leading-relaxed">{v.description}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">par {v.author_name || 'Anonyme'}</span>
-                      {isAdmin && (
-                        <select
-                          value={v.user_id}
-                          onChange={async (e) => {
-                            const newUserId = e.target.value;
-                            const { error } = await supabase.from('model_variations').update({ user_id: newUserId } as any).eq('id', v.id);
-                            if (error) { toast.error('Erreur'); return; }
-                            const newName = allUsers.find(u => u.user_id === newUserId)?.display_name || profiles[newUserId] || 'Anonyme';
-                            setVariations(prev => prev.map(vr => vr.id === v.id ? { ...vr, user_id: newUserId, author_name: newName } : vr));
-                            toast.success('Auteur de la variation modifié');
-                          }}
-                          className="rounded border border-input bg-background px-1.5 py-0.5 text-[10px] outline-none ring-ring focus:ring-2">
-                          {(allUsers.length > 0 ? allUsers : [{ user_id: v.user_id, display_name: v.author_name || 'Anonyme' }]).map(u => (
-                            <option key={u.user_id} value={u.user_id}>{u.display_name}</option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-
-                    {/* Replies */}
-                    {replies.length > 0 && (
-                      <div className="mt-4 space-y-2 border-l-2 border-secondary/20 pl-4">
-                        {replies.map(r => (
-                          <div key={r.id} className="rounded-md bg-muted/50 px-3 py-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-medium text-foreground">{r.author_name || 'Anonyme'}</span>
-                              {model && r.user_id === model.user_id && (
-                                <span className="rounded bg-secondary/10 px-1.5 py-0.5 text-[10px] font-medium text-secondary">Auteur</span>
-                              )}
-                              <span className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString('fr-FR')}</span>
-                            </div>
-                            <p className="whitespace-pre-line text-sm text-muted-foreground">{r.content}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Reply form */}
-                    {user && (
-                      <div className="mt-3">
-                        {replyFormId === v.id ? (
-                          <div className="space-y-2">
-                            <textarea value={replyContent} onChange={e => setReplyContent(e.target.value)}
-                              placeholder="Votre réponse..." rows={2} maxLength={2000}
-                              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
-                            <div className="flex gap-2 justify-end">
-                              <button onClick={() => { setReplyFormId(null); setReplyContent(''); }}
-                                className="rounded-lg px-3 py-1 text-xs text-muted-foreground hover:text-foreground">Annuler</button>
-                              <button onClick={() => submitReply(v.id)} disabled={replySubmitting || !replyContent.trim()}
-                                className="inline-flex items-center gap-1 rounded-lg bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground disabled:opacity-50">
-                                <Send className="h-3 w-3" /> {replySubmitting ? 'Envoi...' : 'Répondre'}
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-3">
-                            <button onClick={() => { setReplyFormId(v.id); setReplyContent(''); }}
-                              className="text-xs text-muted-foreground hover:text-secondary">
-                              Répondre
-                            </button>
-                            {(canManage || (user && user.id === v.user_id)) && (
-                              <Link to={`/contribute?from_variation=${v.id}&parent=${model?.id}&title=${encodeURIComponent(v.title)}&description=${encodeURIComponent(v.description)}`}
-                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary">
-                                <Sparkles className="h-3 w-3" /> Créer comme modèle
-                              </Link>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
+          {childModels.length > 0 ? (
+            <div className="space-y-3">
+              {childModels.map(child => (
+                <Link key={child.id} to={`/model/${child.id}`}
+                  className="flex items-center gap-4 rounded-lg border border-border bg-card p-5 hover:border-secondary/30 transition-colors">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-500/10">
+                    <GitBranch className="h-5 w-5 text-purple-500" />
                   </div>
-                );
-              })}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{child.title}</p>
+                    <p className="text-xs text-muted-foreground">par {child.author_name} · {new Date(child.created_at).toLocaleDateString('fr-FR')}</p>
+                  </div>
+                  <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                </Link>
+              ))}
             </div>
           ) : (
-            <Placeholder text="Aucune variation proposée pour le moment. Soyez le premier !" />
+            <Placeholder text="Aucune variante pour le moment. Créez-en une pour adapter ce modèle à un cas particulier." />
           )}
         </TabsContent>
 

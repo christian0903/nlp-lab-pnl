@@ -3,8 +3,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Send, User, FileText, Lightbulb, GitBranch, MessageSquare } from 'lucide-react';
+import { Send, User, FileText, Lightbulb, GitBranch, MessageSquare, Upload } from 'lucide-react';
 import { MODEL_TYPE_LABELS, ModelType } from '@/types/model';
+import { useAdmin } from '@/hooks/useAdmin';
 
 const complexityOptions = [
   { value: 'débutant', label: 'Débutant' },
@@ -36,6 +37,7 @@ const sectionsByType: Record<ModelType, { label: string; key: string; placeholde
 
 const Contribute = () => {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -107,20 +109,25 @@ const Contribute = () => {
     if (parentId) {
       insertData.parent_model_id = parentId;
     }
-    if (fromPostId) {
-      insertData.source_post_id = fromPostId;
-    }
 
-    const { error } = await supabase.from('models').insert(insertData);
-
-    setSubmitting(false);
+    const { data: newModel, error } = await supabase.from('models').insert(insertData).select('id').single();
 
     if (error) {
+      setSubmitting(false);
       toast.error('Erreur lors de la soumission');
       console.error(error);
       return;
     }
 
+    // Créer le lien post↔modèle si issu d'une discussion forum
+    if (fromPostId && newModel) {
+      await supabase.from('post_model_links').insert({
+        post_id: fromPostId,
+        model_id: newModel.id,
+      });
+    }
+
+    setSubmitting(false);
     toast.success('Modèle soumis ! Un administrateur doit le valider avant qu\'il apparaisse dans la bibliothèque.');
     navigate('/library');
   };
@@ -252,6 +259,15 @@ const Contribute = () => {
           <Link to="/" className="rounded-lg px-5 py-2.5 text-sm text-muted-foreground hover:text-foreground">
             Annuler
           </Link>
+          {isAdmin && (
+            <Link
+              to={`/admin/import${parentId ? `?parent=${parentId}` : ''}`}
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+            >
+              <Upload className="h-4 w-4" />
+              Importer une fiche
+            </Link>
+          )}
           <button
             type="submit"
             disabled={submitting}

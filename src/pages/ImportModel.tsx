@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft, Eye } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft, Eye, GitBranch } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -45,6 +45,16 @@ const ImportModel = () => {
   const { user } = useAuth();
   const { canManage } = useAdmin();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const parentId = searchParams.get('parent');
+  const [parentTitle, setParentTitle] = useState('');
+
+  useEffect(() => {
+    if (parentId) {
+      supabase.from('models').select('title').eq('id', parentId).single()
+        .then(({ data }) => { if (data) setParentTitle(data.title); });
+    }
+  }, [parentId]);
 
   const [markdown, setMarkdown] = useState('');
   const [parsed, setParsed] = useState<ParsedFiche | null>(null);
@@ -124,11 +134,13 @@ const ImportModel = () => {
     let modelId: string | null = null;
 
     if (parsed.action === 'create') {
-      const res = await supabase.from('models').insert({
+      const insertData: any = {
         ...payload,
         user_id: user.id,
         approved: true,
-      } as any).select('id').single();
+      };
+      if (parentId) insertData.parent_model_id = parentId;
+      const res = await supabase.from('models').insert(insertData).select('id').single();
       error = res.error;
       modelId = res.data?.id || null;
     } else if (matchedModelId) {
@@ -176,6 +188,16 @@ const ImportModel = () => {
           Collez une fiche modèle au format markdown pour créer ou mettre à jour un modèle.
         </p>
       </div>
+
+      {parentId && parentTitle && (
+        <div className="mb-6 flex items-center gap-2 rounded-xl border border-secondary/20 bg-secondary/5 p-4">
+          <GitBranch className="h-5 w-5 text-secondary" />
+          <div className="text-sm">
+            <span className="text-foreground">Ce modèle sera une variante de </span>
+            <Link to={`/model/${parentId}`} className="font-medium text-secondary hover:underline">{parentTitle}</Link>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Input */}

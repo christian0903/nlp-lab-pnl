@@ -623,11 +623,9 @@ const ModelDetail = () => {
           <TabsTrigger value="presentation" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Présentation
           </TabsTrigger>
-          {model.links && (model.links as ModelLink[]).length > 0 && (
-            <TabsTrigger value="liens" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-              Liens ({(model.links as ModelLink[]).length})
-            </TabsTrigger>
-          )}
+          <TabsTrigger value="liens" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+            Liens {(model.links as ModelLink[] || []).length > 0 ? `(${(model.links as ModelLink[]).length})` : ''}
+          </TabsTrigger>
           <TabsTrigger value="historique" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Historique
           </TabsTrigger>
@@ -681,8 +679,8 @@ const ModelDetail = () => {
         </TabsContent>
 
         {/* Liens & ressources */}
-        {model.links && (model.links as ModelLink[]).length > 0 && (
-          <TabsContent value="liens">
+        <TabsContent value="liens">
+          {(model.links as ModelLink[] || []).length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {(model.links as ModelLink[]).map((link, i) => (
                 <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
@@ -711,8 +709,12 @@ const ModelDetail = () => {
                 </a>
               ))}
             </div>
-          </TabsContent>
-        )}
+          ) : (
+            <div className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+              Aucun lien pour le moment. Cliquez sur <strong>Modifier</strong> pour ajouter des vidéos, documents ou formations.
+            </div>
+          )}
+        </TabsContent>
 
         {/* Historique */}
         <TabsContent value="historique">

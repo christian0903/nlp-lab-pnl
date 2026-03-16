@@ -39,7 +39,8 @@ const AdminDonations = () => {
 
     // Fetch stripe mode
     const { data: modeData } = await supabase.from('app_settings').select('value').eq('key', 'stripe_mode').single();
-    const mode = modeData?.value === 'live' ? 'live' : 'test';
+    const rawValue = typeof modeData?.value === 'string' ? modeData.value : JSON.stringify(modeData?.value || '');
+    const mode = rawValue.replace(/"/g, '') === 'live' ? 'live' : 'test';
     setStripeMode(mode);
 
     // Fetch donations from edge function
@@ -73,7 +74,7 @@ const AdminDonations = () => {
     setToggling(true);
     const { error } = await supabase.from('app_settings').upsert({
       key: 'stripe_mode',
-      value: JSON.stringify(newMode),
+      value: newMode,
     } as any);
 
     if (error) {

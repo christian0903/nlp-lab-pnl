@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Heart, MessageSquare, Plus, Send, User, LogOut, Beaker, FlaskConical, Pencil, X, Save, Trash2 } from 'lucide-react';
 import { useAdmin } from '@/hooks/useAdmin';
 import { formatDistanceToNow } from 'date-fns';
@@ -49,6 +49,7 @@ const CATEGORIES = [
 const Community = () => {
   const { user, signOut } = useAuth();
   const { canManage } = useAdmin();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
@@ -156,6 +157,20 @@ const Community = () => {
 
   useEffect(() => { fetchPosts(); }, [categoryFilter]);
   useEffect(() => { fetchLikedPosts(); }, [user]);
+
+  // Auto-open form if coming from model feedback link
+  useEffect(() => {
+    if (searchParams.get('new') === '1' && user) {
+      setShowForm(true);
+      const title = searchParams.get('title');
+      const modelId = searchParams.get('model');
+      if (title) setNewTitle(decodeURIComponent(title));
+      if (modelId) setNewModelId(modelId);
+      setNewCategory('modeles');
+      // Clean URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, user]);
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();

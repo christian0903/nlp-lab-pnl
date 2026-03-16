@@ -34,15 +34,12 @@ const ModelDetail = () => {
   const [loading, setLoading] = useState(true);
   const [parentModel, setParentModel] = useState<{ id: string; title: string } | null>(null);
   const [childModels, setChildModels] = useState<{ id: string; title: string; author_name: string; created_at: string }[]>([]);
-  const [linkedPosts, setLinkedPosts] = useState<{ id: string; title: string; created_at: string }[]>([]);
+  const [linkedPosts, setLinkedPosts] = useState<{ id: string; title: string; content: string; user_id: string; created_at: string; category: string }[]>([]);
+  const [approcheModels, setApprocheModels] = useState<{ id: string; title: string; type: string; version: string; user_id: string }[]>([]);
 
 
-  // Feedbacks
+  // Feedbacks (legacy, displayed in Discussions)
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
-  const [showFbForm, setShowFbForm] = useState(false);
-  const [fbContent, setFbContent] = useState('');
-  const [fbRating, setFbRating] = useState(4);
-  const [fbSubmitting, setFbSubmitting] = useState(false);
 
   const [profiles, setProfiles] = useState<Record<string, string>>({});
 
@@ -90,17 +87,6 @@ const ModelDetail = () => {
       const fbs = (fbsRes.data || []) as unknown as Feedback[];
       fbs.forEach(f => allUserIds.add(f.user_id));
 
-      const { data: allProfs } = await supabase
-        .from('profiles')
-        .select('user_id, display_name')
-        .in('user_id', [...allUserIds]);
-
-      const profMap: Record<string, string> = {};
-      allProfs?.forEach((p: any) => { profMap[p.user_id] = p.display_name; });
-      setProfiles(profMap);
-
-      setFeedbacks(fbs.map(f => ({ ...f, author_name: profMap[f.user_id] })));
-
       // Fetch parent model
       if (m.parent_model_id) {
         const { data: parentData } = await supabase.from('models').select('id, title').eq('id', m.parent_model_id).single();
@@ -122,20 +108,50 @@ const ModelDetail = () => {
         setChildModels(childData.map((c: any) => ({ id: c.id, title: c.title, author_name: childProfMap[c.user_id] || 'Anonyme', created_at: c.created_at })));
       }
 
-      // Fetch linked forum posts via M:N table
-      const { data: linkData } = await supabase
-        .from('post_model_links')
-        .select('post_id')
-        .eq('model_id', id!);
-      if (linkData && linkData.length > 0) {
-        const postIds = linkData.map((l: any) => l.post_id);
+      // Fetch linked forum posts (M:N table + legacy model_id)
+      const postIds = new Set<string>();
+      const { data: linkData } = await supabase.from('post_model_links').select('post_id').eq('model_id', id!);
+      if (linkData) linkData.forEach((l: any) => postIds.add(l.post_id));
+      const { data: legacyPosts } = await supabase.from('forum_posts').select('id').eq('model_id', id!);
+      if (legacyPosts) legacyPosts.forEach((p: any) => postIds.add(p.id));
+      if (postIds.size > 0) {
         const { data: postsData } = await supabase
           .from('forum_posts')
-          .select('id, title, created_at')
-          .in('id', postIds)
+          .select('id, title, content, user_id, created_at, category')
+          .in('id', [...postIds])
           .order('created_at', { ascending: false });
-        if (postsData) setLinkedPosts(postsData as any);
+        if (postsData) {
+          setLinkedPosts(postsData as any);
+          postsData.forEach((p: any) => allUserIds.add(p.user_id));
+        }
       }
+
+      // If this is an approche, fetch models linked to it
+      if (m.type === 'approche') {
+        const { data: appModels } = await supabase
+          .from('models')
+          .select('id, title, type, version, user_id')
+          .eq('approche_id', id!)
+          .eq('approved', true)
+          .order('type')
+          .order('title');
+        if (appModels) {
+          setApprocheModels(appModels as any);
+          appModels.forEach((am: any) => allUserIds.add(am.user_id));
+        }
+      }
+
+      // Fetch all profiles at once
+      const { data: allProfs } = await supabase
+        .from('profiles')
+        .select('user_id, display_name')
+        .in('user_id', [...allUserIds]);
+
+      const profMap: Record<string, string> = {};
+      allProfs?.forEach((p: any) => { profMap[p.user_id] = p.display_name; });
+      setProfiles(profMap);
+
+      setFeedbacks(fbs.map(f => ({ ...f, author_name: profMap[f.user_id] })));
 
       setLoading(false);
     };
@@ -179,24 +195,6 @@ const ModelDetail = () => {
     await supabase.from('models').update({ approved: false } as any).eq('id', model.id);
     setModel({ ...model, approved: false });
     toast.success('Modèle remis en attente');
-  };
-
-  const submitFeedback = async () => {
-    if (!user || !model || !fbContent.trim()) return;
-    setFbSubmitting(true);
-    const { data, error } = await supabase.from('model_feedbacks').insert({
-      model_id: model.id,
-      user_id: user.id,
-      content: fbContent.trim(),
-      rating: fbRating,
-    } as any).select().single();
-
-    setFbSubmitting(false);
-    if (error) { toast.error('Erreur'); return; }
-    const newFb = { ...(data as unknown as Feedback), author_name: profiles[user.id] || 'Vous' };
-    setFeedbacks(prev => [newFb, ...prev]);
-    setFbContent(''); setFbRating(4); setShowFbForm(false);
-    toast.success('Feedback ajouté !');
   };
 
   const startEditing = () => {
@@ -458,7 +456,7 @@ const ModelDetail = () => {
               <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {new Date(model.updated_at).toLocaleDateString('fr-FR')}</span>
               <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> {model.views_count}</span>
               <span className="flex items-center gap-1.5"><GitBranch className="h-4 w-4" /> {childModels.length} variantes</span>
-              <span className="flex items-center gap-1.5"><MessageSquare className="h-4 w-4" /> {feedbacks.length} feedbacks</span>
+              <span className="flex items-center gap-1.5"><MessageSquare className="h-4 w-4" /> {linkedPosts.length + feedbacks.length} discussions</span>
             </div>
             <div className="mt-4 flex flex-wrap gap-1.5">
               {model.tags.map(tag => (
@@ -657,6 +655,27 @@ const ModelDetail = () => {
         )}
       </div>
 
+      {/* Approche: models list */}
+      {model.type === 'approche' && approcheModels.length > 0 && (
+        <div className="mb-8 rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h3 className="mb-3 font-display text-base font-semibold text-foreground">
+            Modèles de cette approche ({approcheModels.length})
+          </h3>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {approcheModels.map(m => (
+              <Link key={m.id} to={`/model/${m.id}`}
+                className="flex items-center gap-3 rounded-lg border border-border p-3 hover:border-secondary/30 transition-colors">
+                <TypeBadge type={m.type as any} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{m.title}</p>
+                  <p className="text-xs text-muted-foreground">v{m.version} · {profiles[m.user_id] || 'Anonyme'}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Status management */}
       {canEdit && model.approved && (
         <div className="mb-8 rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -687,8 +706,8 @@ const ModelDetail = () => {
           <TabsTrigger value="variations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Variantes ({childModels.length})
           </TabsTrigger>
-          <TabsTrigger value="feedback" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            Feedback ({feedbacks.length})
+          <TabsTrigger value="discussions" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+            Discussions ({linkedPosts.length + feedbacks.length})
           </TabsTrigger>
         </TabsList>
 
@@ -925,45 +944,47 @@ const ModelDetail = () => {
           )}
         </TabsContent>
 
-        {/* Feedback */}
-        <TabsContent value="feedback">
+        {/* Discussions */}
+        <TabsContent value="discussions">
           {user && (
             <div className="mb-6">
-              {!showFbForm ? (
-                <button onClick={() => setShowFbForm(true)}
-                  className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-                  <Plus className="h-4 w-4" /> Donner un feedback
-                </button>
-              ) : (
-                <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
-                  <h4 className="font-display text-sm font-semibold text-foreground">Votre feedback</h4>
-                  <div>
-                    <label className="mb-1.5 block text-sm text-muted-foreground">Note</label>
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map(n => (
-                        <button key={n} onClick={() => setFbRating(n)}
-                          className={`p-1 transition-colors ${n <= fbRating ? 'text-amber-500' : 'text-muted-foreground/30'}`}>
-                          <Star className="h-5 w-5" fill={n <= fbRating ? 'currentColor' : 'none'} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <textarea value={fbContent} onChange={e => setFbContent(e.target.value)}
-                    placeholder="Partagez votre retour d'expérience avec ce modèle..." rows={4} maxLength={3000}
-                    className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
-                  <div className="flex gap-2 justify-end">
-                    <button onClick={() => setShowFbForm(false)} className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">Annuler</button>
-                    <button onClick={submitFeedback} disabled={fbSubmitting || !fbContent.trim()}
-                      className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground disabled:opacity-50">
-                      <Send className="h-4 w-4" /> {fbSubmitting ? 'Envoi...' : 'Envoyer'}
-                    </button>
-                  </div>
-                </div>
-              )}
+              <Link
+                to={`/community?new=1&model=${model.id}&title=${encodeURIComponent('Feedback : ' + model.title)}`}
+                className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
+                <Plus className="h-4 w-4" /> Donner un feedback
+              </Link>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Votre feedback sera publié comme un post dans la communauté, lié à ce modèle.
+              </p>
             </div>
           )}
-          {feedbacks.length > 0 ? (
-            <div className="space-y-4">
+
+          {/* Posts liés */}
+          {linkedPosts.length > 0 && (
+            <div className="mb-6 space-y-3">
+              {linkedPosts.map(post => (
+                <div key={post.id} className="rounded-lg border border-border bg-card p-5">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Link to={`/profil/${post.user_id}`} className="text-sm font-medium text-foreground hover:text-secondary">{profiles[post.user_id] || 'Anonyme'}</Link>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{post.category}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleDateString('fr-FR')}</span>
+                  </div>
+                  <h4 className="mb-1 text-sm font-semibold text-foreground">{post.title}</h4>
+                  <p className="whitespace-pre-line text-sm text-muted-foreground leading-relaxed line-clamp-4">{post.content}</p>
+                  <Link to="/community" className="mt-2 inline-block text-xs text-secondary hover:underline">Voir dans le forum</Link>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Feedbacks legacy */}
+          {feedbacks.length > 0 && (
+            <div className="space-y-3">
+              {linkedPosts.length > 0 && (
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Feedbacks</h4>
+              )}
               {feedbacks.map(f => (
                 <div key={f.id} className="rounded-lg border border-border bg-card p-5">
                   <div className="mb-2 flex items-center justify-between">
@@ -982,8 +1003,10 @@ const ModelDetail = () => {
                 </div>
               ))}
             </div>
-          ) : (
-            <Placeholder text="Aucun feedback pour le moment. Partagez votre retour d'expérience !" />
+          )}
+
+          {linkedPosts.length === 0 && feedbacks.length === 0 && (
+            <Placeholder text="Aucune discussion pour le moment. Soyez le premier à partager votre retour d'expérience !" />
           )}
         </TabsContent>
       </Tabs>

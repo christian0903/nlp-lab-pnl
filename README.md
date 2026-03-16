@@ -1,18 +1,9 @@
-# Welcome to your Lovable project
+# Welcome to your PNL LAb project
+This project has initially been made by lovable but then (and itis the biggest part) developped with Claude Code
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
+**URL**: https://lab.atelierpnl.eu
 
 **Use your preferred IDE**
 

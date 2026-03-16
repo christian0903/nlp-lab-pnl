@@ -59,7 +59,7 @@ La barre de navigation en haut de l'écran donne accès à toutes les sections :
 
 | Lien | Description |
 |------|-------------|
-| **Accueil** | Tableau de bord avec statistiques et vue Kanban |
+| **Accueil** | Fil d'actualités, statistiques et guide de démarrage |
 | **Bibliothèque** | Explorer et rechercher les modèles PNL |
 | **Événements** | Consulter et s'inscrire aux événements |
 | **Contribuer** | Proposer un nouveau modèle |
@@ -78,19 +78,63 @@ Sur mobile, la navigation se replie dans un menu hamburger.
 
 ## 3. Accueil
 
-La page d'accueil offre une vue d'ensemble de l'activité de la plateforme.
+La page d'accueil est le point d'entrée de la plateforme.
 
 ### Statistiques
 
-Quatre cartes affichent en temps réel :
-- **Modèles** : nombre total de modèles
+Trois cartes affichent en temps réel :
+- **Modèles** : nombre total de modèles approuvés
 - **Publiés** : modèles au statut "Publié"
-- **Variations** : nombre total de variations proposées
 - **Contributeurs** : nombre de contributeurs uniques
 
-### Modèles en développement (Kanban)
+### Vous découvrez le Lab ?
 
-Un tableau Kanban à 5 colonnes montre la progression des modèles dans le pipeline :
+Un bloc d'accueil guide les nouveaux visiteurs avec trois liens :
+- **Explorer la bibliothèque** — parcourir les approches, outils et expériences
+- **Lire les ressources** — guides, glossaire PNL et méthodologie
+- **Rejoindre la communauté** — échanger avec les praticiens
+
+### Dernières nouvelles
+
+Un fil d'actualités chronologique affiche les événements récents de la plateforme :
+- **Nouveau modèle** (badge vert) — un modèle vient d'être ajouté
+- **Mise à jour** (badge coloré) — une entrée du journal d'évolution avec version et contributeurs
+- **Ressource** (badge bleu) — un nouvel article a été publié dans les Ressources
+
+Chaque élément est cliquable et mène directement à la fiche ou la ressource concernée.
+
+---
+
+## 4. Bibliothèque de modèles
+
+La bibliothèque est organisée en **trois onglets** :
+
+### Onglet Catalogue
+
+Vue principale des modèles, organisée en trois sections :
+1. **Approches** — architectures cohérentes regroupant plusieurs modèles autour d'une vision
+2. **Outils** — protocoles, formats et techniques utilisables en séance
+3. **Expériences** — cartographies d'expériences vécues, états problèmes ou ressources
+
+#### Rechercher et filtrer
+
+- **Barre de recherche** : filtrer par titre ou tag
+- **Filtre par type** : Tous les types / Problématique / Outil / Approche
+- **Filtre par statut** : Tous les statuts / Brouillon / En révision / En test / Publié / En évolution
+
+#### Informations affichées
+
+Chaque carte de modèle montre :
+- Type (badge coloré)
+- Statut
+- Titre et description (2 lignes max)
+- Tags (3 premiers affichés)
+- Version, auteur
+- Compteurs : vues, variations, feedbacks
+
+### Onglet Pipeline
+
+Un tableau **Kanban** à 5 colonnes montre la progression de tous les modèles dans le cycle de vie :
 
 | Colonne | Signification |
 |---------|---------------|
@@ -102,33 +146,13 @@ Un tableau Kanban à 5 colonnes montre la progression des modèles dans le pipel
 
 Cliquez sur un modèle dans le Kanban pour accéder à sa fiche détaillée.
 
-### Modèles récents
+### Onglet Par approche
 
-Les 6 derniers modèles ajoutés sont affichés sous forme de cartes avec leur type, statut, tags et statistiques.
-
----
-
-## 4. Bibliothèque de modèles
-
-### Rechercher un modèle
-
-Utilisez la **barre de recherche** pour filtrer par titre ou tag.
-
-### Filtrer
-
-Deux menus déroulants permettent de combiner les filtres :
-- **Type** : Tous les types / Problématique / Outil / Approche
-- **Statut** : Tous les statuts / Brouillon / En révision / En test / Publié / En évolution
-
-### Informations affichées
-
-Chaque carte de modèle montre :
-- Type (badge coloré)
-- Statut
-- Titre et description (2 lignes max)
-- Tags (3 premiers affichés)
-- Version, auteur
-- Compteurs : vues, variations, feedbacks
+Vue arborescente permettant de naviguer les modèles par approche :
+- Chaque **approche** est un bloc dépliable (cliquez pour ouvrir/fermer)
+- À l'intérieur : les **outils** et **expériences** rattachés à cette approche
+- Un lien **"Voir la fiche"** permet d'accéder directement à la fiche de l'approche
+- En bas : une section **"Sans approche"** regroupe les modèles non encore rattachés à une approche
 
 ### Actions admin
 
@@ -155,6 +179,7 @@ Si vous êtes **administrateur**, **modérateur** ou **auteur du modèle**, un b
 - Sections (dynamiques selon le type)
 - Tags
 - Liens & ressources (voir ci-dessous)
+- **Approche associée** (pour les outils et problématiques) — permet de rattacher le modèle à une approche existante
 - **Propriétaire** (admin uniquement) — permet de réassigner le modèle à un autre utilisateur
 
 Tous les champs descriptifs (description, sections) supportent le **format Markdown**. En mode lecture, le markdown est rendu visuellement (titres, listes, gras, tableaux, images...). En mode édition, vous voyez et éditez le code markdown brut.
@@ -209,13 +234,19 @@ Brouillon → En révision → En test → Publié → En évolution
 
 ### Onglet Présentation
 
-Affiche les sections du modèle (structure, protocole, prérequis, etc.) dans des blocs distincts avec **rendu Markdown** (titres, listes, images, tableaux, etc.). Les sections affichées dépendent de ce qui a été renseigné.
+Affiche les sections du modèle avec **rendu Markdown** (titres, listes, images, tableaux, etc.). Les sections affichées dépendent du type et de ce qui a été renseigné.
 
-Si des liens & ressources ont été ajoutés, ils sont affichés sous les sections dans une grille de cartes cliquables.
+Quand un modèle a **3 sections ou plus**, elles sont organisées en **sous-onglets cliquables** pour éviter un mur de texte. Chaque sous-onglet affiche une section individuelle (ex: Protocole | Principe actif | Points de vigilance).
+
+Si l'approche associée est renseignée, son nom apparaît comme lien cliquable dans l'en-tête du modèle.
 
 #### Filiation parent / dérivé
 
-Si un modèle a été créé à partir d'une variation d'un autre modèle, un bandeau **"Dérivé de [Modèle parent]"** s'affiche sous le header avec un lien cliquable vers le parent.
+Si un modèle a été créé comme variante d'un autre, un bandeau **"Dérivé de [Modèle parent]"** s'affiche sous le header avec un lien cliquable vers le parent.
+
+### Onglet Liens
+
+Affiche les liens et ressources externes du modèle (vidéos, documents, formations) sous forme de cartes cliquables. Si aucun lien n'a été ajouté, un message invite à en ajouter via le bouton Modifier.
 
 ### Onglet Historique
 
@@ -228,26 +259,15 @@ L'onglet Historique affiche quatre sections :
 
 Cela crée un **arbre de filiation navigable** dans les deux sens : du parent vers ses dérivés et de chaque dérivé vers son parent.
 
-### Onglet Variations
+### Onglet Variantes
 
-Les utilisateurs connectés peuvent **proposer une variation** du modèle :
-1. Cliquez sur **Proposer une variation**
-2. Remplissez le titre et la description
-3. Cliquez sur **Soumettre**
+L'onglet Variantes affiche les **modèles dérivés** — des fiches complètes qui adaptent ou enrichissent le modèle pour un cas particulier.
 
-Toutes les variations sont listées avec leur auteur et date.
+- Chaque variante est une carte cliquable menant vers sa fiche complète
+- Un bouton **"Créer une variante"** redirige vers le formulaire de contribution avec le parent pré-rempli
+- Les administrateurs voient un bouton **"Importer une fiche"** pour créer une variante par import markdown
 
-#### Réponses aux variations
-
-Chaque variation dispose d'un **fil de discussion**. Tout utilisateur connecté peut cliquer sur **Répondre** pour poster une réponse. Les réponses de l'auteur du modèle sont identifiées par un badge "Auteur". Le propriétaire peut ainsi indiquer si la variation sera intégrée, discuter des améliorations, etc.
-
-#### Promouvoir une variation en modèle
-
-Les administrateurs, modérateurs ou l'auteur de la variation voient un bouton **"Créer comme modèle"** à côté de chaque variation. Un clic redirige vers le formulaire de contribution, pré-rempli avec le titre et la description de la variation, et un lien de filiation vers le modèle d'origine. Le nouveau modèle apparaîtra dans l'onglet Historique du parent comme "modèle dérivé".
-
-#### Changer l'auteur d'une variation (admin)
-
-Les administrateurs voient un sélecteur à côté du nom de l'auteur de chaque variation, permettant de réassigner la variation à un autre utilisateur.
+Une variante est un modèle à part entière avec ses propres sections, son propre journal d'évolution et ses propres feedbacks. Le lien de filiation est visible dans les deux sens (parent ↔ variante).
 
 ### Onglet Feedback
 
@@ -367,7 +387,9 @@ Le forum communautaire permet aux membres de partager des discussions, questions
 - **Liker** un post : cliquez sur le bouton coeur (cliquez à nouveau pour retirer le like)
 - **Commenter** : cliquez sur l'icône commentaire, puis rédigez votre commentaire et cliquez sur envoyer
 - **Filtrer** : cliquez sur une catégorie pour ne voir que ses posts
-- **Proposer comme modèle** (admin/modérateur) : sous chaque post, un bouton permet de créer un modèle pré-rempli avec le contenu de la discussion. C'est le point d'entrée du [workflow de création collaborative](/resources) décrit dans les Ressources.
+- **Modifier un post** : l'auteur du post (et les admin/modérateurs) peut cliquer sur l'icône crayon à côté du titre pour modifier le titre, le contenu et la catégorie
+- **Supprimer un post** : l'auteur du post (et les admin/modérateurs) peut cliquer sur l'icône corbeille. Une confirmation est demandée. La suppression entraîne la suppression de tous les commentaires et likes associés
+- **Proposer comme modèle** (admin/modérateur) : sous chaque post, un bouton permet de créer un modèle pré-rempli avec le contenu de la discussion. C'est le point d'entrée du [workflow de création collaborative](/resources) décrit dans les Ressources
 
 ---
 

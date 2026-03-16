@@ -59,6 +59,9 @@ const ModelDetail = () => {
   const [editJournalNote, setEditJournalNote] = useState('');
   const [editJournalAuthors, setEditJournalAuthors] = useState<string[]>([]);
   const [editOwnerId, setEditOwnerId] = useState('');
+  const [editApprocheId, setEditApprocheId] = useState('');
+  const [approches, setApproches] = useState<{ id: string; title: string }[]>([]);
+  const [approcheName, setApprocheName] = useState('');
   const [allUsers, setAllUsers] = useState<{ user_id: string; display_name: string }[]>([]);
   const [editSubmitting, setEditSubmitting] = useState(false);
 
@@ -138,12 +141,23 @@ const ModelDetail = () => {
     fetchAll();
   }, [id]);
 
-  // Load all users for admin selectors
+  // Load all users for admin selectors + approches list
   useEffect(() => {
-    if (!isAdmin) return;
-    supabase.from('profiles').select('user_id, display_name').order('display_name')
-      .then(({ data }) => { if (data) setAllUsers(data as any); });
+    if (isAdmin) {
+      supabase.from('profiles').select('user_id, display_name').order('display_name')
+        .then(({ data }) => { if (data) setAllUsers(data as any); });
+    }
+    supabase.from('models').select('id, title').eq('type', 'approche').eq('approved', true).order('title')
+      .then(({ data }) => { if (data) setApproches(data as any); });
   }, [isAdmin]);
+
+  // Load approche name if linked
+  useEffect(() => {
+    if (model?.approche_id) {
+      supabase.from('models').select('title').eq('id', model.approche_id).single()
+        .then(({ data }) => { if (data) setApprocheName(data.title); });
+    }
+  }, [model?.approche_id]);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!model) return;
@@ -197,6 +211,7 @@ const ModelDetail = () => {
     setEditJournalNote('');
     setEditJournalAuthors([profiles[user?.id || ''] || 'Anonyme']);
     setEditOwnerId(model.user_id);
+    setEditApprocheId(model.approche_id || '');
     setEditing(true);
   };
 
@@ -236,6 +251,7 @@ const ModelDetail = () => {
       sections: editSections,
       links: savedLinks,
       changelog: updatedChangelog,
+      approche_id: editApprocheId || null,
     };
     if (isAdmin && editOwnerId && editOwnerId !== model.user_id) {
       updateData.user_id = editOwnerId;
@@ -260,8 +276,15 @@ const ModelDetail = () => {
       sections: editSections,
       links: savedLinks,
       changelog: updatedChangelog,
+      approche_id: editApprocheId || null,
       user_id: isAdmin && editOwnerId ? editOwnerId : model.user_id,
     });
+    if (editApprocheId) {
+      const a = approches.find(a => a.id === editApprocheId);
+      setApprocheName(a?.title || '');
+    } else {
+      setApprocheName('');
+    }
     if (isAdmin && editOwnerId && editOwnerId !== model.user_id) {
       setAuthorName(allUsers.find(u => u.user_id === editOwnerId)?.display_name || '');
     }
@@ -419,6 +442,11 @@ const ModelDetail = () => {
             </div>
             <div className="flex flex-wrap gap-5 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5"><User className="h-4 w-4" /> {authorName || 'Anonyme'}</span>
+              {approcheName && (
+                <Link to={`/model/${model.approche_id}`} className="flex items-center gap-1.5 text-secondary hover:underline">
+                  <Sparkles className="h-4 w-4" /> {approcheName}
+                </Link>
+              )}
               <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {new Date(model.updated_at).toLocaleDateString('fr-FR')}</span>
               <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> {model.views_count}</span>
               <span className="flex items-center gap-1.5"><GitBranch className="h-4 w-4" /> {childModels.length} variantes</span>
@@ -477,6 +505,18 @@ const ModelDetail = () => {
                     className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
                     {allUsers.map(u => (
                       <option key={u.user_id} value={u.user_id}>{u.display_name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {editType !== 'approche' && approches.length > 0 && (
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Approche associée</label>
+                  <select value={editApprocheId} onChange={e => setEditApprocheId(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
+                    <option value="">— Aucune approche —</option>
+                    {approches.map(a => (
+                      <option key={a.id} value={a.id}>{a.title}</option>
                     ))}
                   </select>
                 </div>

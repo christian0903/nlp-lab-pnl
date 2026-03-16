@@ -38,6 +38,7 @@ export interface DBModel {
   sections: Record<string, string> | null;
   links: ModelLink[] | null;
   parent_model_id: string | null;
+  approche_id: string | null;
   changelog: (JournalEntry | LegacyChangelogEntry)[] | null;
   approved: boolean;
   views_count: number;

@@ -55,6 +55,8 @@ const Contribute = () => {
   const [submitting, setSubmitting] = useState(false);
   const [parentTitle, setParentTitle] = useState('');
   const [sourcePostTitle, setSourcePostTitle] = useState('');
+  const [approches, setApproches] = useState<{ id: string; title: string }[]>([]);
+  const [selectedApproche, setSelectedApproche] = useState('');
 
   useEffect(() => {
     if (parentId) {
@@ -65,6 +67,8 @@ const Contribute = () => {
       supabase.from('forum_posts').select('title').eq('id', fromPostId).single()
         .then(({ data }) => { if (data) setSourcePostTitle(data.title); });
     }
+    supabase.from('models').select('id, title').eq('type', 'approche').eq('approved', true).order('title')
+      .then(({ data }) => { if (data) setApproches(data as any); });
   }, [parentId, fromPostId]);
 
   if (!user) {
@@ -108,6 +112,9 @@ const Contribute = () => {
     };
     if (parentId) {
       insertData.parent_model_id = parentId;
+    }
+    if (selectedApproche) {
+      insertData.approche_id = selectedApproche;
     }
 
     const { data: newModel, error } = await supabase.from('models').insert(insertData).select('id').single();
@@ -189,12 +196,12 @@ const Contribute = () => {
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className={`grid gap-4 ${type !== 'approche' && approches.length > 0 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-foreground">Type de modèle *</label>
             <select
               value={type}
-              onChange={(e) => setType(e.target.value as ModelType)}
+              onChange={(e) => { setType(e.target.value as ModelType); if (e.target.value === 'approche') setSelectedApproche(''); }}
               className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
             >
               {(Object.entries(MODEL_TYPE_LABELS) as [ModelType, string][]).map(([k, v]) => (
@@ -214,6 +221,21 @@ const Contribute = () => {
               ))}
             </select>
           </div>
+          {type !== 'approche' && approches.length > 0 && (
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">Approche associée</label>
+              <select
+                value={selectedApproche}
+                onChange={(e) => setSelectedApproche(e.target.value)}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
+              >
+                <option value="">— Aucune approche —</option>
+                {approches.map((a) => (
+                  <option key={a.id} value={a.id}>{a.title}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         <div>

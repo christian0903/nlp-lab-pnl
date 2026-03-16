@@ -1,0 +1,78 @@
+/* ============================================
+   THEME SOMBRE
+   Fond sombre bleu-gris + accents teal lumineux
+
+   Active par la classe .dark sur <html>
+   Les memes variables que le classique, adaptees
+   pour un fond sombre avec un contraste lisible.
+   ============================================ */
+
+.dark {
+  /* --- Couleurs de base --- */
+  --background: 222 25% 8%;           /* Fond general (noir bleute) */
+  --foreground: 210 20% 90%;          /* Texte principal (blanc casse) */
+
+  /* --- Cartes et popovers --- */
+  --card: 222 20% 12%;                /* Fond des cartes (gris tres fonce) */
+  --card-foreground: 210 20% 90%;
+  --popover: 222 20% 12%;
+  --popover-foreground: 210 20% 90%;
+
+  /* --- Couleur primaire --- */
+  --primary: 210 20% 90%;             /* Texte clair (inverse du classique) */
+  --primary-foreground: 222 25% 8%;   /* Fond fonce sur primary */
+
+  /* --- Couleur secondaire (boutons, accents) --- */
+  --secondary: 175 55% 45%;           /* Teal lumineux */
+  --secondary-foreground: 0 0% 100%;
+
+  /* --- Elements attenues --- */
+  --muted: 222 15% 18%;               /* Gris fonce */
+  --muted-foreground: 215 15% 55%;    /* Gris moyen */
+
+  /* --- Accent --- */
+  --accent: 175 55% 45%;
+  --accent-foreground: 0 0% 100%;
+
+  /* --- Destructif --- */
+  --destructive: 0 65% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* --- Bordures et inputs --- */
+  --border: 222 15% 20%;
+  --input: 222 15% 20%;
+  --ring: 175 55% 45%;
+
+  /* --- Tokens Lab --- */
+  --lab-navy: 215 30% 75%;
+  --lab-navy-light: 215 25% 60%;
+  --lab-teal: 175 55% 45%;
+  --lab-teal-light: 175 50% 60%;
+  --lab-cyan: 190 60% 55%;
+  --lab-warm: 35 75% 55%;
+  --lab-success: 155 55% 45%;
+  --lab-surface: 222 20% 10%;
+  --lab-surface-elevated: 222 20% 14%;
+
+  /* --- Degradés --- */
+  --gradient-hero: linear-gradient(135deg, hsl(222 30% 10%), hsl(220 25% 15%), hsl(180 40% 18%));
+  --gradient-accent: linear-gradient(135deg, hsl(175 55% 45%), hsl(170 50% 50%));
+  --gradient-warm: linear-gradient(135deg, hsl(35 75% 55%), hsl(20 70% 50%));
+  --gradient-card: linear-gradient(180deg, hsl(222 20% 12%), hsl(222 20% 10%));
+
+  /* --- Ombres (plus marquees sur fond sombre) --- */
+  --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.2), 0 1px 2px hsl(0 0% 0% / 0.15);
+  --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.25), 0 2px 4px hsl(0 0% 0% / 0.15);
+  --shadow-lg: 0 12px 40px hsl(0 0% 0% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2);
+  --shadow-glow: 0 0 30px hsl(175 55% 45% / 0.2);
+
+  /* --- Sidebar --- */
+  --sidebar-background: 222 20% 10%;
+  --sidebar-foreground: 210 20% 80%;
+  --sidebar-primary: 210 20% 90%;
+  --sidebar-primary-foreground: 222 25% 8%;
+  --sidebar-accent: 222 15% 18%;
+  --sidebar-accent-foreground: 210 20% 80%;
+  --sidebar-border: 222 15% 20%;
+  --sidebar-ring: 175 55% 45%;
+}

@@ -1,0 +1,78 @@
+/* ============================================
+   THEME VIVID SOMBRE
+   Violet/rose sur fond sombre
+
+   Active par .theme-vivid.dark sur <html>
+   Combine les couleurs vives du vivid
+   avec un fond sombre confortable.
+   ============================================ */
+
+.theme-vivid.dark {
+  /* --- Couleurs de base --- */
+  --background: 260 25% 8%;           /* Fond noir violace */
+  --foreground: 250 20% 90%;          /* Texte clair */
+
+  /* --- Cartes et popovers --- */
+  --card: 260 20% 12%;
+  --card-foreground: 250 20% 90%;
+  --popover: 260 20% 12%;
+  --popover-foreground: 250 20% 90%;
+
+  /* --- Couleur primaire --- */
+  --primary: 250 20% 90%;             /* Texte clair */
+  --primary-foreground: 260 25% 8%;   /* Fond fonce */
+
+  /* --- Couleur secondaire (rose lumineux) --- */
+  --secondary: 330 70% 60%;           /* Rose-magenta lumineux */
+  --secondary-foreground: 0 0% 100%;
+
+  /* --- Elements attenues --- */
+  --muted: 260 15% 18%;
+  --muted-foreground: 250 15% 55%;
+
+  /* --- Accent --- */
+  --accent: 170 65% 50%;              /* Teal lumineux */
+  --accent-foreground: 0 0% 100%;
+
+  /* --- Destructif --- */
+  --destructive: 0 65% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* --- Bordures et inputs --- */
+  --border: 260 15% 20%;
+  --input: 260 15% 20%;
+  --ring: 330 70% 60%;
+
+  /* --- Tokens Lab --- */
+  --lab-navy: 260 50% 70%;
+  --lab-navy-light: 260 40% 60%;
+  --lab-teal: 170 65% 50%;
+  --lab-teal-light: 170 55% 60%;
+  --lab-cyan: 195 70% 55%;
+  --lab-warm: 25 85% 55%;
+  --lab-success: 155 60% 45%;
+  --lab-surface: 260 20% 10%;
+  --lab-surface-elevated: 260 20% 14%;
+
+  /* --- Degradés --- */
+  --gradient-hero: linear-gradient(135deg, hsl(260 30% 10%), hsl(280 25% 15%), hsl(330 40% 20%));
+  --gradient-accent: linear-gradient(135deg, hsl(330 70% 60%), hsl(350 65% 60%));
+  --gradient-warm: linear-gradient(135deg, hsl(25 85% 55%), hsl(350 65% 50%));
+  --gradient-card: linear-gradient(180deg, hsl(260 20% 12%), hsl(260 20% 10%));
+
+  /* --- Ombres --- */
+  --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.2), 0 1px 2px hsl(0 0% 0% / 0.15);
+  --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.25), 0 2px 4px hsl(0 0% 0% / 0.15);
+  --shadow-lg: 0 12px 40px hsl(0 0% 0% / 0.3), 0 4px 12px hsl(0 0% 0% / 0.2);
+  --shadow-glow: 0 0 30px hsl(330 70% 60% / 0.25);
+
+  /* --- Sidebar --- */
+  --sidebar-background: 260 20% 10%;
+  --sidebar-foreground: 250 20% 80%;
+  --sidebar-primary: 250 20% 90%;
+  --sidebar-primary-foreground: 260 25% 8%;
+  --sidebar-accent: 260 15% 18%;
+  --sidebar-accent-foreground: 250 20% 80%;
+  --sidebar-border: 260 15% 20%;
+  --sidebar-ring: 330 70% 60%;
+}

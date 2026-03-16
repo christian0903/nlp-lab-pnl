@@ -1,72 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
+/* --- Themes (1 fichier par theme, modifiables independamment) --- */
+@import './themes/classic.css';
+@import './themes/dark.css';
+@import './themes/vivid.css';
+@import './themes/vivid-dark.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer base {
-  :root {
-    --background: 220 20% 97%;
-    --foreground: 220 30% 10%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 220 30% 10%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 10%;
-
-    --primary: 220 60% 20%;
-    --primary-foreground: 180 40% 95%;
-
-    --secondary: 180 50% 35%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 10% 45%;
-
-    --accent: 170 60% 40%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 180 50% 35%;
-
-    --radius: 0.625rem;
-
-    /* Custom tokens */
-    --lab-navy: 220 60% 20%;
-    --lab-navy-light: 220 40% 30%;
-    --lab-teal: 180 50% 35%;
-    --lab-teal-light: 175 45% 55%;
-    --lab-cyan: 190 70% 50%;
-    --lab-warm: 35 80% 55%;
-    --lab-success: 155 60% 40%;
-    --lab-surface: 220 20% 98%;
-    --lab-surface-elevated: 0 0% 100%;
-
-    --gradient-hero: linear-gradient(135deg, hsl(220 60% 20%), hsl(220 40% 30%), hsl(180 50% 35%));
-    --gradient-accent: linear-gradient(135deg, hsl(180 50% 35%), hsl(170 60% 40%));
-    --gradient-warm: linear-gradient(135deg, hsl(35 80% 55%), hsl(20 75% 50%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 20% 98%));
-
-    --shadow-sm: 0 1px 3px hsl(220 30% 10% / 0.04), 0 1px 2px hsl(220 30% 10% / 0.06);
-    --shadow-md: 0 4px 12px hsl(220 30% 10% / 0.06), 0 2px 4px hsl(220 30% 10% / 0.04);
-    --shadow-lg: 0 12px 40px hsl(220 30% 10% / 0.08), 0 4px 12px hsl(220 30% 10% / 0.04);
-    --shadow-glow: 0 0 30px hsl(180 50% 35% / 0.15);
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-}
 
 @layer base {
   * {
@@ -106,6 +48,7 @@
     color: hsl(var(--primary-foreground));
   }
 
+  /* --- Badges de statut --- */
   .lab-status-draft {
     background: hsl(var(--muted));
     color: hsl(var(--muted-foreground));
@@ -127,6 +70,24 @@
     color: hsl(270 40% 35%);
   }
 
+  .dark .lab-status-review {
+    background: hsl(35 60% 18%);
+    color: hsl(35 70% 65%);
+  }
+  .dark .lab-status-testing {
+    background: hsl(190 40% 18%);
+    color: hsl(190 50% 65%);
+  }
+  .dark .lab-status-published {
+    background: hsl(155 35% 18%);
+    color: hsl(155 45% 60%);
+  }
+  .dark .lab-status-evolving {
+    background: hsl(270 30% 20%);
+    color: hsl(270 40% 65%);
+  }
+
+  /* --- Badges de type --- */
   .lab-type-problematique {
     background: hsl(0 60% 93%);
     color: hsl(0 50% 35%);
@@ -141,5 +102,21 @@
     background: hsl(145 50% 92%);
     color: hsl(145 40% 25%);
     border: 1px solid hsl(145 35% 82%);
+  }
+
+  .dark .lab-type-problematique {
+    background: hsl(0 40% 18%);
+    color: hsl(0 50% 70%);
+    border: 1px solid hsl(0 30% 25%);
+  }
+  .dark .lab-type-outil {
+    background: hsl(210 35% 18%);
+    color: hsl(210 50% 70%);
+    border: 1px solid hsl(210 25% 28%);
+  }
+  .dark .lab-type-approche {
+    background: hsl(145 30% 16%);
+    color: hsl(145 45% 65%);
+    border: 1px solid hsl(145 25% 25%);
   }
 }

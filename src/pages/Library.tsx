@@ -363,7 +363,7 @@ const ModelCardDB = ({ model, authorName, index = 0, canManage, onApprove }: {
 
         <div className="flex items-center justify-between border-t border-border pt-3">
           <span className="text-xs text-muted-foreground">
-            v{model.version} · {authorName || 'Anonyme'}
+            v{model.version} · <Link to={`/profil/${model.user_id}`} onClick={e => e.stopPropagation()} className="hover:text-secondary">{authorName || 'Anonyme'}</Link>
           </span>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">

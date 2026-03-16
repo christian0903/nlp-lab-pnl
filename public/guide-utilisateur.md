@@ -63,6 +63,19 @@ La barre de navigation en haut de l'écran donne accès à toutes les sections :
 
 En bas de chaque page, le **footer** affiche la version de l'application, un lien vers atelierpnl.eu et un lien pour soutenir le Lab.
 
+### Theme
+
+Un bouton dans le header (icone soleil/lune/palette) permet de choisir parmi 4 themes :
+
+| Theme | Description |
+|-------|-------------|
+| **Classique** | Bleu-gris et teal — sobre et professionnel (defaut) |
+| **Sombre** | Mode sombre avec accents teal lumineux |
+| **Vivid** | Violet, rose et teal — moderne et colore |
+| **Vivid sombre** | Vivid en mode sombre |
+
+Le choix est sauvegarde automatiquement et persiste entre les visites.
+
 Sur mobile, la navigation se replie dans un menu hamburger.
 
 ---

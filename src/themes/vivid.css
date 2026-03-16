@@ -1,0 +1,78 @@
+/* ============================================
+   THEME VIVID (moderne, colore)
+   Violet/rose/teal — energique et dynamique
+
+   Active par la classe .theme-vivid sur <html>
+   Peut etre combine avec .dark pour le mode
+   vivid sombre (.theme-vivid.dark)
+   ============================================ */
+
+.theme-vivid {
+  /* --- Couleurs de base --- */
+  --background: 250 25% 97%;          /* Fond legerement violace */
+  --foreground: 250 30% 10%;          /* Texte principal */
+
+  /* --- Cartes et popovers --- */
+  --card: 0 0% 100%;
+  --card-foreground: 250 30% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 250 30% 10%;
+
+  /* --- Couleur primaire (violet profond) --- */
+  --primary: 260 70% 45%;             /* Violet vif */
+  --primary-foreground: 0 0% 100%;
+
+  /* --- Couleur secondaire (rose energique) --- */
+  --secondary: 330 75% 55%;           /* Rose-magenta */
+  --secondary-foreground: 0 0% 100%;
+
+  /* --- Elements attenues --- */
+  --muted: 250 20% 92%;
+  --muted-foreground: 250 10% 45%;
+
+  /* --- Accent (vert-teal pour contraste) --- */
+  --accent: 170 70% 42%;              /* Teal vif */
+  --accent-foreground: 0 0% 100%;
+
+  /* --- Destructif --- */
+  --destructive: 0 75% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* --- Bordures et inputs --- */
+  --border: 250 15% 88%;
+  --input: 250 15% 88%;
+  --ring: 330 75% 55%;                /* Focus rose */
+
+  /* --- Tokens Lab --- */
+  --lab-navy: 260 70% 45%;            /* Violet au lieu de navy */
+  --lab-navy-light: 260 55% 55%;
+  --lab-teal: 170 70% 42%;
+  --lab-teal-light: 170 60% 55%;
+  --lab-cyan: 195 80% 50%;
+  --lab-warm: 25 90% 55%;             /* Orange plus vif */
+  --lab-success: 155 65% 42%;
+  --lab-surface: 250 25% 98%;
+  --lab-surface-elevated: 0 0% 100%;
+
+  /* --- Degradés (violet → rose) --- */
+  --gradient-hero: linear-gradient(135deg, hsl(260 70% 40%), hsl(290 60% 45%), hsl(330 75% 55%));
+  --gradient-accent: linear-gradient(135deg, hsl(330 75% 55%), hsl(350 70% 55%));
+  --gradient-warm: linear-gradient(135deg, hsl(25 90% 55%), hsl(350 70% 50%));
+  --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(250 25% 98%));
+
+  /* --- Ombres --- */
+  --shadow-sm: 0 1px 3px hsl(260 30% 10% / 0.05), 0 1px 2px hsl(260 30% 10% / 0.07);
+  --shadow-md: 0 4px 12px hsl(260 30% 10% / 0.08), 0 2px 4px hsl(260 30% 10% / 0.05);
+  --shadow-lg: 0 12px 40px hsl(260 30% 10% / 0.1), 0 4px 12px hsl(260 30% 10% / 0.06);
+  --shadow-glow: 0 0 30px hsl(330 75% 55% / 0.2);
+
+  /* --- Sidebar --- */
+  --sidebar-background: 250 25% 98%;
+  --sidebar-foreground: 250 15% 25%;
+  --sidebar-primary: 260 70% 45%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 250 20% 95%;
+  --sidebar-accent-foreground: 250 15% 25%;
+  --sidebar-border: 250 15% 90%;
+  --sidebar-ring: 330 75% 55%;
+}

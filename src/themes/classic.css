@@ -1,0 +1,85 @@
+/* ============================================
+   THEME CLASSIQUE (defaut)
+   Bleu-gris + teal — sobre et professionnel
+
+   Format des couleurs : H S% L% (HSL sans virgules)
+   Exemple : 220 60% 20% = hsl(220, 60%, 20%)
+
+   Pour modifier : ajustez les valeurs HSL
+   - H (teinte)     : 0-360 (0=rouge, 120=vert, 240=bleu)
+   - S (saturation)  : 0-100% (0=gris, 100=vif)
+   - L (luminosite)  : 0-100% (0=noir, 100=blanc)
+   ============================================ */
+
+:root {
+  /* --- Couleurs de base --- */
+  --background: 220 20% 97%;          /* Fond general (gris tres clair) */
+  --foreground: 220 30% 10%;          /* Texte principal (quasi noir) */
+
+  /* --- Cartes et popovers --- */
+  --card: 0 0% 100%;                  /* Fond des cartes (blanc) */
+  --card-foreground: 220 30% 10%;     /* Texte dans les cartes */
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 30% 10%;
+
+  /* --- Couleur primaire (hero, header) --- */
+  --primary: 220 60% 20%;             /* Bleu navy fonce */
+  --primary-foreground: 180 40% 95%;  /* Texte sur primary (clair) */
+
+  /* --- Couleur secondaire (boutons, accents) --- */
+  --secondary: 180 50% 35%;           /* Teal */
+  --secondary-foreground: 0 0% 100%;  /* Texte sur secondary (blanc) */
+
+  /* --- Elements attenues --- */
+  --muted: 220 15% 92%;               /* Fond attenue (gris clair) */
+  --muted-foreground: 220 10% 45%;    /* Texte attenue (gris moyen) */
+
+  /* --- Accent (badges, highlights) --- */
+  --accent: 170 60% 40%;              /* Vert-teal vif */
+  --accent-foreground: 0 0% 100%;
+
+  /* --- Destructif (erreurs, suppressions) --- */
+  --destructive: 0 70% 55%;           /* Rouge */
+  --destructive-foreground: 0 0% 100%;
+
+  /* --- Bordures et inputs --- */
+  --border: 220 15% 88%;              /* Bordures (gris clair) */
+  --input: 220 15% 88%;               /* Bordures des champs */
+  --ring: 180 50% 35%;                /* Anneau de focus (teal) */
+
+  /* --- Coins arrondis --- */
+  --radius: 0.625rem;                 /* 10px */
+
+  /* --- Tokens Lab personnalises --- */
+  --lab-navy: 220 60% 20%;            /* Navy fonce */
+  --lab-navy-light: 220 40% 30%;      /* Navy clair */
+  --lab-teal: 180 50% 35%;            /* Teal principal */
+  --lab-teal-light: 175 45% 55%;      /* Teal clair */
+  --lab-cyan: 190 70% 50%;            /* Cyan vif */
+  --lab-warm: 35 80% 55%;             /* Orange chaud */
+  --lab-success: 155 60% 40%;         /* Vert succes */
+  --lab-surface: 220 20% 98%;         /* Surface de fond */
+  --lab-surface-elevated: 0 0% 100%;  /* Surface elevee (blanc) */
+
+  /* --- Degradés --- */
+  --gradient-hero: linear-gradient(135deg, hsl(220 60% 20%), hsl(220 40% 30%), hsl(180 50% 35%));
+  --gradient-accent: linear-gradient(135deg, hsl(180 50% 35%), hsl(170 60% 40%));
+  --gradient-warm: linear-gradient(135deg, hsl(35 80% 55%), hsl(20 75% 50%));
+  --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 20% 98%));
+
+  /* --- Ombres --- */
+  --shadow-sm: 0 1px 3px hsl(220 30% 10% / 0.04), 0 1px 2px hsl(220 30% 10% / 0.06);
+  --shadow-md: 0 4px 12px hsl(220 30% 10% / 0.06), 0 2px 4px hsl(220 30% 10% / 0.04);
+  --shadow-lg: 0 12px 40px hsl(220 30% 10% / 0.08), 0 4px 12px hsl(220 30% 10% / 0.04);
+  --shadow-glow: 0 0 30px hsl(180 50% 35% / 0.15);
+
+  /* --- Sidebar (si utilisee) --- */
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+}

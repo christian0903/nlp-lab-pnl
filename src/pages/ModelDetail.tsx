@@ -59,6 +59,7 @@ const ModelDetail = () => {
   const [editJournalNote, setEditJournalNote] = useState('');
   const [editJournalAuthors, setEditJournalAuthors] = useState<string[]>([]);
   const [editOwnerId, setEditOwnerId] = useState('');
+  const [editCreatedAt, setEditCreatedAt] = useState('');
   const [editApprocheId, setEditApprocheId] = useState('');
   const [approches, setApproches] = useState<{ id: string; title: string }[]>([]);
   const [approcheName, setApprocheName] = useState('');
@@ -211,6 +212,7 @@ const ModelDetail = () => {
     setEditJournalNote('');
     setEditJournalAuthors([profiles[user?.id || ''] || 'Anonyme']);
     setEditOwnerId(model.user_id);
+    setEditCreatedAt(model.created_at.split('T')[0]);
     setEditApprocheId(model.approche_id || '');
     setEditing(true);
   };
@@ -256,6 +258,9 @@ const ModelDetail = () => {
     if (isAdmin && editOwnerId && editOwnerId !== model.user_id) {
       updateData.user_id = editOwnerId;
     }
+    if (isAdmin && editCreatedAt) {
+      updateData.created_at = new Date(editCreatedAt).toISOString();
+    }
 
     const { error } = await supabase.from('models').update(updateData).eq('id', model.id);
 
@@ -278,6 +283,7 @@ const ModelDetail = () => {
       changelog: updatedChangelog,
       approche_id: editApprocheId || null,
       user_id: isAdmin && editOwnerId ? editOwnerId : model.user_id,
+      created_at: isAdmin && editCreatedAt ? new Date(editCreatedAt).toISOString() : model.created_at,
     });
     if (editApprocheId) {
       const a = approches.find(a => a.id === editApprocheId);
@@ -441,7 +447,9 @@ const ModelDetail = () => {
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{model.description}</ReactMarkdown>
             </div>
             <div className="flex flex-wrap gap-5 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5"><User className="h-4 w-4" /> {authorName || 'Anonyme'}</span>
+              <Link to={`/profil/${model.user_id}`} className="flex items-center gap-1.5 hover:text-secondary transition-colors">
+                <User className="h-4 w-4" /> {authorName || 'Anonyme'}
+              </Link>
               {approcheName && (
                 <Link to={`/model/${model.approche_id}`} className="flex items-center gap-1.5 text-secondary hover:underline">
                   <Sparkles className="h-4 w-4" /> {approcheName}
@@ -507,6 +515,13 @@ const ModelDetail = () => {
                       <option key={u.user_id} value={u.user_id}>{u.display_name}</option>
                     ))}
                   </select>
+                </div>
+              )}
+              {isAdmin && (
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Date de création</label>
+                  <input type="date" value={editCreatedAt} onChange={e => setEditCreatedAt(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
                 </div>
               )}
               {editType !== 'approche' && approches.length > 0 && (

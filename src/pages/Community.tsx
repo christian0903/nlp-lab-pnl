@@ -430,7 +430,7 @@ const Community = () => {
                     {profile?.display_name?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">{profile?.display_name || 'Anonyme'}</p>
+                    <Link to={`/profil/${post.user_id}`} className="text-sm font-medium text-foreground hover:text-secondary">{profile?.display_name || 'Anonyme'}</Link>
                     <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
                   </div>
                   <div className="ml-auto flex flex-wrap items-center gap-2">

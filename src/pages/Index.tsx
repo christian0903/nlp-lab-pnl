@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FlaskConical, BookOpen, Users, GitBranch, ArrowRight, Microscope, FileText, Clock, Sparkles, Plus } from 'lucide-react';
+import { FlaskConical, BookOpen, Users, GitBranch, ArrowRight, Microscope, FileText, Clock, Sparkles, Plus, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { DBModel, JournalEntry, LegacyChangelogEntry } from '@/types/model';
 import TypeBadge from '@/components/lab/TypeBadge';
@@ -212,7 +212,7 @@ const Index = () => {
             Ce site est un laboratoire collaboratif où les praticiens PNL partagent, testent et font évoluer des modèles.
             Voici par où commencer :
           </p>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Link to="/library" className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 hover:border-secondary/40 transition-colors">
               <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-secondary" />
               <div>
@@ -232,6 +232,13 @@ const Index = () => {
               <div>
                 <p className="text-sm font-semibold text-foreground">Rejoindre la communauté</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">Échangez avec les praticiens, posez vos questions et partagez vos découvertes.</p>
+              </div>
+            </Link>
+            <Link to="/soutenir" className="flex items-start gap-3 rounded-lg border border-secondary/20 bg-secondary/5 p-4 hover:border-secondary/40 transition-colors">
+              <Heart className="mt-0.5 h-5 w-5 shrink-0 text-secondary" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Soutenir le projet</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">Ce Lab est gratuit et ouvert. Votre don aide à le maintenir.</p>
               </div>
             </Link>
           </div>

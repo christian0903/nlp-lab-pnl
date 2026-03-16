@@ -972,6 +972,17 @@ const ModelDetail = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Donation nudge */}
+      <div className="mt-10 rounded-xl border border-border bg-card/50 p-4 text-center">
+        <p className="text-sm text-muted-foreground">
+          Ce modèle vous a été utile ?{' '}
+          <Link to="/soutenir" className="font-medium text-secondary hover:underline">
+            Soutenez le Lab
+          </Link>{' '}
+          pour que ce contenu reste gratuit et ouvert.
+        </p>
+      </div>
     </div>
   );
 };

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Save, X, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Save, X, Eye, EyeOff, Loader2, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
+import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
@@ -360,8 +361,13 @@ const Resources = () => {
               ">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{selected.content}</ReactMarkdown>
               </article>
-              <div className="mt-6 border-t border-border pt-3 text-xs text-muted-foreground">
-                Mis à jour le {new Date(selected.updated_at).toLocaleDateString('fr-FR')}
+              <div className="mt-6 border-t border-border pt-3 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  Mis à jour le {new Date(selected.updated_at).toLocaleDateString('fr-FR')}
+                </span>
+                <Link to="/soutenir" className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:underline">
+                  <Heart className="h-3 w-3" /> Ce contenu est gratuit — soutenez-nous
+                </Link>
               </div>
             </div>
           ) : (

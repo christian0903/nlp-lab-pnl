@@ -1,0 +1,368 @@
+# Guide Administrateur — PNL Lab R&D
+
+> Documentation réservée aux administrateurs et modérateurs.
+
+---
+
+## Table des matières
+
+1. [Rôles et permissions](#1-rôles-et-permissions)
+2. [Tableau de bord admin](#2-tableau-de-bord-admin)
+3. [Validation des modèles](#3-validation-des-modèles)
+4. [Gestion des utilisateurs](#4-gestion-des-utilisateurs)
+5. [Import de modèles](#5-import-de-modèles)
+6. [Format des fiches d'import](#6-format-des-fiches-dimport)
+7. [Gestion des images](#7-gestion-des-images)
+8. [Paramètres](#8-paramètres)
+9. [Export de données](#9-export-de-données)
+10. [Gestion des donations](#10-gestion-des-donations)
+11. [Fonctionnalités éditoriales](#11-fonctionnalités-éditoriales)
+12. [Sécurité et clés API](#12-sécurité-et-clés-api)
+
+---
+
+## 1. Rôles et permissions
+
+### Visiteur (non connecté)
+
+- Consulter les modèles publiés et approuvés
+- Lire les posts du forum
+- Voir les événements
+- Consulter les ressources
+- Faire un don
+
+### Utilisateur connecté
+
+Tout ce qu'un visiteur peut faire, plus :
+- Créer et modifier ses propres modèles
+- Proposer des variantes et feedbacks
+- Publier, modifier et supprimer ses posts dans le forum
+- Liker et commenter
+- S'inscrire aux événements
+- Gérer son profil
+- Recevoir des notifications
+
+### Modérateur
+
+Tout ce qu'un utilisateur peut faire, plus :
+- Valider ou rejeter les modèles en attente
+- Modifier et supprimer n'importe quel modèle ou post
+- Proposer des modèles depuis le forum ("Proposer comme modèle")
+- Gérer les articles Ressources (créer, modifier, supprimer)
+- Créer et supprimer des événements
+- Envoyer des emails aux participants
+- Importer des modèles via fiche markdown
+- Exporter les données en CSV
+- Accéder au tableau de bord admin
+
+**Le modérateur ne peut PAS** :
+- Gérer les utilisateurs
+- Modifier les paramètres de l'application
+- Basculer le mode Stripe (test/live)
+
+### Administrateur
+
+Tout ce qu'un modérateur peut faire, plus :
+- **Gérer les utilisateurs** : ajouter, supprimer, changer les rôles
+- **Réinitialiser les mots de passe** des utilisateurs
+- **Configurer les paramètres** de l'application
+- **Gérer les donations** : voir le journal des dons, basculer test/live
+- **Supprimer des modèles** définitivement
+
+---
+
+## 2. Tableau de bord admin
+
+Accessible via le lien **Admin** dans la navigation.
+
+### Statistiques
+
+Six cartes :
+- Modèles en attente de validation (mis en évidence)
+- Modèles validés
+- Total des modèles
+- Nombre d'utilisateurs
+- Nombre de posts forum
+- Modèles publiés
+
+Distribution par statut affichée en dessous.
+
+### Onglets
+
+- **Modèles en attente** : voir, valider ou rejeter
+- **Modèles validés** : liste complète avec type, auteur, statut
+- **Activité récente** : 8 derniers modèles modifiés
+- **Utilisateurs** : tableau avec rôles
+- **Images** : galerie avec remplacement/suppression
+- **Paramètres** : configuration de l'application
+
+### Boutons d'accès rapide
+
+- **Donations** : gestion des paiements Stripe
+- **Gérer les utilisateurs** : page dédiée
+- **Importer un modèle** : import markdown
+- **Export CSV** : modèles, utilisateurs, posts
+
+---
+
+## 3. Validation des modèles
+
+Quand un utilisateur soumet un modèle, il arrive en **attente de validation**.
+
+### Depuis la bibliothèque
+
+Les admins voient un bouton **"En attente (N)"** qui affiche les modèles non validés. Chaque carte a un bouton **"Valider"**.
+
+### Depuis la fiche modèle
+
+- Modèle en attente : bandeau orange avec bouton **Valider**
+- Modèle validé : bandeau vert avec bouton **Remettre en attente**
+
+### Depuis le tableau de bord
+
+Onglet "Modèles en attente" avec actions Voir / Rejeter / Valider.
+
+---
+
+## 4. Gestion des utilisateurs
+
+Accessible via **Admin → Gérer les utilisateurs** (administrateurs uniquement).
+
+| Action | Description |
+|--------|-------------|
+| **Ajouter un utilisateur** | Créer un compte avec nom, email et mot de passe initial |
+| **Changer le rôle** | Sélecteur : Utilisateur / Modérateur / Administrateur |
+| **Modifier le nom** | Cliquer sur le crayon, Entrée pour sauvegarder |
+| **Modifier l'email** | Cliquer sur le crayon, Entrée pour sauvegarder |
+| **Reset mot de passe** | Envoie un email de réinitialisation |
+| **Supprimer** | Supprime le profil et les rôles (avec confirmation) |
+
+Informations visibles : avatar, nom, email, date d'inscription, dernière connexion, bio, expertise, UUID.
+
+Note : impossible de modifier son propre rôle depuis cette page.
+
+---
+
+## 5. Import de modèles
+
+### Accès
+
+- **Admin → Importer un modèle**
+- Ou depuis la page Contribuer → bouton **"Importer une fiche"** (admin uniquement)
+
+### Workflow
+
+1. Collez la fiche markdown (ou cliquez **Charger l'exemple**)
+2. Cliquez **Prévisualiser**
+3. Vérifiez : badge Création/Mise à jour, métadonnées, sections
+4. Cliquez **Créer** ou **Mettre à jour**
+
+### Détection automatique
+
+L'import cherche par titre si le modèle existe déjà et bascule automatiquement entre création et mise à jour.
+
+### Import comme variante
+
+Si on arrive depuis le bouton "Créer une variante" → "Importer une fiche", le `parent_model_id` est automatiquement rattaché.
+
+---
+
+## 6. Format des fiches d'import
+
+### Structure
+
+```markdown
+---
+action: create | update
+title: "Nom du modèle"
+type: problematique | outil | approche
+status: brouillon | en_revision | en_test | publie | en_evolution
+version: "1.0.0"
+complexity: débutant | intermédiaire | avancé
+tags:
+  - tag1
+  - tag2
+---
+
+## Description
+
+Description concise du modèle.
+
+## Sections
+
+### protocol
+
+Étapes du protocole.
+
+### active_principle
+
+Mécanisme central du changement.
+```
+
+### Sections disponibles
+
+| Section | Quand l'utiliser |
+|---------|-----------------|
+| `structure` | Architecture ou composants du modèle |
+| `protocol` | Étapes d'exécution |
+| `active_principle` | Mécanisme central qui produit le changement |
+| `patterns` | Patterns comportementaux observés |
+| `signals` | Signaux reconnaissables (corporels, verbaux) |
+| `intervention_points` | Points d'intervention |
+| `vigilance` | Contre-indications, erreurs fréquentes |
+| `variants` | Variantes connues et adaptations |
+| `philosophy` | Fondements théoriques |
+| `creators` | Créateurs de l'approche |
+| `prerequisites` | Conditions préalables |
+| `toolkit` | Outils et techniques associés |
+
+### Pertinence par type
+
+| Section | Problématique | Outil | Approche |
+|---------|:---:|:---:|:---:|
+| `protocol` | Rare | **Essentiel** | Optionnel |
+| `active_principle` | Rare | **Essentiel** | Optionnel |
+| `patterns` | **Essentiel** | Optionnel | Optionnel |
+| `signals` | **Essentiel** | Optionnel | Rare |
+| `intervention_points` | **Essentiel** | Optionnel | Rare |
+| `vigilance` | Optionnel | **Essentiel** | Optionnel |
+| `philosophy` | Optionnel | Rare | **Essentiel** |
+| `creators` | Rare | Rare | **Essentiel** |
+| `toolkit` | Rare | Optionnel | **Essentiel** |
+
+### Versionnement
+
+| Situation | Règle |
+|-----------|-------|
+| Nouveau modèle | `1.0.0` |
+| Corrections mineures | `1.0.1` |
+| Ajout de contenu | `1.1.0` |
+| Refonte majeure | `2.0.0` |
+
+---
+
+## 7. Gestion des images
+
+Accessible via l'onglet **Images** dans le tableau de bord admin.
+
+Pour chaque image :
+- Miniature de prévisualisation
+- Nom du fichier, taille et date
+- **Remplacer** : uploader une nouvelle image au même emplacement
+- **Supprimer** : retirer l'image du serveur
+- **Copier URL** : copier l'adresse publique
+
+---
+
+## 8. Paramètres
+
+| Paramètre | Description | Défaut |
+|-----------|-------------|:------:|
+| **Taille max des images** | Les images dépassant cette taille sont rejetées | 2 Mo |
+
+---
+
+## 9. Export de données
+
+Trois exports CSV disponibles :
+- **Modèles** : tous les modèles avec métadonnées
+- **Utilisateurs** : liste des utilisateurs et rôles
+- **Posts** : publications du forum
+
+---
+
+## 10. Gestion des donations
+
+Accessible via **Admin → Donations**.
+
+### Mode Stripe (test / live)
+
+Un toggle permet de basculer entre mode test et mode live :
+- **Mode test** : paiements simulés, carte de test `4242 4242 4242 4242`
+- **Mode live** : paiements réels
+
+Le basculement vers live demande une confirmation.
+
+### Statistiques
+
+- Nombre de paiements
+- Total reçu
+- Abonnements mensuels actifs
+
+### Journal des dons
+
+Tableau chronologique de tous les paiements reçus :
+- Date, email, montant, type (unique/mensuel)
+
+### Abonnements actifs
+
+Liste des donations mensuelles en cours.
+
+### Clés Stripe
+
+Les clés sont stockées dans les **Supabase Secrets** (jamais dans le code) :
+- `STRIPE_SECRET_KEY_TEST` : clé test
+- `STRIPE_SECRET_KEY_LIVE` : clé live restreinte
+
+Le mode actif est stocké dans `app_settings` (clé `stripe_mode`).
+
+---
+
+## 11. Fonctionnalités éditoriales
+
+### Proposer comme modèle (depuis le forum)
+
+Les admins/modérateurs voient un bouton **"Proposer comme modèle"** sous chaque post du forum. Cela crée un modèle pré-rempli avec le contenu de la discussion et un lien dans la table `post_model_links`.
+
+### Journal d'évolution multi-auteurs
+
+En mode édition, la section "Journal d'évolution" permet de :
+- Décrire ce qui a changé
+- Créditer plusieurs contributeurs via un sélecteur
+- L'entrée est ajoutée automatiquement avec version et date
+
+### Approche associée
+
+Les outils et problématiques peuvent être rattachés à une approche via un sélecteur visible en mode édition et dans le formulaire de contribution.
+
+### Gestion des articles Ressources
+
+Les admins/modérateurs peuvent créer, modifier et supprimer des articles markdown dans la section Ressources. Support de l'upload d'images dans le contenu.
+
+---
+
+## 12. Sécurité et clés API
+
+### Clés côté client (publiques)
+
+Stockées dans `.env` (non commité dans git) :
+- `VITE_SUPABASE_URL` : URL du projet Supabase
+- `VITE_SUPABASE_PUBLISHABLE_KEY` : clé anon Supabase (conçue pour être publique, protégée par RLS)
+
+Un fichier `.env.example` documente les variables nécessaires sans les valeurs.
+
+### Clés côté serveur (secrètes)
+
+Stockées dans les **Supabase Secrets** (inaccessibles depuis le client) :
+- `STRIPE_SECRET_KEY_TEST` : clé Stripe test
+- `STRIPE_SECRET_KEY_LIVE` : clé Stripe live restreinte (permissions : Checkout Sessions Write, Products/Prices Read)
+- `SUPABASE_SERVICE_ROLE_KEY` : clé service Supabase (auto-configurée)
+
+### Edge Functions
+
+Les fonctions Supabase Edge s'exécutent côté serveur :
+- `create-donation` : crée une session Stripe Checkout (sans vérification JWT — accessible à tous)
+- `list-donations` : liste les paiements Stripe (vérifie que l'utilisateur est admin dans le code)
+- `send-event-email` : envoi d'emails aux participants
+- `send-model-notification` : notifications de changement
+
+### Bonnes pratiques
+
+- Le `.env` est dans le `.gitignore` — ne jamais le commiter
+- Les clés Stripe secrètes ne transitent jamais par le navigateur
+- La clé live Stripe est restreinte (permissions minimales)
+- Le mode test/live est contrôlable depuis l'interface admin
+
+---
+
+*PNL Lab R&D — Guide Administrateur*

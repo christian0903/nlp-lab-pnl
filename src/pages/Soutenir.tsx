@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Heart, ArrowLeft, Loader2, CheckCircle, Coffee, Server, Clock } from 'lucide-react';
+import { Heart, ArrowLeft, Loader2, CheckCircle, Coffee } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -16,30 +16,34 @@ const Soutenir = () => {
   const [customAmount, setCustomAmount] = useState('');
   const [isCustom, setIsCustom] = useState(false);
   const [recurring, setRecurring] = useState(false);
+  const [recurrenceType, setRecurrenceType] = useState<'month' | 'week'>('month');
   const [loading, setLoading] = useState(false);
+  const [coffeeLoading, setCoffeeLoading] = useState(false);
+
+  // Coffee modal
+  const [showCoffee, setShowCoffee] = useState(false);
+  const [coffeeRecurring, setCoffeeRecurring] = useState<'' | 'week' | 'month'>('');
 
   const effectiveAmount = isCustom ? Number(customAmount) || 0 : amount;
 
-  const handleDonate = async () => {
-    if (effectiveAmount < 1) {
+  const handleDonate = async (donationAmount: number, isRecurring: boolean, interval: string = 'month') => {
+    if (donationAmount < 1) {
       toast.error('Le montant minimum est de 1€');
       return;
     }
-    if (effectiveAmount > 1000) {
+    if (donationAmount > 1000) {
       toast.error('Le montant maximum est de 1000€');
       return;
     }
 
-    setLoading(true);
+    const setLoad = donationAmount === 5 && showCoffee ? setCoffeeLoading : setLoading;
+    setLoad(true);
     try {
       const response = await supabase.functions.invoke('create-donation', {
-        body: { amount: effectiveAmount, recurring },
+        body: { amount: donationAmount, recurring: isRecurring, interval },
       });
 
-      console.log('Stripe response:', response);
-
       if (response.error) throw response.error;
-
       const data = response.data;
       if (data?.error) throw new Error(data.error);
 
@@ -51,7 +55,7 @@ const Soutenir = () => {
     } catch (err: any) {
       console.error(err);
       toast.error('Erreur lors de la création du paiement. Réessayez.');
-      setLoading(false);
+      setLoad(false);
     }
   };
 
@@ -82,10 +86,6 @@ const Soutenir = () => {
 
       <div className="mb-8">
         <h1 className="font-display text-3xl font-bold text-foreground">Soutenir le Lab</h1>
-        <p className="mt-2 text-muted-foreground leading-relaxed">
-          Le PNL Lab R&D Collective est un projet ouvert et gratuit. Votre don nous aide à couvrir les frais
-          et à continuer de développer cette plateforme.
-        </p>
       </div>
 
       {canceled && (
@@ -94,28 +94,87 @@ const Soutenir = () => {
         </div>
       )}
 
-      {/* Pourquoi donner */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-4 text-center">
-          <Server className="mx-auto mb-2 h-6 w-6 text-secondary" />
-          <p className="text-sm font-medium text-foreground">Hébergement</p>
-          <p className="mt-1 text-xs text-muted-foreground">Serveur, base de données, nom de domaine</p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4 text-center">
-          <Clock className="mx-auto mb-2 h-6 w-6 text-secondary" />
-          <p className="text-sm font-medium text-foreground">Développement</p>
-          <p className="mt-1 text-xs text-muted-foreground">Nouvelles fonctionnalités et améliorations</p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4 text-center">
-          <Coffee className="mx-auto mb-2 h-6 w-6 text-secondary" />
-          <p className="text-sm font-medium text-foreground">Café</p>
-          <p className="mt-1 text-xs text-muted-foreground">Le carburant derrière chaque ligne de code</p>
+      {/* Pourquoi donner — texte descriptif */}
+      <div className="mb-8 rounded-xl border border-border bg-card p-6 shadow-sm">
+        <h2 className="mb-3 font-display text-lg font-semibold text-foreground">Pourquoi soutenir ce projet ?</h2>
+        <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+          <p>
+            Le <strong className="text-foreground">PNL Lab R&D Collective</strong> est un projet indépendant, ouvert et gratuit.
+            Pas de publicité, pas de paywall, pas de revente de données. Juste un espace de travail au service des praticiens PNL.
+          </p>
+          <p>
+            Maintenir cette plateforme a un coût : serveur, base de données, nom de domaine, outils de développement,
+            et surtout le temps consacré à développer de nouvelles fonctionnalités, corriger les bugs et accompagner la communauté.
+          </p>
+          <p>
+            Votre don — même modeste — nous aide à garder ce Lab vivant et à le faire évoluer selon les besoins
+            de la communauté. <strong className="text-foreground">Chaque contribution fait une vraie différence.</strong>
+          </p>
         </div>
       </div>
 
-      {/* Donation form */}
+      {/* Offrez-moi un café — bouton rapide */}
+      <div className="mb-8">
+        <button
+          onClick={() => setShowCoffee(true)}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-amber-500/30 bg-amber-500/5 px-5 py-4 text-sm font-semibold text-foreground transition-colors hover:border-amber-500/50 hover:bg-amber-500/10"
+        >
+          <Coffee className="h-5 w-5 text-amber-600" />
+          Offrez-moi un café — 5€
+        </button>
+      </div>
+
+      {/* Coffee modal */}
+      {showCoffee && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowCoffee(false)}>
+          <div className="mx-4 w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-lg" onClick={e => e.stopPropagation()}>
+            <div className="mb-4 text-center">
+              <Coffee className="mx-auto mb-2 h-10 w-10 text-amber-500" />
+              <h3 className="font-display text-lg font-bold text-foreground">Un café pour le Lab</h3>
+              <p className="mt-1 text-sm text-muted-foreground">5€ — le prix d'un bon espresso</p>
+            </div>
+
+            <div className="mb-5 space-y-2">
+              <label className="flex items-center gap-3 cursor-pointer rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors">
+                <input type="radio" name="coffee-freq" checked={coffeeRecurring === ''} onChange={() => setCoffeeRecurring('')}
+                  className="accent-secondary" />
+                <span className="text-sm text-foreground">Juste une fois</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors">
+                <input type="radio" name="coffee-freq" checked={coffeeRecurring === 'week'} onChange={() => setCoffeeRecurring('week')}
+                  className="accent-secondary" />
+                <span className="text-sm text-foreground">Chaque semaine</span>
+                <span className="ml-auto rounded-full bg-secondary/10 px-2 py-0.5 text-[10px] font-medium text-secondary">~20€/mois</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors">
+                <input type="radio" name="coffee-freq" checked={coffeeRecurring === 'month'} onChange={() => setCoffeeRecurring('month')}
+                  className="accent-secondary" />
+                <span className="text-sm text-foreground">Chaque mois</span>
+                <span className="ml-auto rounded-full bg-secondary/10 px-2 py-0.5 text-[10px] font-medium text-secondary">5€/mois</span>
+              </label>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setShowCoffee(false)}
+                className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground">
+                Annuler
+              </button>
+              <button
+                onClick={() => handleDonate(5, coffeeRecurring !== '', coffeeRecurring || 'month')}
+                disabled={coffeeLoading}
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-600 disabled:opacity-50"
+              >
+                {coffeeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Coffee className="h-4 w-4" />}
+                {coffeeLoading ? 'Redirection...' : 'Offrir le café'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Donation form — montant libre */}
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Choisissez un montant</h2>
+        <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Ou choisissez un montant</h2>
 
         {/* Amount buttons */}
         <div className="mb-4 flex flex-wrap gap-2">
@@ -164,7 +223,7 @@ const Soutenir = () => {
         )}
 
         {/* Recurring toggle */}
-        <div className="mb-6">
+        <div className="mb-6 space-y-2">
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -172,25 +231,40 @@ const Soutenir = () => {
               onChange={(e) => setRecurring(e.target.checked)}
               className="rounded border-input"
             />
-            <span className="text-sm text-foreground">Faire ce don chaque mois</span>
-            {recurring && (
-              <span className="rounded-full bg-secondary/10 px-2 py-0.5 text-xs text-secondary">
-                {effectiveAmount}€/mois
-              </span>
-            )}
+            <span className="text-sm text-foreground">Faire ce don régulièrement</span>
           </label>
+          {recurring && (
+            <div className="ml-7 flex gap-2">
+              <button
+                onClick={() => setRecurrenceType('week')}
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                  recurrenceType === 'week' ? 'bg-secondary text-secondary-foreground' : 'border border-border text-muted-foreground'
+                }`}
+              >
+                Chaque semaine
+              </button>
+              <button
+                onClick={() => setRecurrenceType('month')}
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                  recurrenceType === 'month' ? 'bg-secondary text-secondary-foreground' : 'border border-border text-muted-foreground'
+                }`}
+              >
+                Chaque mois
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Submit */}
         <button
-          onClick={handleDonate}
+          onClick={() => handleDonate(effectiveAmount, recurring, recurrenceType)}
           disabled={loading || effectiveAmount < 1}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-secondary px-5 py-3 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50"
         >
           {loading ? (
             <><Loader2 className="h-4 w-4 animate-spin" /> Redirection vers Stripe...</>
           ) : (
-            <><Heart className="h-4 w-4" /> Donner {effectiveAmount > 0 ? `${effectiveAmount}€` : ''}{recurring ? '/mois' : ''}</>
+            <><Heart className="h-4 w-4" /> Donner {effectiveAmount > 0 ? `${effectiveAmount}€` : ''}{recurring ? `/${recurrenceType === 'week' ? 'semaine' : 'mois'}` : ''}</>
           )}
         </button>
 

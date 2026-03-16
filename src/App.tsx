@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Header from "@/components/lab/Header";
+import Footer from "@/components/lab/Footer";
 import Index from "./pages/Index";
 import Library from "./pages/Library";
 import ModelDetail from "./pages/ModelDetail";
@@ -20,6 +21,8 @@ import ImportModel from "./pages/ImportModel";
 import AdminUsers from "./pages/AdminUsers";
 import Help from "./pages/Help";
 import Soutenir from "./pages/Soutenir";
+import AdminDonations from "./pages/AdminDonations";
+import HelpAdmin from "./pages/HelpAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,7 +34,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <div className="flex min-h-screen flex-col">
           <Header />
+          <main className="flex-1">
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/library" element={<Library />} />
@@ -42,6 +47,8 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/import" element={<ImportModel />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/donations" element={<AdminDonations />} />
+            <Route path="/admin/guide" element={<HelpAdmin />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/events" element={<Events />} />
@@ -50,6 +57,9 @@ const App = () => (
             <Route path="/soutenir" element={<Soutenir />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </main>
+          <Footer />
+          </div>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

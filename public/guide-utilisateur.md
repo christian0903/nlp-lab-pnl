@@ -1,4 +1,4 @@
-# Guide Utilisateur — PNL Lab R&D Collective
+# Guide Utilisateur — PNL Lab R&D
 
 > Plateforme collaborative de recherche et développement en Programmation Neuro-Linguistique.
 
@@ -10,17 +10,14 @@
 2. [Navigation](#2-navigation)
 3. [Accueil](#3-accueil)
 4. [Bibliothèque de modèles](#4-bibliothèque-de-modèles)
-5. [Détail d'un modèle](#5-détail-dun-modèle) — édition, journal d'évolution, contributeurs, liens, images, markdown, filiation
-6. [Contribuer un modèle](#6-contribuer-un-modèle) — modèle dérivé, depuis le forum
-7. [Importer un modèle (admin)](#7-importer-un-modèle-admin)
-8. [Communauté](#8-communauté) — forum, proposer comme modèle
-9. [Événements](#9-événements)
-10. [Ressources](#10-ressources) — articles markdown dynamiques
-11. [Profil](#11-profil)
-12. [Notifications](#12-notifications)
-13. [Administration](#13-administration) — images, paramètres, gestion utilisateurs
-14. [Rôles et permissions](#14-rôles-et-permissions) — modérateur, admin, gestion users
-15. [Format des fiches d'import](#15-format-des-fiches-dimport)
+5. [Détail d'un modèle](#5-détail-dun-modèle)
+6. [Contribuer un modèle](#6-contribuer-un-modèle)
+7. [Communauté](#7-communauté)
+8. [Événements](#8-événements)
+9. [Ressources](#9-ressources)
+10. [Profil](#10-profil)
+11. [Notifications](#11-notifications)
+12. [Soutenir le Lab](#12-soutenir-le-lab)
 
 ---
 
@@ -35,8 +32,6 @@
    - **Email** : votre adresse email
    - **Mot de passe** : minimum 6 caractères
 4. Cliquez sur **Créer le compte**
-
-Le premier utilisateur inscrit sur la plateforme reçoit automatiquement le rôle **administrateur**.
 
 ### Se connecter
 
@@ -66,11 +61,7 @@ La barre de navigation en haut de l'écran donne accès à toutes les sections :
 | **Communauté** | Forum de discussion |
 | **Ressources** | Glossaire PNL, guide et critères qualité |
 
-En haut à droite, les utilisateurs connectés voient également :
-- La **cloche de notifications** (avec badge de compteur)
-- Le lien **Admin** (visible uniquement pour les administrateurs)
-- Le lien vers leur **profil**
-- Le bouton **Déconnexion**
+En bas de chaque page, le **footer** affiche la version de l'application, un lien vers atelierpnl.eu et un lien pour soutenir le Lab.
 
 Sur mobile, la navigation se replie dans un menu hamburger.
 
@@ -89,10 +80,11 @@ Trois cartes affichent en temps réel :
 
 ### Vous découvrez le Lab ?
 
-Un bloc d'accueil guide les nouveaux visiteurs avec trois liens :
+Un bloc d'accueil guide les nouveaux visiteurs avec quatre liens :
 - **Explorer la bibliothèque** — parcourir les approches, outils et expériences
 - **Lire les ressources** — guides, glossaire PNL et méthodologie
 - **Rejoindre la communauté** — échanger avec les praticiens
+- **Soutenir le projet** — aider à maintenir le Lab ouvert et gratuit
 
 ### Dernières nouvelles
 
@@ -122,16 +114,6 @@ Vue principale des modèles, organisée en trois sections :
 - **Filtre par type** : Tous les types / Problématique / Outil / Approche
 - **Filtre par statut** : Tous les statuts / Brouillon / En révision / En test / Publié / En évolution
 
-#### Informations affichées
-
-Chaque carte de modèle montre :
-- Type (badge coloré)
-- Statut
-- Titre et description (2 lignes max)
-- Tags (3 premiers affichés)
-- Version, auteur
-- Compteurs : vues, variations, feedbacks
-
 ### Onglet Pipeline
 
 Un tableau **Kanban** à 5 colonnes montre la progression de tous les modèles dans le cycle de vie :
@@ -144,19 +126,13 @@ Un tableau **Kanban** à 5 colonnes montre la progression de tous les modèles d
 | Publié | Validé et accessible à tous |
 | En évolution | Publié mais en cours d'amélioration |
 
-Cliquez sur un modèle dans le Kanban pour accéder à sa fiche détaillée.
-
 ### Onglet Par approche
 
 Vue arborescente permettant de naviguer les modèles par approche :
 - Chaque **approche** est un bloc dépliable (cliquez pour ouvrir/fermer)
 - À l'intérieur : les **outils** et **expériences** rattachés à cette approche
 - Un lien **"Voir la fiche"** permet d'accéder directement à la fiche de l'approche
-- En bas : une section **"Sans approche"** regroupe les modèles non encore rattachés à une approche
-
-### Actions admin
-
-Les administrateurs voient un bouton **En attente (N)** qui bascule l'affichage vers les modèles en attente de validation. Chaque modèle en attente peut être validé directement depuis sa carte.
+- En bas : une section **"Sans approche"** regroupe les modèles non encore rattachés
 
 ---
 
@@ -166,118 +142,39 @@ La page de détail d'un modèle est organisée en onglets.
 
 ### En-tête
 
-Affiche le titre, la description, les badges (type, statut, version), les tags, l'auteur et les compteurs (vues, variations, feedbacks).
+Affiche le titre, la description, les badges (type, statut, version), les tags, l'auteur, l'approche associée et les compteurs (vues, variantes, feedbacks).
 
-#### Bouton Modifier
-
-Si vous êtes **administrateur**, **modérateur** ou **auteur du modèle**, un bouton **Modifier** apparaît en haut à droite. Il ouvre un formulaire d'édition inline permettant de modifier :
-- Titre
-- Type (Problématique / Outil / Approche)
-- Complexité (Débutant / Intermédiaire / Avancé)
-- Version
-- Description
-- Sections (dynamiques selon le type)
-- Tags
-- Liens & ressources (voir ci-dessous)
-- **Approche associée** (pour les outils et problématiques) — permet de rattacher le modèle à une approche existante
-- **Propriétaire** (admin uniquement) — permet de réassigner le modèle à un autre utilisateur
-
-Tous les champs descriptifs (description, sections) supportent le **format Markdown**. En mode lecture, le markdown est rendu visuellement (titres, listes, gras, tableaux, images...). En mode édition, vous voyez et éditez le code markdown brut.
-
-#### Insérer des images dans les champs
-
-Sous chaque champ texte en mode édition, un bouton **Image** permet d'uploader une image (PNG, JPG, JPEG). L'image est automatiquement stockée sur le serveur et le code markdown correspondant (`![nom](url)`) est inséré dans le texte. La taille maximale des images est configurable dans les paramètres admin.
-
-Avant d'enregistrer, la section **"Journal d'évolution"** (encadré doré) permet de :
-
-1. **Décrire ce qui a changé** : une note libre (ex: "Ajout du principe actif, variante kinesthésique")
-2. **Lister les contributeurs** de cette modification : plusieurs auteurs peuvent être crédités pour une même entrée
-
-Si remplie, une entrée est automatiquement ajoutée au **journal d'évolution** (onglet Historique) avec la version, la date et les noms des contributeurs. Les administrateurs peuvent ajouter n'importe quel utilisateur comme contributeur via un sélecteur dédié.
-
-Cliquez sur **Enregistrer** pour sauvegarder ou **Annuler** pour revenir à l'affichage.
-
-#### Bouton Supprimer (admin)
-
-Les **administrateurs** voient un bouton **Supprimer** (rouge) à côté du bouton Modifier. Un clic ouvre une modale de confirmation. La suppression est **définitive** et inclut les variations et feedbacks associés.
-
-#### Liens & ressources
-
-Chaque modèle peut avoir une liste de liens vers des ressources externes. En mode édition, cliquez sur **Ajouter un lien** pour ajouter une entrée avec :
-
-| Champ | Description |
-|-------|-------------|
-| **Type** | Vidéo, Document ou Formation |
-| **Titre** | Nom du lien |
-| **URL** | Adresse web de la ressource |
-| **Description** | Note courte (optionnel) |
-
-En mode lecture, les liens sont affichés sous les sections avec une icône par type :
-- **Vidéo** (rouge) : vidéos YouTube ou autres
-- **Document** (bleu) : articles, PDF, pages web
-- **Formation** (violet) : formations en ligne
-
-Cliquez sur un lien pour l'ouvrir dans un nouvel onglet.
-
-#### Gestion du statut
-
-Les administrateurs et auteurs peuvent changer le statut du modèle en cliquant sur l'un des boutons de progression :
-
-```
-Brouillon → En révision → En test → Publié → En évolution
-```
-
-#### Validation admin
-
-- Pour les modèles **en attente**, les administrateurs voient un bandeau orange avec un bouton **Valider**.
-- Pour les modèles **déjà validés**, un bandeau vert propose un bouton **Remettre en attente** pour retirer temporairement la validation.
+Si vous êtes l'auteur du modèle, un bouton **Modifier** apparaît pour éditer les champs.
 
 ### Onglet Présentation
 
-Affiche les sections du modèle avec **rendu Markdown** (titres, listes, images, tableaux, etc.). Les sections affichées dépendent du type et de ce qui a été renseigné.
+Affiche les sections du modèle avec **rendu Markdown**. Quand un modèle a 3 sections ou plus, elles sont organisées en **sous-onglets cliquables** pour faciliter la lecture.
 
-Quand un modèle a **3 sections ou plus**, elles sont organisées en **sous-onglets cliquables** pour éviter un mur de texte. Chaque sous-onglet affiche une section individuelle (ex: Protocole | Principe actif | Points de vigilance).
+Les sections disponibles dépendent du type :
 
-Si l'approche associée est renseignée, son nom apparaît comme lien cliquable dans l'en-tête du modèle.
-
-#### Filiation parent / dérivé
-
-Si un modèle a été créé comme variante d'un autre, un bandeau **"Dérivé de [Modèle parent]"** s'affiche sous le header avec un lien cliquable vers le parent.
+| Type | Sections |
+|------|----------|
+| **Outil** | Protocole, Principe actif, Points de vigilance, Variantes, Prérequis |
+| **Problématique** | Patterns, Signaux reconnaissables, Points d'intervention, Prérequis |
+| **Approche** | Philosophie, Créateurs, Boîte à outils, Prérequis |
 
 ### Onglet Liens
 
-Affiche les liens et ressources externes du modèle (vidéos, documents, formations) sous forme de cartes cliquables. Si aucun lien n'a été ajouté, un message invite à en ajouter via le bouton Modifier.
+Affiche les liens et ressources externes (vidéos, documents, formations) sous forme de cartes cliquables.
 
 ### Onglet Historique
 
-L'onglet Historique affiche quatre sections :
-
-1. **Origine** — Si le modèle est dérivé d'un autre, un lien vers le modèle parent est affiché
-2. **Contributeurs** — Liste automatiquement calculée de tous les contributeurs du modèle, issus de l'union des auteurs de toutes les entrées du journal d'évolution
-3. **Journal d'évolution** — L'historique complet avec version, date, contributeurs et description de chaque changement. Chaque entrée peut créditer plusieurs contributeurs.
-4. **Modèles dérivés** — La liste des modèles qui ont été créés à partir de celui-ci (avec auteur, date et lien cliquable)
-
-Cela crée un **arbre de filiation navigable** dans les deux sens : du parent vers ses dérivés et de chaque dérivé vers son parent.
+- **Contributeurs** — liste de tous les contributeurs, calculée depuis le journal d'évolution
+- **Journal d'évolution** — historique des modifications avec version, date, contributeurs et description
+- **Modèles dérivés** — les variantes créées à partir de ce modèle
 
 ### Onglet Variantes
 
-L'onglet Variantes affiche les **modèles dérivés** — des fiches complètes qui adaptent ou enrichissent le modèle pour un cas particulier.
-
-- Chaque variante est une carte cliquable menant vers sa fiche complète
-- Un bouton **"Créer une variante"** redirige vers le formulaire de contribution avec le parent pré-rempli
-- Les administrateurs voient un bouton **"Importer une fiche"** pour créer une variante par import markdown
-
-Une variante est un modèle à part entière avec ses propres sections, son propre journal d'évolution et ses propres feedbacks. Le lien de filiation est visible dans les deux sens (parent ↔ variante).
+Affiche les **modèles dérivés** — des fiches complètes qui adaptent ou enrichissent le modèle pour un cas particulier. Vous pouvez créer une variante via le bouton **"Créer une variante"**.
 
 ### Onglet Feedback
 
-Les utilisateurs connectés peuvent **donner un feedback** :
-1. Cliquez sur **Donner un feedback**
-2. Attribuez une note de 1 à 5 étoiles
-3. Rédigez votre retour d'expérience
-4. Cliquez sur **Envoyer**
-
-Tous les feedbacks sont listés avec la note, l'auteur et la date.
+Donnez votre retour d'expérience avec une note (1-5 étoiles) et un commentaire.
 
 ---
 
@@ -292,25 +189,10 @@ Accessible via le menu **Contribuer** (nécessite d'être connecté).
 | Titre | Nom du modèle (max 200 car.) | Oui |
 | Type | Problématique, Outil ou Approche | Oui |
 | Complexité | Débutant, Intermédiaire ou Avancé | Non |
+| Approche associée | Rattacher à une approche existante (outils et problématiques) | Non |
 | Description | Présentation du modèle (max 5000 car.) | Oui |
-| Sections | Dépendent du type choisi (voir ci-dessous) | Non |
+| Sections | Dépendent du type choisi | Non |
 | Tags | Mots-clés séparés par des virgules | Non |
-
-### Sections par type
-
-| Type | Sections proposées |
-|------|-------------------|
-| **Problématique** | Patterns identifiés, Signaux reconnaissables, Points d'intervention, Prérequis |
-| **Outil** | Protocole détaillé, Principe actif, Points de vigilance, Variantes connues, Prérequis |
-| **Approche** | Philosophie et principes, Créateurs, Boîte à outils, Prérequis |
-
-### Modèle dérivé
-
-Si vous créez un modèle à partir d'une variation (via le bouton "Créer comme modèle"), le formulaire est pré-rempli et un bandeau indique le modèle parent. Le lien de filiation est automatiquement enregistré.
-
-### Modèle issu d'une discussion forum
-
-Les **administrateurs et modérateurs** peuvent créer un modèle directement depuis un post du forum en cliquant sur **"Proposer comme modèle"** sous le post. Le formulaire de contribution s'ouvre pré-rempli avec le titre et le contenu de la discussion. Un bandeau violet indique la discussion d'origine.
 
 ### Workflow de publication
 
@@ -320,45 +202,7 @@ Les **administrateurs et modérateurs** peuvent créer un modèle directement de
 
 ---
 
-## 7. Importer un modèle (admin)
-
-L'import permet de créer ou mettre à jour un modèle à partir d'une **fiche markdown structurée**. Cette fonctionnalité est réservée aux administrateurs.
-
-### Accès
-
-1. Allez dans **Admin**
-2. Cliquez sur **Importer un modèle**
-
-### Workflow d'import
-
-1. **Collez** la fiche markdown dans la zone de texte (ou cliquez sur **Charger l'exemple** pour voir le format)
-2. Cliquez sur **Prévisualiser**
-3. Vérifiez la prévisualisation :
-   - Le badge indique s'il s'agit d'une **Création** ou d'une **Mise à jour**
-   - Les métadonnées (type, statut, version, tags) sont affichées
-   - Les sections sont prévisualisées
-4. Cliquez sur **Créer le modèle** ou **Mettre à jour le modèle**
-
-### Détection automatique
-
-L'import détecte intelligemment si le modèle existe déjà en cherchant par titre :
-
-| Fiche indique | Modèle existe ? | Résultat | Message |
-|---------------|:--------------:|----------|---------|
-| `action: create` | Non | Création | "Aucun modèle existant — nouveau modèle" |
-| `action: create` | Oui | Mise à jour | Avertissement : le modèle sera mis à jour, pas de doublon |
-| `action: update` | Oui | Mise à jour | "Modèle existant trouvé" |
-| `action: update` | Non | Création | Avertissement : un nouveau modèle sera créé |
-
-Les modèles créés par import sont automatiquement **approuvés**.
-
-### Format de la fiche
-
-Voir la section [Format des fiches d'import](#15-format-des-fiches-dimport) pour le détail du format markdown attendu.
-
----
-
-## 8. Communauté
+## 7. Communauté
 
 Le forum communautaire permet aux membres de partager des discussions, questions et retours d'expérience.
 
@@ -375,35 +219,24 @@ Le forum communautaire permet aux membres de partager des discussions, questions
 ### Créer un post
 
 1. Cliquez sur **Nouveau post** (nécessite d'être connecté)
-2. Remplissez :
-   - **Titre** (max 200 car.)
-   - **Contenu** (max 5000 car.)
-   - **Catégorie** (sélecteur)
-   - **Modèle associé** (optionnel — lie le post à un modèle existant)
+2. Remplissez le titre, le contenu, la catégorie et optionnellement un modèle associé
 3. Cliquez sur **Publier**
 
 ### Interagir
 
-- **Liker** un post : cliquez sur le bouton coeur (cliquez à nouveau pour retirer le like)
-- **Commenter** : cliquez sur l'icône commentaire, puis rédigez votre commentaire et cliquez sur envoyer
-- **Filtrer** : cliquez sur une catégorie pour ne voir que ses posts
-- **Modifier un post** : l'auteur du post (et les admin/modérateurs) peut cliquer sur l'icône crayon à côté du titre pour modifier le titre, le contenu et la catégorie
-- **Supprimer un post** : l'auteur du post (et les admin/modérateurs) peut cliquer sur l'icône corbeille. Une confirmation est demandée. La suppression entraîne la suppression de tous les commentaires et likes associés
-- **Proposer comme modèle** (admin/modérateur) : sous chaque post, un bouton permet de créer un modèle pré-rempli avec le contenu de la discussion. C'est le point d'entrée du [workflow de création collaborative](/resources) décrit dans les Ressources
+- **Liker** un post : cliquez sur le coeur
+- **Commenter** : cliquez sur l'icône commentaire
+- **Filtrer** : cliquez sur une catégorie
+- **Modifier** : l'auteur peut modifier son post via l'icône crayon
+- **Supprimer** : l'auteur peut supprimer son post via l'icône corbeille
 
 ---
 
-## 9. Événements
-
-La section Événements permet de planifier et s'inscrire à des ateliers et formations.
+## 8. Événements
 
 ### Consulter les événements
 
-Les événements sont organisés en deux groupes :
-- **Événements à venir** : triés par date
-- **Événements passés** : archivés
-
-Chaque événement affiche : titre, description, date, heure, durée et nombre de participants inscrits.
+Les événements sont organisés en deux groupes : **à venir** et **passés**.
 
 ### S'inscrire
 
@@ -411,413 +244,49 @@ Chaque événement affiche : titre, description, date, heure, durée et nombre d
 2. Le lien Zoom devient visible après inscription
 3. Pour vous désinscrire, cliquez sur **Se désinscrire**
 
-L'inscription est désactivée quand le nombre maximum de participants est atteint.
-
-### Créer un événement (admin)
-
-Les administrateurs peuvent créer des événements en remplissant :
-
-| Champ | Description |
-|-------|-------------|
-| Titre | Nom de l'événement (max 200 car.) |
-| Description | Détail de l'événement (max 2000 car.) |
-| Date | Date de l'événement |
-| Heure | Heure de début (défaut : 19h00) |
-| Durée | De 15 à 480 minutes |
-| Lien Zoom | URL de la visioconférence |
-| Max participants | Limite optionnelle |
-
-### Envoyer un email aux participants (admin)
-
-Les administrateurs peuvent envoyer un email à tous les inscrits d'un événement :
-1. Cliquez sur l'icône email de l'événement
-2. Remplissez le sujet et le contenu
-3. Cliquez sur **Envoyer**
-
 ---
 
-## 10. Ressources
+## 9. Ressources
 
-La section Ressources est un espace de publication d'**articles en Markdown** stockés en base de données.
+Articles en Markdown couvrant guides, glossaire PNL et méthodologie.
 
-### Consultation
-
-- Les articles sont listés à gauche (ou en haut sur mobile) avec leur catégorie
-- Cliquez sur un article pour afficher son contenu en markdown rendu
+- Les articles sont listés à gauche avec leur catégorie
+- Cliquez sur un article pour afficher son contenu
 - Filtrez par catégorie : Guide, Glossaire, Technique, Article
 
-### Articles pré-installés
-
-Trois articles sont fournis par défaut :
-- **Guide du Modélisateur** — Les 5 étapes pour créer un modèle PNL
-- **Glossaire PNL** — Définitions des termes clés, organisés par catégorie
-- **Critères de qualité** — 8 critères d'évaluation des modèles
-
-### Gestion des articles (admin / modérateur)
-
-Les administrateurs et modérateurs peuvent :
-
-| Action | Description |
-|--------|-------------|
-| **Nouvel article** | Créer un article avec titre, slug, catégorie, contenu markdown |
-| **Modifier** | Éditer le contenu avec prévisualisation markdown en temps réel |
-| **Supprimer** | Supprimer un article (avec confirmation) |
-| **Publier / Brouillon** | Un article en brouillon n'est visible que par les admin/modérateurs |
-| **Ordre d'affichage** | Numéro pour trier les articles dans la liste |
-
-Le contenu est rédigé en **Markdown** avec support des titres, listes, tableaux, gras, liens, images, etc.
-
-Un bouton **Image** sous l'éditeur permet d'uploader des images (PNG, JPG, JPEG) directement dans l'article. Le code markdown `![nom](url)` est inséré automatiquement. La taille maximale est celle définie dans les paramètres admin.
-
 ---
 
-## 11. Profil
-
-Accessible en cliquant sur **Profil** dans la navigation (utilisateur connecté).
-
-### Informations modifiables
+## 10. Profil
 
 | Champ | Description |
 |-------|-------------|
-| **Avatar** | Cliquez sur l'icône appareil photo pour uploader une image (max 2 Mo) |
-| **Nom d'affichage** | Votre nom sur la plateforme (max 100 car.) |
-| **Bio** | Courte présentation (max 500 car., compteur affiché) |
-| **Expertise** | Tags de compétences. Tapez un mot-clé et appuyez sur Entrée ou cliquez sur Ajouter. Cliquez sur × pour retirer un tag. |
-
-Cliquez sur **Enregistrer** pour sauvegarder vos modifications.
+| **Avatar** | Cliquez sur l'icône pour uploader une image (max 2 Mo) |
+| **Nom d'affichage** | Votre nom sur la plateforme |
+| **Bio** | Courte présentation (max 500 car.) |
+| **Expertise** | Tags de compétences |
 
 ---
 
-## 12. Notifications
+## 11. Notifications
 
-### Cloche de notifications
-
-Une cloche dans la barre de navigation affiche le nombre de notifications non lues (badge rouge). Cliquez dessus pour ouvrir le panneau.
-
-### Types de notifications
-
-| Type | Déclencheur |
-|------|------------|
-| Feedback | Quelqu'un a posté un feedback sur votre modèle |
-| Variation | Quelqu'un a proposé une variation de votre modèle |
-| Post | Un post du forum a été lié à votre modèle |
-| Changement de statut | Le statut de votre modèle a changé |
-
-### Actions
-
-- Cliquez sur une notification pour accéder au modèle concerné
-- Cliquez sur **Tout marquer comme lu** pour effacer le badge
-- Les 20 dernières notifications sont affichées
-- Les notifications arrivent **en temps réel** (pas besoin de rafraîchir la page)
+Une cloche dans la barre de navigation affiche le nombre de notifications non lues :
+- Feedback reçu sur votre modèle
+- Variation proposée sur votre modèle
+- Post lié à votre modèle
+- Changement de statut de votre modèle
 
 ---
 
-## 13. Administration
+## 12. Soutenir le Lab
 
-La page Admin est accessible uniquement aux administrateurs via le lien **Admin** dans la navigation.
+Le PNL Lab est un projet gratuit et ouvert. Vous pouvez le soutenir via la page **Soutenir le Lab** accessible depuis le footer ou l'accueil :
 
-### Tableau de bord
+- **Offrez-moi un café** (5€) — don rapide, unique ou récurrent
+- **Don libre** — choisissez votre montant (5€, 10€, 20€, 50€ ou montant personnalisé)
+- **Don récurrent** — chaque semaine ou chaque mois
 
-Six cartes statistiques :
-- Modèles en attente de validation (mis en évidence)
-- Modèles validés
-- Total des modèles
-- Nombre d'utilisateurs
-- Nombre de posts forum
-- Modèles publiés
-
-Distribution par statut affichée en dessous.
-
-### Onglets
-
-#### Modèles en attente
-
-Liste des modèles non encore validés. Pour chaque modèle :
-- **Voir** : accéder à la fiche détaillée
-- **Rejeter** : supprimer le modèle
-- **Valider** : approuver le modèle (il devient visible dans la bibliothèque)
-
-#### Modèles validés
-
-Liste de tous les modèles approuvés avec leur type, auteur, statut, vues et feedbacks. Cliquez pour accéder au détail.
-
-#### Activité récente
-
-Les 8 derniers modèles modifiés avec indicateur de statut d'approbation.
-
-#### Utilisateurs
-
-Tableau de tous les utilisateurs avec :
-- Nom et avatar
-- Date d'inscription
-- Rôle actuel (Admin ou Utilisateur)
-- Bouton **Promouvoir admin** / **Retirer admin** (impossible de modifier son propre rôle)
-
-#### Images
-
-Galerie de toutes les images uploadées dans les modèles. Pour chaque image :
-- Miniature de prévisualisation
-- Nom du fichier et chemin
-- Taille et date
-- **Remplacer** : uploader une nouvelle image au même emplacement (les liens existants dans les modèles continueront de fonctionner)
-- **Supprimer** : retirer l'image du serveur
-- **Copier URL** : copier l'adresse publique de l'image dans le presse-papier
-
-Le bouton **Actualiser** recharge la liste des images.
-
-#### Paramètres
-
-Page de configuration de l'application :
-
-| Paramètre | Description | Défaut |
-|-----------|-------------|:------:|
-| **Taille max des images** | Les images uploadées qui dépassent cette taille sont rejetées | 2 Mo |
-
-Cliquez sur **Enregistrer** pour sauvegarder les modifications.
-
-### Export de données
-
-Trois boutons permettent d'exporter les données en CSV :
-- **Modèles CSV** : tous les modèles avec métadonnées
-- **Utilisateurs CSV** : liste des utilisateurs et rôles
-- **Posts CSV** : publications du forum
-
-### Import de modèle
-
-Le bouton **Importer un modèle** mène à la page d'import markdown (voir section [7](#7-importer-un-modèle-admin)).
+Le paiement est sécurisé via Stripe.
 
 ---
 
-## 14. Rôles et permissions
-
-### Visiteur (non connecté)
-
-- Consulter les modèles publiés et approuvés
-- Lire les posts du forum
-- Voir les événements
-- Consulter le glossaire et les ressources
-
-### Utilisateur connecté
-
-Tout ce qu'un visiteur peut faire, plus :
-- Créer et modifier ses propres modèles
-- Proposer des variations et feedbacks
-- Publier et commenter dans le forum
-- Liker des posts
-- S'inscrire aux événements
-- Gérer son profil
-- Recevoir des notifications
-
-### Modérateur
-
-Tout ce qu'un utilisateur peut faire, plus :
-- Valider ou rejeter les modèles en attente
-- Remettre un modèle validé en attente
-- Modifier et supprimer n'importe quel modèle
-- Ajouter des liens & ressources aux modèles
-- Uploader des images dans les champs des modèles
-- Gérer la galerie d'images (remplacer, supprimer)
-- Créer et supprimer des événements
-- Envoyer des emails aux participants
-- Importer des modèles via fiche markdown
-- Exporter les données en CSV
-- Accéder au tableau de bord admin
-
-**Le modérateur ne peut PAS** :
-- Gérer les utilisateurs (ajouter, supprimer, changer les rôles)
-- Modifier les paramètres de l'application
-
-### Administrateur
-
-Tout ce qu'un modérateur peut faire, plus :
-- **Gérer les utilisateurs** : ajouter, supprimer des comptes, changer les rôles (Utilisateur / Modérateur / Admin)
-- **Réinitialiser les mots de passe** : envoyer un email de réinitialisation à un utilisateur
-- **Configurer les paramètres** de l'application (taille max images)
-
-### Page de gestion des utilisateurs (admin)
-
-Accessible via le bouton **Gérer les utilisateurs** sur la page Admin.
-
-#### Informations affichées pour chaque utilisateur
-
-| Champ | Description |
-|-------|-------------|
-| **Avatar** | Photo de profil ou initiale |
-| **Nom d'affichage** | Modifiable inline par l'admin (cliquer sur le crayon) |
-| **Email** | Adresse email du compte, modifiable inline par l'admin |
-| **Date d'inscription** | Depuis quand l'utilisateur est inscrit |
-| **Dernière connexion** | Date de la dernière connexion (ou "jamais") |
-| **Bio** | Courte présentation (ou "non renseignée") |
-| **Expertise** | Tags de compétences (ou "non renseignée") |
-| **UUID** | Identifiant technique unique |
-
-#### Actions disponibles
-
-| Action | Description |
-|--------|-------------|
-| **Ajouter un utilisateur** | Créer un compte avec nom, email et mot de passe initial |
-| **Changer le rôle** | Sélecteur : Utilisateur / Modérateur / Administrateur |
-| **Modifier le nom** | Cliquer sur le crayon à côté du nom, Entrée pour sauvegarder |
-| **Modifier l'email** | Cliquer sur le crayon à côté de l'email, Entrée pour sauvegarder |
-| **Reset mot de passe** | Envoie un email de réinitialisation à l'adresse de l'utilisateur |
-| **Supprimer** | Supprime le profil et les rôles (avec confirmation) |
-
-Note : il est impossible de modifier son propre rôle, nom ou email depuis cette page (utilisez la page Profil).
-
----
-
-## 15. Format des fiches d'import
-
-Les fiches d'import utilisent un format markdown avec un frontmatter YAML.
-
-### Structure
-
-```markdown
----
-action: create | update
-title: "Nom du modèle"
-type: problematique | outil | approche
-status: brouillon | en_revision | en_test | publie | en_evolution
-version: "1.0.0"
-complexity: débutant | intermédiaire | avancé
-tags:
-  - tag1
-  - tag2
-  - tag3
----
-
-## Description
-
-Description concise du modèle en 1 à 3 phrases.
-
-## Sections
-
-### structure
-
-Structure et composants du modèle.
-
-### protocol
-
-Étapes numérotées du protocole.
-
-### patterns
-
-Patterns comportementaux observés.
-
-### philosophy
-
-Fondements théoriques et philosophiques.
-
-### prerequisites
-
-Prérequis pour utiliser ce modèle.
-
-### toolkit
-
-Outils et techniques associés.
-```
-
-### Champs du frontmatter
-
-| Champ | Valeurs possibles | Obligatoire |
-|-------|-------------------|:-----------:|
-| `action` | `create` (nouveau) ou `update` (modifier) | Oui |
-| `title` | Texte libre entre guillemets | Oui |
-| `type` | `problematique`, `outil`, `approche` | Oui |
-| `status` | `brouillon`, `en_revision`, `en_test`, `publie`, `en_evolution` | Oui |
-| `version` | Versionnement sémantique (ex: `"1.0.0"`) | Oui |
-| `complexity` | `débutant`, `intermédiaire`, `avancé` | Oui |
-| `tags` | Liste YAML de mots-clés | Non |
-
-### Sections disponibles
-
-N'incluez que les sections pour lesquelles vous avez du contenu. Il n'est pas nécessaire de toutes les remplir.
-
-| Section | Quand l'utiliser |
-|---------|-----------------|
-| `structure` | Architecture ou composants du modèle |
-| `protocol` | Étapes d'exécution ou de mise en oeuvre |
-| `active_principle` | Mécanisme central qui produit le changement |
-| `patterns` | Patterns comportementaux ou linguistiques observés |
-| `signals` | Signaux reconnaissables (corporels, verbaux, comportementaux) |
-| `intervention_points` | Points d'intervention pour modifier l'expérience |
-| `vigilance` | Points de vigilance, contre-indications, erreurs fréquentes |
-| `variants` | Variantes connues et adaptations |
-| `philosophy` | Fondements théoriques, références aux auteurs |
-| `creators` | Créateurs ou développeurs de l'approche |
-| `prerequisites` | Connaissances, compétences ou conditions préalables |
-| `toolkit` | Outils et techniques associés à une approche |
-
-### Pertinence des sections par type
-
-| Section | Problématique | Outil | Approche |
-|---------|:---:|:---:|:---:|
-| `structure` | Pertinent | Pertinent | Pertinent |
-| `protocol` | Rare | **Essentiel** | Optionnel |
-| `active_principle` | Rare | **Essentiel** | Optionnel |
-| `patterns` | **Essentiel** | Optionnel | Optionnel |
-| `signals` | **Essentiel** | Optionnel | Rare |
-| `intervention_points` | **Essentiel** | Optionnel | Rare |
-| `vigilance` | Optionnel | **Essentiel** | Optionnel |
-| `variants` | Optionnel | Pertinent | Optionnel |
-| `philosophy` | Optionnel | Rare | **Essentiel** |
-| `creators` | Rare | Rare | **Essentiel** |
-| `prerequisites` | Pertinent | Pertinent | Pertinent |
-| `toolkit` | Rare | Optionnel | **Essentiel** |
-
-### Versionnement
-
-| Situation | Règle |
-|-----------|-------|
-| Nouveau modèle | `1.0.0` |
-| Corrections mineures | Incrémenter le patch : `1.0.1` |
-| Ajout de contenu | Incrémenter le minor : `1.1.0` |
-| Refonte majeure | Incrémenter le major : `2.0.0` |
-
-### Exemple complet
-
-```markdown
----
-action: create
-title: "Le SOCCER"
-type: outil
-status: en_revision
-version: "1.1.0"
-complexity: avancé
-tags:
-  - SCORE
-  - systémique
-  - Bateson
----
-
-## Description
-
-Variante du SCORE remplaçant la cause par deux types de conditions
-(initiales et de maintien), adoptant un paradigme systémique autopoïétique.
-
-## Sections
-
-### structure
-
-Le SOCCER remplace le C (Cause) du SCORE par :
-
-- **Conditions Initiales (Ci)** : ce qui amène le système dans l'état problème
-- **Conditions de Maintien (Cm)** : ce qui maintient le système dans cet état
-
-### protocol
-
-1. **S — Symptôme** : Quel est le problème ?
-2. **O — Objectif** : Que voulez-vous à la place ?
-3. **C — Conditions Initiales** : Quelles conditions ont amené ce problème ?
-4. **C — Conditions de Maintien** : Qu'est-ce qui maintient cet état ?
-5. **E — Effets** : Quels effets produira le changement ?
-6. **R — Ressources** : De quoi avez-vous besoin ?
-
-### prerequisites
-
-Connaissance du SCORE. Notions de systémique et d'homéostasie.
-```
-
----
-
-*PNL Lab R&D Collective — Guide Utilisateur*
+*PNL Lab R&D — Guide Utilisateur*

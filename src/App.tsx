@@ -19,6 +19,7 @@ import Events from "./pages/Events";
 import ImportModel from "./pages/ImportModel";
 import AdminUsers from "./pages/AdminUsers";
 import Help from "./pages/Help";
+import Soutenir from "./pages/Soutenir";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/events" element={<Events />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/aide" element={<Help />} />
+            <Route path="/soutenir" element={<Soutenir />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -43,6 +43,11 @@
   --input: 222 15% 20%;
   --ring: 175 55% 45%;
 
+  /* --- Annonce (bandeau accueil) --- */
+  --announcement-bg: 35 50% 12%;       /* Ambre sombre */
+  --announcement-border: 35 40% 25%;
+  --announcement-icon: 35 70% 55%;
+
   /* --- Tokens Lab --- */
   --lab-navy: 215 30% 75%;
   --lab-navy-light: 215 25% 60%;

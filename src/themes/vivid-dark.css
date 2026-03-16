@@ -43,6 +43,11 @@
   --input: 260 15% 20%;
   --ring: 330 70% 60%;
 
+  /* --- Annonce (bandeau accueil) --- */
+  --announcement-bg: 280 30% 14%;      /* Violet sombre */
+  --announcement-border: 280 25% 25%;
+  --announcement-icon: 280 55% 60%;
+
   /* --- Tokens Lab --- */
   --lab-navy: 260 50% 70%;
   --lab-navy-light: 260 40% 60%;

@@ -24,6 +24,7 @@ import Soutenir from "./pages/Soutenir";
 import AdminDonations from "./pages/AdminDonations";
 import HelpAdmin from "./pages/HelpAdmin";
 import PublicProfile from "./pages/PublicProfile";
+import AdminAnnouncement from "./pages/AdminAnnouncement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/donations" element={<AdminDonations />} />
             <Route path="/admin/guide" element={<HelpAdmin />} />
+            <Route path="/admin/annonce" element={<AdminAnnouncement />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profil/:userId" element={<PublicProfile />} />

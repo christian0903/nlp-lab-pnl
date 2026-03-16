@@ -47,6 +47,11 @@
   --input: 220 15% 88%;               /* Bordures des champs */
   --ring: 180 50% 35%;                /* Anneau de focus (teal) */
 
+  /* --- Annonce (bandeau accueil) --- */
+  --announcement-bg: 35 85% 95%;       /* Ambre doux */
+  --announcement-border: 35 70% 80%;
+  --announcement-icon: 35 80% 45%;
+
   /* --- Coins arrondis --- */
   --radius: 0.625rem;                 /* 10px */
 

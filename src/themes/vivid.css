@@ -43,6 +43,11 @@
   --input: 250 15% 88%;
   --ring: 330 75% 55%;                /* Focus rose */
 
+  /* --- Annonce (bandeau accueil) --- */
+  --announcement-bg: 280 60% 95%;      /* Violet clair */
+  --announcement-border: 280 50% 82%;
+  --announcement-icon: 280 65% 50%;
+
   /* --- Tokens Lab --- */
   --lab-navy: 260 70% 45%;            /* Violet au lieu de navy */
   --lab-navy-light: 260 55% 55%;

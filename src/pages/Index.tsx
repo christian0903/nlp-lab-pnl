@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FlaskConical, BookOpen, Users, GitBranch, ArrowRight, Microscope, FileText, Clock, Sparkles, Plus, Heart } from 'lucide-react';
+import { FlaskConical, BookOpen, Users, GitBranch, ArrowRight, Microscope, FileText, Clock, Sparkles, Plus, Heart, Megaphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { DBModel, JournalEntry, LegacyChangelogEntry } from '@/types/model';
 import TypeBadge from '@/components/lab/TypeBadge';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface NewsItem {
   id: string;
@@ -22,8 +24,18 @@ const Index = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ models: 0, published: 0, contributors: 0 });
+  const [announcement, setAnnouncement] = useState('');
 
   useEffect(() => {
+    // Fetch announcement
+    supabase.from('app_settings').select('value').eq('key', 'announcement').single()
+      .then(({ data }) => {
+        if (data?.value) {
+          const val = typeof data.value === 'string' ? data.value : JSON.stringify(data.value);
+          setAnnouncement(val.replace(/^"|"$/g, ''));
+        }
+      });
+
     const fetchNews = async () => {
       const items: NewsItem[] = [];
 
@@ -183,8 +195,22 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Announcement banner */}
+      {announcement.trim() && (
+        <section className="container mx-auto -mt-8 relative z-20 px-4 mb-4">
+          <div className="rounded-xl border p-4 shadow-sm" style={{ backgroundColor: 'hsl(var(--announcement-bg))', borderColor: 'hsl(var(--announcement-border))' }}>
+            <div className="flex items-start gap-3">
+              <Megaphone className="mt-0.5 h-5 w-5 shrink-0" style={{ color: 'hsl(var(--announcement-icon))' }} />
+              <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-foreground prose-p:my-1 prose-a:text-secondary hover:prose-a:underline prose-strong:text-foreground">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{announcement}</ReactMarkdown>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Stats */}
-      <section className="container mx-auto -mt-14 relative z-10 px-4">
+      <section className={`container mx-auto ${announcement.trim() ? '-mt-0' : '-mt-14'} relative z-10 px-4`}>
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl border border-border bg-card p-4 shadow-sm text-center">
             <FlaskConical className="mx-auto mb-1 h-5 w-5 text-secondary" />

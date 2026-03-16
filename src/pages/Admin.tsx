@@ -228,6 +228,10 @@ const Admin = () => {
               <Users className="h-3.5 w-3.5" /> Gérer les utilisateurs
             </Link>
           )}
+          <Link to="/admin/annonce"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-all">
+            <Activity className="h-3.5 w-3.5" /> Annonce
+          </Link>
           <Link to="/admin/donations"
             className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition-all">
             <Heart className="h-3.5 w-3.5" /> Donations

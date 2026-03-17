@@ -16,8 +16,9 @@
 8. [Paramètres](#8-paramètres)
 9. [Export de données](#9-export-de-données)
 10. [Gestion des donations](#10-gestion-des-donations)
-11. [Fonctionnalités éditoriales](#11-fonctionnalités-éditoriales)
-12. [Sécurité et clés API](#12-sécurité-et-clés-api)
+11. [Annonce d'accueil](#11-annonce-daccueil)
+12. [Fonctionnalités éditoriales](#12-fonctionnalités-éditoriales)
+13. [Sécurité et clés API](#13-sécurité-et-clés-api)
 
 ---
 
@@ -67,6 +68,8 @@ Tout ce qu'un modérateur peut faire, plus :
 - **Réinitialiser les mots de passe** des utilisateurs
 - **Configurer les paramètres** de l'application
 - **Gérer les donations** : voir le journal des dons, basculer test/live
+- **Publier des annonces** sur la page d'accueil
+- **Modifier la date de création** des modèles
 - **Supprimer des modèles** définitivement
 
 ---
@@ -98,9 +101,11 @@ Distribution par statut affichée en dessous.
 
 ### Boutons d'accès rapide
 
+- **Annonce** : publier un message sur la page d'accueil
 - **Donations** : gestion des paiements Stripe
 - **Gérer les utilisateurs** : page dédiée
 - **Importer un modèle** : import markdown
+- **Guide admin** : documentation administrateur
 - **Export CSV** : modèles, utilisateurs, posts
 
 ---
@@ -308,7 +313,25 @@ Le mode actif est stocké dans `app_settings` (clé `stripe_mode`).
 
 ---
 
-## 11. Fonctionnalités éditoriales
+## 11. Annonce d'accueil
+
+Accessible via **Admin → Annonce**.
+
+Permet de publier un message visible par tous les visiteurs sur la page d'accueil, dans un bandeau coloré sous le hero.
+
+### Fonctionnement
+
+- Rédigez le message en **Markdown** (gras, liens, listes supportés)
+- Cliquez **Publier l'annonce** pour l'afficher
+- Cliquez **Supprimer l'annonce** pour masquer le bandeau
+- Un bouton **Prévisualiser** montre le rendu avant publication
+- Si le contenu est vide, le bandeau n'apparaît pas
+
+Le bandeau s'adapte automatiquement au thème choisi par l'utilisateur (couleurs différentes par thème).
+
+---
+
+## 12. Fonctionnalités éditoriales
 
 ### Proposer comme modèle (depuis le forum)
 
@@ -323,7 +346,11 @@ En mode édition, la section "Journal d'évolution" permet de :
 
 ### Approche associée
 
-Les outils et problématiques peuvent être rattachés à une approche via un sélecteur visible en mode édition et dans le formulaire de contribution.
+Les outils et problématiques peuvent être rattachés à une approche via un sélecteur visible en mode édition et dans le formulaire de contribution. Sur la fiche d'une approche, un bloc affiche automatiquement tous les modèles rattachés.
+
+### Date de création (admin)
+
+Les administrateurs peuvent modifier la **date de création** d'un modèle via le champ date en mode édition. Utile pour antidater des modèles qui existaient avant la plateforme.
 
 ### Gestion des articles Ressources
 
@@ -331,7 +358,7 @@ Les admins/modérateurs peuvent créer, modifier et supprimer des articles markd
 
 ---
 
-## 12. Sécurité et clés API
+## 13. Sécurité et clés API
 
 ### Clés côté client (publiques)
 

@@ -60,6 +60,7 @@ La barre de navigation en haut de l'écran donne accès à toutes les sections :
 | **Contribuer** | Proposer un nouveau modèle |
 | **Communauté** | Forum de discussion |
 | **Ressources** | Glossaire PNL, guide et critères qualité |
+| **Aide** | Guide utilisateur intégré dans l'application |
 
 En bas de chaque page, le **footer** affiche la version de l'application, un lien vers atelierpnl.eu et un lien pour soutenir le Lab.
 
@@ -98,6 +99,10 @@ Un bloc d'accueil guide les nouveaux visiteurs avec quatre liens :
 - **Lire les ressources** — guides, glossaire PNL et méthodologie
 - **Rejoindre la communauté** — échanger avec les praticiens
 - **Soutenir le projet** — aider à maintenir le Lab ouvert et gratuit
+
+### Annonce
+
+Si un administrateur a publié une annonce, elle apparaît dans un bandeau coloré entre le hero et les statistiques.
 
 ### Dernières nouvelles
 
@@ -155,7 +160,9 @@ La page de détail d'un modèle est organisée en onglets.
 
 ### En-tête
 
-Affiche le titre, la description, les badges (type, statut, version), les tags, l'auteur, l'approche associée et les compteurs (vues, variantes, feedbacks).
+Affiche le titre, la description, les badges (type, statut, version), les tags, l'auteur (cliquable pour voir son profil), l'approche associée et les compteurs (vues, variantes, discussions).
+
+Pour les modèles de type **Approche**, un bloc liste tous les outils et expériences rattachés à cette approche.
 
 Si vous êtes l'auteur du modèle, un bouton **Modifier** apparaît pour éditer les champs.
 
@@ -185,9 +192,9 @@ Affiche les liens et ressources externes (vidéos, documents, formations) sous f
 
 Affiche les **modèles dérivés** — des fiches complètes qui adaptent ou enrichissent le modèle pour un cas particulier. Vous pouvez créer une variante via le bouton **"Créer une variante"**.
 
-### Onglet Feedback
+### Onglet Discussions
 
-Donnez votre retour d'expérience avec une note (1-5 étoiles) et un commentaire.
+Regroupe les **posts du forum liés** à ce modèle et les **feedbacks** existants. Le bouton **"Donner un feedback"** ouvre le forum avec un post pré-lié au modèle, permettant à toute la communauté de participer à la discussion.
 
 ---
 
@@ -271,12 +278,23 @@ Articles en Markdown couvrant guides, glossaire PNL et méthodologie.
 
 ## 10. Profil
 
+### Mon profil
+
 | Champ | Description |
 |-------|-------------|
 | **Avatar** | Cliquez sur l'icône pour uploader une image (max 2 Mo) |
 | **Nom d'affichage** | Votre nom sur la plateforme |
 | **Bio** | Courte présentation (max 500 car.) |
 | **Expertise** | Tags de compétences |
+
+### Profil public
+
+En cliquant sur le **nom d'un auteur** (sur une fiche modèle, dans la bibliothèque ou dans le forum), vous accédez à son profil public qui affiche :
+- Son avatar, nom, bio et expertise
+- La date d'inscription
+- La liste de ses **modèles** publiés
+- Les modèles où il est mentionné comme **contributeur** dans le journal d'évolution
+- Ses **posts** dans le forum
 
 ---
 

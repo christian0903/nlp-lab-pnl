@@ -126,6 +126,33 @@ const Header = () => {
                   {item.label}
                 </Link>
               ))}
+              <div className="mt-2 flex items-center gap-3 border-t border-border pt-3 px-3">
+                <ThemeSwitcher />
+                {user ? (
+                  <>
+                    <NotificationBell />
+                    {canManage && (
+                      <Link to="/admin" onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                        <ShieldCheck className="h-4 w-4" /> Admin
+                      </Link>
+                    )}
+                    <Link to="/profile" onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                      <User className="h-4 w-4" /> Profil
+                    </Link>
+                    <button onClick={() => { signOut(); setMobileOpen(false); }}
+                      className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <LogOut className="h-4 w-4" />
+                    </button>
+                  </>
+                ) : (
+                  <Link to="/auth" onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground">
+                    <User className="h-4 w-4" /> Connexion
+                  </Link>
+                )}
+              </div>
             </nav>
           </motion.div>
         )}

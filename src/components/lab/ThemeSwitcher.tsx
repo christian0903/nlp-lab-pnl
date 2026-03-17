@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sun, Moon, Palette } from 'lucide-react';
 
 type Theme = 'classic' | 'dark' | 'vivid' | 'vivid-dark';
@@ -24,16 +24,41 @@ const ThemeSwitcher = () => {
     return saved || 'classic';
   });
   const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [dropStyle, setDropStyle] = useState<React.CSSProperties>({});
 
   useEffect(() => {
     applyTheme(theme);
     localStorage.setItem('pnl-theme', theme);
   }, [theme]);
 
-  // Apply on mount
   useEffect(() => {
     applyTheme(theme);
   }, []);
+
+  const handleOpen = () => {
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        // Mobile: ouvre vers le haut, bord gauche a 0
+        setDropStyle({
+          position: 'fixed',
+          bottom: window.innerHeight - rect.top + 8,
+          left: 8,
+          right: 8,
+        });
+      } else {
+        // Desktop: ouvre vers le bas, aligne a droite du bouton
+        setDropStyle({
+          position: 'fixed',
+          top: rect.bottom + 8,
+          left: Math.max(8, rect.right - 160),
+        });
+      }
+    }
+    setOpen(!open);
+  };
 
   const currentIcon = theme.includes('dark') ? Moon : theme.includes('vivid') ? Palette : Sun;
   const Icon = currentIcon;
@@ -41,7 +66,8 @@ const ThemeSwitcher = () => {
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        ref={btnRef}
+        onClick={handleOpen}
         className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground transition-colors"
         title="Changer le theme"
       >
@@ -50,7 +76,7 @@ const ThemeSwitcher = () => {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full z-50 mt-2 w-40 rounded-lg border border-border bg-card p-1 shadow-lg">
+          <div className="z-50 rounded-lg border border-border bg-card p-1 shadow-lg" style={dropStyle}>
             {THEMES.map(t => {
               const TIcon = t.icon;
               return (

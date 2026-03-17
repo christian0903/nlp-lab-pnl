@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bell, MessageSquare, GitBranch, FileText, RefreshCw, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +25,8 @@ const NotificationBell = () => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [dropStyle, setDropStyle] = useState<React.CSSProperties>({});
 
   useEffect(() => {
     if (!user) return;
@@ -65,6 +67,28 @@ const NotificationBell = () => {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  const handleOpen = () => {
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        setDropStyle({
+          position: 'fixed',
+          bottom: window.innerHeight - rect.top + 8,
+          left: 8,
+          right: 8,
+        });
+      } else {
+        setDropStyle({
+          position: 'fixed',
+          top: rect.bottom + 8,
+          right: Math.max(8, window.innerWidth - rect.right),
+        });
+      }
+    }
+    setOpen(!open);
+  };
+
   const markAllRead = async () => {
     const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
     if (unreadIds.length === 0) return;
@@ -88,7 +112,8 @@ const NotificationBell = () => {
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        ref={btnRef}
+        onClick={handleOpen}
         className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-foreground transition-colors"
       >
         <Bell className="h-4.5 w-4.5" />
@@ -108,7 +133,8 @@ const NotificationBell = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-border bg-card shadow-lg"
+              className="z-50 w-auto rounded-xl border border-border bg-card shadow-lg"
+              style={dropStyle}
             >
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
                 <span className="text-sm font-semibold text-foreground">Notifications</span>

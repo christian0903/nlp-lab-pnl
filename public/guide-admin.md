@@ -18,7 +18,8 @@
 10. [Gestion des donations](#10-gestion-des-donations)
 11. [Annonce d'accueil](#11-annonce-daccueil)
 12. [Fonctionnalités éditoriales](#12-fonctionnalités-éditoriales)
-13. [Sécurité et clés API](#13-sécurité-et-clés-api)
+13. [Statistiques de visite](#13-statistiques-de-visite)
+14. [Sécurité et clés API](#14-sécurité-et-clés-api)
 
 ---
 
@@ -352,13 +353,45 @@ Les outils et problématiques peuvent être rattachés à une approche via un s�
 
 Les administrateurs peuvent modifier la **date de création** d'un modèle via le champ date en mode édition. Utile pour antidater des modèles qui existaient avant la plateforme.
 
+### Protection anti-bot à l'inscription
+
+Quatre mécanismes protègent le formulaire d'inscription :
+
+| Protection | Fonctionnement |
+|------------|----------------|
+| **Honeypot** | Champ invisible rempli uniquement par les bots — inscription silencieusement bloquée |
+| **Question PNL** | "La carte n'est pas le ..." — seul un praticien PNL connaît la réponse |
+| **Validation du nom** | Rejette les noms suspects (chiffres seuls, URLs, caractères spéciaux) |
+| **Confirmation email** | Le compte n'est actif qu'après clic sur le lien de confirmation dans l'email |
+
 ### Gestion des articles Ressources
 
 Les admins/modérateurs peuvent créer, modifier et supprimer des articles markdown dans la section Ressources. Support de l'upload d'images dans le contenu.
 
 ---
 
-## 13. Sécurité et clés API
+## 13. Statistiques de visite
+
+Le site utilise **Umami** (cloud.umami.is) pour les statistiques de visite. Umami est un outil open source, sans cookies, conforme RGPD — aucun bandeau de consentement n'est nécessaire.
+
+### Accès
+
+Connectez-vous sur **cloud.umami.is** avec le compte configuré. Le dashboard affiche :
+- Pages vues et visiteurs uniques
+- Sources de trafic (referrers)
+- Pays et langues des visiteurs
+- Appareils et navigateurs
+- Pages les plus consultées
+
+### Fonctionnement
+
+Un script léger (~2 KB) est chargé dans chaque page. Il envoie les données de navigation à Umami Cloud sans stocker de cookies ni de données personnelles sur le navigateur du visiteur.
+
+Le plan gratuit permet 10 000 événements par mois — largement suffisant pour le trafic actuel.
+
+---
+
+## 14. Sécurité et clés API
 
 ### Clés côté client (publiques)
 

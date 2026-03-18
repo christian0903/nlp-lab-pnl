@@ -28,10 +28,12 @@
 1. Cliquez sur **Se connecter** en haut à droite
 2. Cliquez sur **S'inscrire**
 3. Remplissez :
-   - **Nom d'affichage** : votre nom tel qu'il apparaîtra sur la plateforme
+   - **Nom d'affichage** : votre nom tel qu'il apparaîtra sur la plateforme (minimum 2 caractères)
    - **Email** : votre adresse email
    - **Mot de passe** : minimum 6 caractères
+   - **Question de vérification** : une question simple pour les praticiens PNL
 4. Cliquez sur **Créer le compte**
+5. **Vérifiez votre email** : un lien de confirmation vous est envoyé. Votre compte ne sera actif qu'après avoir cliqué sur ce lien.
 
 ### Se connecter
 

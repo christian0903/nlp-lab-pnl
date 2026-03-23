@@ -19,7 +19,8 @@
 11. [Annonce d'accueil](#11-annonce-daccueil)
 12. [Fonctionnalités éditoriales](#12-fonctionnalités-éditoriales)
 13. [Statistiques de visite](#13-statistiques-de-visite)
-14. [Sécurité et clés API](#14-sécurité-et-clés-api)
+14. [PWA (Progressive Web App)](#14-pwa-progressive-web-app)
+15. [Sécurité et clés API](#15-sécurité-et-clés-api)
 
 ---
 
@@ -401,7 +402,23 @@ Le plan gratuit permet 10 000 événements par mois — largement suffisant pour
 
 ---
 
-## 14. Sécurité et clés API
+## 14. PWA (Progressive Web App)
+
+Le site est installable comme une application mobile. Les fichiers PWA sont :
+
+- **`manifest.json`** : nom, icone, couleurs, mode d'affichage (standalone)
+- **`sw.js`** : service worker avec strategie network-first
+  - Les requetes vers Supabase, Stripe et Umami ne sont jamais interceptees
+  - Les pages visitees sont mises en cache pour un acces hors-ligne
+  - Le cache est automatiquement nettoye lors des mises a jour
+
+Le service worker ne modifie pas le comportement en ligne de l'application. Il sert uniquement de fallback quand le reseau est indisponible.
+
+Pour forcer une mise a jour du cache apres un deploiement, incrementez `CACHE_NAME` dans `sw.js`.
+
+---
+
+## 15. Sécurité et clés API
 
 ### Clés côté client (publiques)
 

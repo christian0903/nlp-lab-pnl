@@ -1,0 +1,24 @@
+{
+  "name": "PNL Lab R&D",
+  "short_name": "PNL Lab",
+  "description": "Laboratoire collaboratif de recherche et développement en PNL",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#2b8a8a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/images/logo-lab-atelierpnl.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo-lab-atelierpnl.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

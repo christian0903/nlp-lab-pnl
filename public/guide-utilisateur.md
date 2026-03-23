@@ -81,6 +81,17 @@ Un bouton dans le header (icone soleil/lune/palette) permet de choisir parmi 4 t
 
 Le choix est sauvegarde automatiquement et persiste entre les visites.
 
+### Installation sur mobile (PWA)
+
+Le Lab est installable comme une application sur votre telephone :
+
+1. Ouvrez **lab.atelierpnl.eu** dans Safari (iPhone) ou Chrome (Android)
+2. Appuyez sur le bouton **Partager** (Safari) ou le menu **trois points** (Chrome)
+3. Choisissez **"Sur l'ecran d'accueil"** (Safari) ou **"Installer l'application"** (Chrome)
+4. L'app apparait sur votre ecran d'accueil avec l'icone du Lab
+
+L'app fonctionne en plein ecran et les pages deja visitees restent accessibles meme sans connexion internet.
+
 Sur mobile, la navigation se replie dans un menu hamburger.
 
 ---

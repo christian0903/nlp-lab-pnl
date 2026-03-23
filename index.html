@@ -3,29 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>PNL lab</title>
-    <meta name="description" content="lab pnl">
-    <meta name="author" content="Lovable" />
+    <title>PNL Lab R&D</title>
+    <meta name="description" content="Laboratoire collaboratif de recherche et développement en PNL">
+    <meta name="author" content="Atelier PNL" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#2b8a8a" />
+    <link rel="apple-touch-icon" href="/images/logo-lab-atelierpnl.png" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    
-    
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/76410732-d0be-4da6-8e2a-fd47da4a59f9/id-preview-ea6d76f1--8fb97b66-ef03-475f-88e2-1e7a7876801a.lovable.app-1773011361488.png">
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/76410732-d0be-4da6-8e2a-fd47da4a59f9/id-preview-ea6d76f1--8fb97b66-ef03-475f-88e2-1e7a7876801a.lovable.app-1773011361488.png">
-    <meta property="og:title" content="PNL lab">
-  <meta name="twitter:title" content="PNL lab">
-  <meta property="og:description" content="lab pnl">
-  <meta name="twitter:description" content="lab pnl">
+    <meta property="og:title" content="PNL Lab R&D">
+    <meta property="og:description" content="Laboratoire collaboratif de recherche et développement en PNL">
+    <meta property="og:image" content="/images/logo-lab-atelierpnl.png">
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="PNL Lab R&D">
+    <meta name="twitter:description" content="Laboratoire collaboratif de recherche et développement en PNL">
   <script defer src="https://cloud.umami.is/script.js" data-website-id="66624db0-a382-45a2-af58-c0d3597073da"></script>
 </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

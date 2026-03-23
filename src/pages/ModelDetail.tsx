@@ -734,10 +734,10 @@ const ModelDetail = () => {
             // Plus de 2 sections → sous-tabs pour naviguer
             return (
               <Tabs defaultValue={filledSections[0][0]} className="w-full">
-                <TabsList className="mb-4 flex flex-wrap gap-1 bg-transparent p-0">
+                <TabsList className="mb-4 flex gap-1.5 overflow-x-auto bg-transparent p-0 pb-2">
                   {filledSections.map(([key]) => (
                     <TabsTrigger key={key} value={key}
-                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:border-secondary">
+                      className="shrink-0 whitespace-nowrap rounded-lg border border-border px-3 py-1.5 text-xs font-medium data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:border-secondary">
                       {sectionLabel(key)}
                     </TabsTrigger>
                   ))}

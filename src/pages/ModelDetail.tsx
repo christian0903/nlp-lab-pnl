@@ -693,7 +693,7 @@ const ModelDetail = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="presentation" className="w-full">
-        <TabsList className="mb-6 w-full justify-start overflow-x-auto border-b border-border bg-transparent p-0">
+        <TabsList className="mb-3 w-full justify-start overflow-x-auto border-b border-border bg-transparent p-0">
           <TabsTrigger value="presentation" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Présentation
           </TabsTrigger>

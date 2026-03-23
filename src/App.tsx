@@ -25,6 +25,7 @@ import AdminDonations from "./pages/AdminDonations";
 import HelpAdmin from "./pages/HelpAdmin";
 import PublicProfile from "./pages/PublicProfile";
 import AdminAnnouncement from "./pages/AdminAnnouncement";
+import Contributors from "./pages/Contributors";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/profil/:userId" element={<PublicProfile />} />
             <Route path="/events" element={<Events />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/contributeurs" element={<Contributors />} />
             <Route path="/aide" element={<Help />} />
             <Route path="/soutenir" element={<Soutenir />} />
             <Route path="*" element={<NotFound />} />

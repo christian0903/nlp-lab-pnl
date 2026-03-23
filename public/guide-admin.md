@@ -353,6 +353,16 @@ Les outils et problématiques peuvent être rattachés à une approche via un s�
 
 Les administrateurs peuvent modifier la **date de création** d'un modèle via le champ date en mode édition. Utile pour antidater des modèles qui existaient avant la plateforme.
 
+### Modification des profils (admin)
+
+Les administrateurs peuvent modifier le profil de n'importe quel utilisateur :
+1. Allez sur la page **Contributeurs** ou le profil public d'un utilisateur
+2. Cliquez sur **"Modifier le profil"** en haut à droite
+3. Modifiez le CV, les liens personnels, la bio, l'expertise
+4. Cliquez **Sauvegarder**
+
+L'URL est `/profile?user=<userId>` — le paramètre `user` permet à l'admin d'éditer un profil autre que le sien.
+
 ### Protection anti-bot à l'inscription
 
 Quatre mécanismes protègent le formulaire d'inscription :

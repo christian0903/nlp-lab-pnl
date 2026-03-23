@@ -12,12 +12,13 @@
 4. [Bibliothèque de modèles](#4-bibliothèque-de-modèles)
 5. [Détail d'un modèle](#5-détail-dun-modèle)
 6. [Contribuer un modèle](#6-contribuer-un-modèle)
-7. [Communauté](#7-communauté)
-8. [Événements](#8-événements)
-9. [Ressources](#9-ressources)
-10. [Profil](#10-profil)
-11. [Notifications](#11-notifications)
-12. [Soutenir le Lab](#12-soutenir-le-lab)
+7. [Contributeurs](#7-contributeurs)
+8. [Communauté](#8-communauté)
+9. [Événements](#9-événements)
+10. [Ressources](#10-ressources)
+11. [Profil](#11-profil)
+12. [Notifications](#12-notifications)
+13. [Soutenir le Lab](#13-soutenir-le-lab)
 
 ---
 
@@ -62,6 +63,7 @@ La barre de navigation en haut de l'écran donne accès à toutes les sections :
 | **Contribuer** | Proposer un nouveau modèle |
 | **Communauté** | Forum de discussion |
 | **Ressources** | Glossaire PNL, guide et critères qualité |
+| **Contributeurs** | Les praticiens qui font vivre le Lab |
 | **Aide** | Guide utilisateur intégré dans l'application |
 
 En bas de chaque page, le **footer** affiche la version de l'application, un lien vers atelierpnl.eu et un lien pour soutenir le Lab.
@@ -224,7 +226,32 @@ Accessible via le menu **Contribuer** (nécessite d'être connecté).
 
 ---
 
-## 7. Communauté
+## 7. Contributeurs
+
+La page **Contributeurs** met en valeur les praticiens qui font vivre le Lab. Accessible depuis le menu de navigation.
+
+### Liste des contributeurs
+
+Affiche tous les utilisateurs ayant au moins un modèle ou un post, triés par activité. Chaque carte montre :
+- Photo vignette et nom
+- Bio courte
+- Tags d'expertise (4 premiers affichés)
+- Nombre de modèles et de posts
+
+### Profil détaillé
+
+En cliquant sur un contributeur, vous accédez à sa page complète avec :
+- **Parcours et compétences** — CV long en Markdown décrivant son parcours, formations et expériences
+- **Liens personnels** — site web, LinkedIn, chaîne YouTube, page de formation...
+- **Modèles** publiés
+- **Contributions** aux modèles d'autres auteurs
+- **Posts** dans le forum
+
+Chaque contributeur peut enrichir son profil depuis la page **Profil** (nom, bio, CV, expertise, liens).
+
+---
+
+## 8. Communauté
 
 Le forum communautaire permet aux membres de partager des discussions, questions et retours d'expérience.
 
@@ -254,7 +281,7 @@ Le forum communautaire permet aux membres de partager des discussions, questions
 
 ---
 
-## 8. Événements
+## 9. Événements
 
 ### Consulter les événements
 
@@ -268,7 +295,7 @@ Les événements sont organisés en deux groupes : **à venir** et **passés**.
 
 ---
 
-## 9. Ressources
+## 10. Ressources
 
 Articles en Markdown couvrant guides, glossaire PNL et méthodologie.
 
@@ -278,21 +305,26 @@ Articles en Markdown couvrant guides, glossaire PNL et méthodologie.
 
 ---
 
-## 10. Profil
+## 11. Profil
 
 ### Mon profil
 
 | Champ | Description |
 |-------|-------------|
-| **Avatar** | Cliquez sur l'icône pour uploader une image (max 2 Mo) |
+| **Avatar** | Cliquez sur l'icône appareil photo pour uploader une image (max 2 Mo) |
 | **Nom d'affichage** | Votre nom sur la plateforme |
-| **Bio** | Courte présentation (max 500 car.) |
-| **Expertise** | Tags de compétences |
+| **Bio courte** | Une phrase ou deux de présentation (max 500 car.) |
+| **Parcours et compétences** | CV long décrivant votre parcours, formations, expériences (max 5000 car., Markdown supporté) |
+| **Domaines d'expertise** | Tags de compétences (tapez + Entrée pour ajouter) |
+| **Liens personnels** | Site web, LinkedIn, YouTube, page de formation... (label + URL) |
+
+Un lien **"Voir le profil public"** en haut de la page permet de vérifier le rendu.
 
 ### Profil public
 
 En cliquant sur le **nom d'un auteur** (sur une fiche modèle, dans la bibliothèque ou dans le forum), vous accédez à son profil public qui affiche :
-- Son avatar, nom, bio et expertise
+- Son avatar, nom, bio et liens personnels
+- Son parcours et compétences (CV en Markdown)
 - La date d'inscription
 - La liste de ses **modèles** publiés
 - Les modèles où il est mentionné comme **contributeur** dans le journal d'évolution
@@ -300,7 +332,7 @@ En cliquant sur le **nom d'un auteur** (sur une fiche modèle, dans la biblioth�
 
 ---
 
-## 11. Notifications
+## 12. Notifications
 
 Une cloche dans la barre de navigation affiche le nombre de notifications non lues :
 - Feedback reçu sur votre modèle
@@ -310,7 +342,7 @@ Une cloche dans la barre de navigation affiche le nombre de notifications non lu
 
 ---
 
-## 12. Soutenir le Lab
+## 13. Soutenir le Lab
 
 Le PNL Lab est un projet gratuit et ouvert. Vous pouvez le soutenir via la page **Soutenir le Lab** accessible depuis le footer ou l'accueil :
 

@@ -14,6 +14,7 @@ const navItems = [
   { label: 'Contribuer', path: '/contribute' },
   { label: 'Communauté', path: '/community' },
   { label: 'Ressources', path: '/resources' },
+  { label: 'Contributeurs', path: '/contributeurs' },
   { label: 'Aide', path: '/aide' },
 ];
 

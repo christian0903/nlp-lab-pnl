@@ -365,12 +365,12 @@ const Community = () => {
       {/* Category filter */}
       <div className="mb-6 flex flex-wrap gap-2">
         <button onClick={() => setCategoryFilter('all')}
-          className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${categoryFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
+          className={`rounded-full px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors ${categoryFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
           Tous
         </button>
         {CATEGORIES.map((cat) => (
           <button key={cat.value} onClick={() => setCategoryFilter(cat.value)}
-            className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${categoryFilter === cat.value ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
+            className={`rounded-full px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors ${categoryFilter === cat.value ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
             {cat.label}
           </button>
         ))}
@@ -448,7 +448,7 @@ const Community = () => {
                     <Link to={`/profil/${post.user_id}`} className="text-sm font-medium text-foreground hover:text-secondary">{profile?.display_name || 'Anonyme'}</Link>
                     <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
                   </div>
-                  <div className="ml-auto flex flex-wrap items-center gap-2">
+                  <div className="ml-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
                     {[...linkedModelIds].map(modelId => modelNames[modelId] ? (
                       <Link key={modelId} to={`/model/${modelId}`}
                         className="inline-flex items-center gap-1 rounded-full bg-secondary/10 px-2.5 py-0.5 text-xs font-medium text-secondary hover:bg-secondary/20 transition-colors">

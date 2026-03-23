@@ -108,7 +108,7 @@ const AdminDonations = () => {
 
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold text-foreground">Donations</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Donations</h1>
           <p className="mt-1 text-muted-foreground">Gestion des paiements Stripe</p>
         </div>
         <button onClick={() => fetchData()} disabled={loading}
@@ -123,7 +123,7 @@ const AdminDonations = () => {
           ? 'border-emerald-500/30 bg-emerald-500/5'
           : 'border-amber-500/30 bg-amber-500/5'
       }`}>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-display text-lg font-semibold text-foreground">
               Mode Stripe : <span className={stripeMode === 'live' ? 'text-emerald-600' : 'text-amber-600'}>
@@ -154,20 +154,20 @@ const AdminDonations = () => {
       </div>
 
       {/* Stats */}
-      <div className="mb-8 grid grid-cols-3 gap-4">
-        <div className="rounded-xl border border-border bg-card p-4 text-center shadow-sm">
+      <div className="mb-8 grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="rounded-xl border border-border bg-card p-3 sm:p-4 text-center shadow-sm">
           <CreditCard className="mx-auto mb-1 h-5 w-5 text-secondary" />
-          <p className="font-display text-2xl font-bold text-foreground">{donations.length}</p>
+          <p className="font-display text-xl sm:text-2xl font-bold text-foreground">{donations.length}</p>
           <p className="text-xs text-muted-foreground">Paiements</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4 text-center shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-3 sm:p-4 text-center shadow-sm">
           <Heart className="mx-auto mb-1 h-5 w-5 text-secondary" />
-          <p className="font-display text-2xl font-bold text-foreground">{totalDonations.toFixed(0)}€</p>
+          <p className="font-display text-xl sm:text-2xl font-bold text-foreground">{totalDonations.toFixed(0)}€</p>
           <p className="text-xs text-muted-foreground">Total reçu</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4 text-center shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-3 sm:p-4 text-center shadow-sm">
           <Repeat className="mx-auto mb-1 h-5 w-5 text-secondary" />
-          <p className="font-display text-2xl font-bold text-foreground">{subscriptions.length}</p>
+          <p className="font-display text-xl sm:text-2xl font-bold text-foreground">{subscriptions.length}</p>
           <p className="text-xs text-muted-foreground">Abonnements actifs</p>
         </div>
       </div>

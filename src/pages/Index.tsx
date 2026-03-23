@@ -169,11 +169,11 @@ const Index = () => {
               <Microscope className="h-4 w-4" />
               Laboratoire de Recherche & Développement
             </div>
-            <h1 className="mb-4 font-display text-4xl font-bold leading-tight md:text-5xl">
+            <h1 className="mb-4 font-display text-3xl md:text-4xl font-bold leading-tight lg:text-5xl">
               Modéliser l'excellence{' '}
               <span className="text-lab-teal-light">ensemble</span>
             </h1>
-            <p className="mb-8 text-lg text-primary-foreground/70 leading-relaxed">
+            <p className="mb-8 text-base md:text-lg text-primary-foreground/70 leading-relaxed">
               Un espace collaboratif où praticiens et chercheurs en PNL créent, testent et font évoluer
               des modèles au service de la transformation humaine.
             </p>
@@ -211,20 +211,20 @@ const Index = () => {
 
       {/* Stats */}
       <section className={`container mx-auto ${announcement.trim() ? '-mt-0' : '-mt-14'} relative z-10 px-4`}>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-border bg-card p-4 shadow-sm text-center">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm text-center">
             <FlaskConical className="mx-auto mb-1 h-5 w-5 text-secondary" />
-            <p className="font-display text-2xl font-bold text-foreground">{stats.models}</p>
+            <p className="font-display text-xl sm:text-2xl font-bold text-foreground">{stats.models}</p>
             <p className="text-xs text-muted-foreground">Modèles</p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-4 shadow-sm text-center">
+          <div className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm text-center">
             <BookOpen className="mx-auto mb-1 h-5 w-5 text-secondary" />
-            <p className="font-display text-2xl font-bold text-foreground">{stats.published}</p>
+            <p className="font-display text-xl sm:text-2xl font-bold text-foreground">{stats.published}</p>
             <p className="text-xs text-muted-foreground">Publiés</p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-4 shadow-sm text-center">
+          <div className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm text-center">
             <Users className="mx-auto mb-1 h-5 w-5 text-secondary" />
-            <p className="font-display text-2xl font-bold text-foreground">{stats.contributors}</p>
+            <p className="font-display text-xl sm:text-2xl font-bold text-foreground">{stats.contributors}</p>
             <p className="text-xs text-muted-foreground">Contributeurs</p>
           </div>
         </div>

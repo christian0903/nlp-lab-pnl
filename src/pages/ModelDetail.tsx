@@ -440,11 +440,11 @@ const ModelDetail = () => {
                 </div>
               )}
             </div>
-            <h1 className="mb-2 font-display text-3xl font-bold text-foreground">{model.title}</h1>
+            <h1 className="mb-2 font-display text-2xl sm:text-3xl font-bold text-foreground">{model.title}</h1>
             <div className="mb-5 prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{model.description}</ReactMarkdown>
             </div>
-            <div className="flex flex-wrap gap-5 text-sm text-muted-foreground">
+            <div className="flex flex-wrap gap-3 sm:gap-5 text-sm text-muted-foreground">
               <Link to={`/profil/${model.user_id}`} className="flex items-center gap-1.5 hover:text-secondary transition-colors">
                 <User className="h-4 w-4" /> {authorName || 'Anonyme'}
               </Link>
@@ -694,19 +694,19 @@ const ModelDetail = () => {
       {/* Tabs */}
       <Tabs defaultValue="presentation" className="w-full">
         <TabsList className="mb-6 w-full justify-start overflow-x-auto border-b border-border bg-transparent p-0">
-          <TabsTrigger value="presentation" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+          <TabsTrigger value="presentation" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Présentation
           </TabsTrigger>
-          <TabsTrigger value="liens" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+          <TabsTrigger value="liens" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Liens {(model.links as ModelLink[] || []).length > 0 ? `(${(model.links as ModelLink[]).length})` : ''}
           </TabsTrigger>
-          <TabsTrigger value="historique" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+          <TabsTrigger value="historique" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Historique
           </TabsTrigger>
-          <TabsTrigger value="variations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+          <TabsTrigger value="variations" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Variantes ({childModels.length})
           </TabsTrigger>
-          <TabsTrigger value="discussions" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+          <TabsTrigger value="discussions" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             Discussions ({linkedPosts.length + feedbacks.length})
           </TabsTrigger>
         </TabsList>

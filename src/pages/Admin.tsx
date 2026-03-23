@@ -217,11 +217,11 @@ const Admin = () => {
             <ShieldCheck className="h-5 w-5 text-secondary" />
           </div>
           <div>
-            <h1 className="font-display text-3xl font-bold text-foreground">Administration</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Administration</h1>
             <p className="text-sm text-muted-foreground">Vue d'ensemble et gestion de la plateforme</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isAdmin && (
             <Link to="/admin/users"
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:brightness-110 transition-all">

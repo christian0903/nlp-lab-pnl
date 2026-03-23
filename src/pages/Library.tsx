@@ -137,11 +137,11 @@ const Library = () => {
                 className="w-full rounded-lg border border-input bg-background py-2.5 pl-10 pr-4 text-sm outline-none ring-ring focus:ring-2"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value as ModelType | 'all')}
-                className="rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
+                className="w-full sm:w-auto rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
               >
                 <option value="all">Tous les types</option>
                 {(Object.entries(MODEL_TYPE_LABELS) as [ModelType, string][]).map(([k, v]) => (
@@ -151,7 +151,7 @@ const Library = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as ModelStatus | 'all')}
-                className="rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
+                className="w-full sm:w-auto rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
               >
                 <option value="all">Tous les statuts</option>
                 {(Object.entries(MODEL_STATUS_LABELS) as [ModelStatus, string][]).map(([k, v]) => (
@@ -175,7 +175,7 @@ const Library = () => {
                 return (
                   <div key={sectionType}>
                     <div className="mb-4">
-                      <h2 className="font-display text-xl font-bold text-foreground">{label}</h2>
+                      <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">{label}</h2>
                       <p className="text-sm text-muted-foreground">{desc}</p>
                     </div>
                     {sectionModels.length > 0 ? (

@@ -177,7 +177,7 @@ const Soutenir = () => {
         <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Ou choisissez un montant</h2>
 
         {/* Amount buttons */}
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-2">
           {AMOUNTS.map((a) => (
             <button
               key={a}
@@ -214,7 +214,7 @@ const Soutenir = () => {
                 placeholder="Montant en €"
                 min={1}
                 max={1000}
-                className="w-40 rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
+                className="w-full sm:w-40 rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
                 autoFocus
               />
               <span className="text-sm text-muted-foreground">€</span>
@@ -234,7 +234,7 @@ const Soutenir = () => {
             <span className="text-sm text-foreground">Faire ce don régulièrement</span>
           </label>
           {recurring && (
-            <div className="ml-7 flex gap-2">
+            <div className="ml-7 flex flex-wrap gap-2">
               <button
                 onClick={() => setRecurrenceType('week')}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${

@@ -142,7 +142,7 @@ const Contribute = () => {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-10">
       <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold text-foreground">Proposer un modèle</h1>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Proposer un modèle</h1>
         <p className="mt-1 text-muted-foreground">
           Votre modèle sera soumis à validation par un administrateur avant d'être visible dans la bibliothèque.
         </p>

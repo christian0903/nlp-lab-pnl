@@ -36,6 +36,8 @@
 4. Cliquez sur **Créer le compte**
 5. **Vérifiez votre email** : un lien de confirmation vous est envoyé. Votre compte ne sera actif qu'après avoir cliqué sur ce lien.
 
+**Note** : seule la page d'accueil est accessible sans connexion. L'accès à la bibliothèque, la communauté, les ressources et toutes les autres pages nécessite un compte.
+
 ### Se connecter
 
 1. Cliquez sur **Se connecter**

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -20,6 +20,8 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = (location.state as any)?.from || '/';
 
   const validateSignup = (): boolean => {
     // 1. Honeypot : si rempli, c'est un bot
@@ -65,7 +67,7 @@ const Auth = () => {
       } else if (mode === 'login') {
         await signIn(email, password);
         toast.success('Connexion réussie');
-        navigate('/community');
+        navigate(returnTo);
       } else {
         if (!validateSignup()) {
           setLoading(false);

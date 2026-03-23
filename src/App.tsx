@@ -26,6 +26,7 @@ import HelpAdmin from "./pages/HelpAdmin";
 import PublicProfile from "./pages/PublicProfile";
 import AdminAnnouncement from "./pages/AdminAnnouncement";
 import Contributors from "./pages/Contributors";
+import AuthGuard from "./components/lab/AuthGuard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <div className="flex min-h-screen flex-col">
           <Header />
           <main className="flex-1">
+          <AuthGuard>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/library" element={<Library />} />
@@ -63,6 +65,7 @@ const App = () => (
             <Route path="/soutenir" element={<Soutenir />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </AuthGuard>
           </main>
           <Footer />
           </div>

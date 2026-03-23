@@ -373,7 +373,8 @@ Quatre mécanismes protègent le formulaire d'inscription :
 | **Honeypot** | Champ invisible rempli uniquement par les bots — inscription silencieusement bloquée |
 | **Question PNL** | "La carte n'est pas le ..." — seul un praticien PNL connaît la réponse |
 | **Validation du nom** | Rejette les noms suspects (chiffres seuls, URLs, caractères spéciaux) |
-| **Confirmation email** | Le compte n'est actif qu'après clic sur le lien de confirmation dans l'email |
+| **Confirmation email** | Le compte n'est actif qu'après clic sur le lien de confirmation dans l'email (paramètre "Confirm email" dans Supabase → Authentication → Providers → Email) |
+| **Accès restreint** | Seules la page d'accueil, la page de connexion et la page de dons sont accessibles sans compte. Toutes les autres pages redirigent vers la connexion |
 
 ### Gestion des articles Ressources
 

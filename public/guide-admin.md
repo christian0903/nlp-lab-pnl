@@ -350,6 +350,24 @@ En mode édition, la section "Journal d'évolution" permet de :
 
 Les outils et problématiques peuvent être rattachés à une approche via un sélecteur visible en mode édition et dans le formulaire de contribution. Sur la fiche d'une approche, un bloc affiche automatiquement tous les modèles rattachés.
 
+### Traduction des modèles
+
+Les administrateurs peuvent créer des traductions de modèles :
+
+1. Ouvrez la fiche d'un modèle existant
+2. Sous les tags, cliquez sur **"Créer la version anglaise"** (ou "Créer la version française")
+3. Un nouveau modèle est créé dans l'autre langue, lié à l'original via `translation_of`
+4. Le titre est copié, mais la description et les sections sont vides
+5. Deux options pour rédiger la traduction :
+   - **Modifier** : écrire directement dans l'éditeur
+   - **Importer une fiche** : coller du markdown traduit via la page d'import
+
+Une fois la traduction rédigée, les deux fiches affichent un lien pour basculer entre les versions (**"View in English"** / **"Voir en français"**).
+
+#### Import avec choix de langue
+
+La page d'import (**Admin → Importer un modèle**) dispose d'un sélecteur **FR | EN** qui définit la langue du modèle importé. Le badge de langue est visible dans la prévisualisation.
+
 ### Date de création (admin)
 
 Les administrateurs peuvent modifier la **date de création** d'un modèle via le champ date en mode édition. Utile pour antidater des modèles qui existaient avant la plateforme.

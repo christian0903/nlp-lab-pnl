@@ -83,6 +83,16 @@ A button in the header (sun/moon/palette icon) lets you choose from 4 themes:
 
 Your choice is saved automatically and persists between visits.
 
+### Language
+
+The site is available in **French** and **English**. A **FR | EN** toggle in the header lets you switch between languages.
+
+- Language is automatically detected on first visit (browser language)
+- Your choice is saved and persists between visits
+- The interface (menus, buttons, messages) changes immediately
+- Models and resources are filtered by the active language
+- The help guide is displayed in the chosen language
+
 ### Mobile installation (PWA)
 
 The Lab can be installed as an app on your phone:
@@ -147,7 +157,10 @@ Main view of models, organized into three sections:
 
 - **Search bar**: filter by title or tag
 - **Filter by type**: All types / Experience / Tool / Approach
+- **Filter by language**: All languages / Français / English — defaults to the active language
 - **Filter by status**: All statuses / Draft / Under review / Testing / Published / Evolving
+
+Each model card displays a **language badge** (FR or EN) and the name of the **associated approach** if applicable.
 
 ### Pipeline tab
 
@@ -177,11 +190,15 @@ The model detail page is organized into tabs.
 
 ### Header
 
-Displays the title, description, badges (type, status, version), tags, author (clickable to view their profile), associated approach and counters (views, variants, discussions).
+Displays the title, description, badges (type, language, status, version), tags, author (clickable to view their profile), associated approach and counters (views, variants, discussions).
 
 For **Approach** type models, a block lists all tools and experiences linked to that approach.
 
 If you are the model's author, an **Edit** button appears to edit the fields.
+
+### Translations
+
+If the model exists in the other language, a **"View in English"** or **"Voir en français"** link appears below the tags, allowing you to switch to the translated version.
 
 ### Presentation tab
 

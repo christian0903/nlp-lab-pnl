@@ -81,7 +81,17 @@ Un bouton dans le header (icone soleil/lune/palette) permet de choisir parmi 4 t
 | **Vivid** | Violet, rose et teal — moderne et colore |
 | **Vivid sombre** | Vivid en mode sombre |
 
-Le choix est sauvegarde automatiquement et persiste entre les visites.
+Le choix est sauvegardé automatiquement et persiste entre les visites.
+
+### Langue
+
+Le site est disponible en **français** et en **anglais**. Un sélecteur **FR | EN** dans le header permet de basculer entre les deux langues.
+
+- La langue est détectée automatiquement au premier accès (langue du navigateur)
+- Le choix est sauvegardé et persiste entre les visites
+- L'interface (menus, boutons, messages) change immédiatement
+- Les modèles et ressources sont filtrés par langue active
+- Le guide d'aide s'affiche dans la langue choisie
 
 ### Installation sur mobile (PWA)
 
@@ -147,7 +157,10 @@ Vue principale des modèles, organisée en trois sections :
 
 - **Barre de recherche** : filtrer par titre ou tag
 - **Filtre par type** : Tous les types / Problématique / Outil / Approche
+- **Filtre par langue** : Toutes les langues / Français / English — par défaut affiche la langue active
 - **Filtre par statut** : Tous les statuts / Brouillon / En révision / En test / Publié / En évolution
+
+Chaque carte de modèle affiche un **badge de langue** (FR ou EN) et le nom de l'**approche associée** le cas échéant.
 
 ### Onglet Pipeline
 
@@ -177,11 +190,15 @@ La page de détail d'un modèle est organisée en onglets.
 
 ### En-tête
 
-Affiche le titre, la description, les badges (type, statut, version), les tags, l'auteur (cliquable pour voir son profil), l'approche associée et les compteurs (vues, variantes, discussions).
+Affiche le titre, la description, les badges (type, langue, statut, version), les tags, l'auteur (cliquable pour voir son profil), l'approche associée et les compteurs (vues, variantes, discussions).
 
 Pour les modèles de type **Approche**, un bloc liste tous les outils et expériences rattachés à cette approche.
 
 Si vous êtes l'auteur du modèle, un bouton **Modifier** apparaît pour éditer les champs.
+
+### Traductions
+
+Si le modèle existe dans l'autre langue, un lien **"View in English"** ou **"Voir en français"** apparaît sous les tags, permettant de basculer vers la version traduite.
 
 ### Onglet Présentation
 

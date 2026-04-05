@@ -350,6 +350,24 @@ In edit mode, the "Evolution log" section allows you to:
 
 Tools and experiences can be linked to an approach via a selector visible in edit mode and in the contribution form. On an approach's page, a block automatically displays all linked models.
 
+### Model translations
+
+Administrators can create translations of models:
+
+1. Open an existing model's page
+2. Below the tags, click **"Create English version"** (or "Create French version")
+3. A new model is created in the other language, linked to the original via `translation_of`
+4. The title is copied, but the description and sections are left empty
+5. Two options for writing the translation:
+   - **Edit**: write directly in the editor
+   - **Import a sheet**: paste translated markdown via the import page
+
+Once the translation is written, both pages display a link to switch between versions (**"View in English"** / **"Voir en français"**).
+
+#### Import with language selection
+
+The import page (**Admin → Import a model**) has a **FR | EN** toggle that sets the language of the imported model. The language badge is visible in the preview.
+
 ### Creation date (admin)
 
 Administrators can edit a model's **creation date** via the date field in edit mode. Useful for backdating models that existed before the platform.

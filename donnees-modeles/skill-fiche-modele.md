@@ -50,28 +50,139 @@ Une fois les informations collectées, produis la fiche markdown structurée.
 
 ## Format de sortie
 
+**IMPORTANT** : utilise EXACTEMENT cette structure. Les sections doivent être sous `## Sections` avec des `### clé_technique` (pas des titres libres). Les clés techniques sont listées dans les tableaux ci-dessous.
+
+### Pour un Outil :
+
 ```markdown
 ---
-action: create | update
-title: "Nom du modèle"
-type: problematique | outil | approche
-status: brouillon | en_revision | en_test | publie | en_evolution
+action: create
+title: "Nom de l'outil"
+type: outil
+status: brouillon
 version: "1.0.0"
 complexity: débutant | intermédiaire | avancé
 tags:
   - tag1
   - tag2
-  - tag3
 ---
 
 ## Description
 
-[1 à 3 phrases. Résume ce que fait le modèle, pourquoi il a été créé, et ce qui le distingue.]
+[1 à 3 phrases]
 
 ## Sections
 
-[Sections pertinentes selon le type — voir ci-dessous]
+### structure
+
+[Architecture ou composants]
+
+### protocol
+
+[Étapes concrètes numérotées]
+
+### active_principle
+
+[Le mécanisme central qui produit le changement]
+
+### vigilance
+
+[Contre-indications, erreurs fréquentes, limites]
+
+### variants
+
+[Adaptations connues]
+
+### prerequisites
+
+[Prérequis pour utiliser l'outil]
 ```
+
+### Pour une Problématique / Expérience :
+
+```markdown
+---
+action: create
+title: "Nom de l'expérience"
+type: problematique
+status: brouillon
+version: "1.0.0"
+complexity: débutant | intermédiaire | avancé
+tags:
+  - tag1
+  - tag2
+---
+
+## Description
+
+[1 à 3 phrases]
+
+## Sections
+
+### patterns
+
+[Patterns comportementaux observés]
+
+### signals
+
+[Signaux reconnaissables : corporels, verbaux, comportementaux]
+
+### intervention_points
+
+[Points d'intervention pour modifier l'expérience]
+
+### structure
+
+[Architecture identifiable si pertinent]
+
+### prerequisites
+
+[Compétences nécessaires]
+```
+
+### Pour une Approche :
+
+```markdown
+---
+action: create
+title: "Nom de l'approche"
+type: approche
+status: brouillon
+version: "1.0.0"
+complexity: débutant | intermédiaire | avancé
+tags:
+  - tag1
+  - tag2
+---
+
+## Description
+
+[1 à 3 phrases]
+
+## Sections
+
+### philosophy
+
+[Vision fondatrice, principes, axiomes]
+
+### creators
+
+[Qui, quand, contexte de création, influences]
+
+### structure
+
+[Comment l'approche s'articule, ses composants]
+
+### toolkit
+
+[Outils et modèles associés]
+
+### prerequisites
+
+[Formations ou expériences recommandées]
+```
+
+N'inclure que les sections pour lesquelles il y a du contenu réel. Mieux vaut 3 sections bien remplies que 6 sections creuses.
 
 ## Sections par type
 

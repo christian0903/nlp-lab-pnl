@@ -333,6 +333,7 @@ const ModelDetail = () => {
     approche: [
       { label: 'Philosophie et principes', key: 'philosophy', placeholder: 'Décrivez les fondements philosophiques...' },
       { label: 'Créateurs', key: 'creators', placeholder: 'Qui a créé ou développé cette approche ?' },
+      { label: 'Structure', key: 'structure', placeholder: 'Architecture ou composants de cette approche, comment elle s\'articule...' },
       { label: 'Boîte à outils', key: 'toolkit', placeholder: 'Les outils et techniques associés à cette approche...' },
       { label: 'Prérequis', key: 'prerequisites', placeholder: 'Formations ou expériences recommandées...' },
     ],

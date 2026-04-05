@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Eye, GitBranch, MessageSquare, Clock, User, ShieldCheck, Star, Plus, Send, Pencil, X, Save, Trash2, Play, FileText, GraduationCap, ExternalLink, Sparkles, ArrowUpRight, Globe } from 'lucide-react';
+import { ArrowLeft, Eye, GitBranch, MessageSquare, Clock, User, ShieldCheck, Star, Plus, Send, Pencil, X, Save, Trash2, Play, FileText, GraduationCap, ExternalLink, Sparkles, ArrowUpRight, Globe, Upload } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from '@/integrations/supabase/client';
@@ -791,6 +791,25 @@ const ModelDetail = () => {
         <TabsContent value="presentation">
           {(() => {
             const filledSections = Object.entries(sections).filter(([_, v]) => v);
+            if (filledSections.length === 0 && !model.description) {
+              return (
+                <div className="rounded-lg border border-dashed border-border p-10 text-center">
+                  <p className="text-muted-foreground mb-4">{t('modelDetail.noContent')}</p>
+                  {canManage && (
+                    <div className="flex items-center justify-center gap-3">
+                      <button onClick={startEditing}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground hover:brightness-110">
+                        <Pencil className="h-3.5 w-3.5" /> {t('common.edit')}
+                      </button>
+                      <Link to={`/admin/import`}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        <Upload className="h-3.5 w-3.5" /> {t('contribute.importSheet')}
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              );
+            }
             if (filledSections.length === 0) {
               return (
                 <div className="rounded-lg border border-dashed border-border p-10 text-center text-muted-foreground">

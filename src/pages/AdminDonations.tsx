@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface Donation {
   id: string;
@@ -26,6 +27,7 @@ interface Subscription {
 }
 
 const AdminDonations = () => {
+  const { t, i18n } = useTranslation();
   const { user, session } = useAuth();
   const { isAdmin, canManage, loading: adminLoading } = useAdmin();
   const [stripeMode, setStripeMode] = useState<'test' | 'live'>('test');
@@ -89,7 +91,7 @@ const AdminDonations = () => {
 
   const formatDate = (date: string) => {
     try {
-      return new Date(date).toLocaleDateString('fr-FR', {
+      return new Date(date).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR', {
         day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
       });
     } catch { return date; }
@@ -97,7 +99,7 @@ const AdminDonations = () => {
 
   const totalDonations = donations.reduce((sum, d) => sum + d.amount, 0);
 
-  if (adminLoading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
+  if (adminLoading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
   if (!canManage) return <Navigate to="/" />;
 
   return (
@@ -173,7 +175,7 @@ const AdminDonations = () => {
       </div>
 
       {loading ? (
-        <div className="py-10 text-center text-muted-foreground">Chargement...</div>
+        <div className="py-10 text-center text-muted-foreground">{t('common.loading')}</div>
       ) : (
         <div className="space-y-8">
           {/* Donations table */}

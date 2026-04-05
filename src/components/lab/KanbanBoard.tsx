@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
-import { DBModel, MODEL_STATUS_LABELS, ModelStatus } from '@/types/model';
+import { DBModel, ModelStatus } from '@/types/model';
 import TypeBadge from './TypeBadge';
 
 const columns: { status: ModelStatus; icon: string }[] = [
@@ -13,6 +14,7 @@ const columns: { status: ModelStatus; icon: string }[] = [
 ];
 
 const KanbanBoard = () => {
+  const { t } = useTranslation();
   const [models, setModels] = useState<DBModel[]>([]);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ const KanbanBoard = () => {
             <div className="mb-3 flex items-center gap-2">
               <span className="text-base">{icon}</span>
               <h4 className="font-display text-sm font-semibold text-foreground">
-                {MODEL_STATUS_LABELS[status]}
+                {t('modelStatuses.' + status)}
               </h4>
               <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
                 {col.length}

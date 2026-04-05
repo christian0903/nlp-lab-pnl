@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Heart, ArrowLeft, Loader2, CheckCircle, Coffee } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +9,7 @@ const AMOUNTS = [5, 10, 20, 50];
 const DEFAULT_AMOUNT = 10;
 
 const Soutenir = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const success = searchParams.get('success') === 'true';
   const canceled = searchParams.get('canceled') === 'true';
@@ -28,11 +30,11 @@ const Soutenir = () => {
 
   const handleDonate = async (donationAmount: number, isRecurring: boolean, interval: string = 'month') => {
     if (donationAmount < 1) {
-      toast.error('Le montant minimum est de 1€');
+      toast.error(t('soutenir.minAmount'));
       return;
     }
     if (donationAmount > 1000) {
-      toast.error('Le montant maximum est de 1000€');
+      toast.error(t('soutenir.maxAmount'));
       return;
     }
 
@@ -50,11 +52,11 @@ const Soutenir = () => {
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        throw new Error('Pas de lien de paiement reçu');
+        throw new Error(t('soutenir.noPaymentLink'));
       }
     } catch (err: any) {
       console.error(err);
-      toast.error('Erreur lors de la création du paiement. Réessayez.');
+      toast.error(t('soutenir.paymentError'));
       setLoad(false);
     }
   };
@@ -63,16 +65,15 @@ const Soutenir = () => {
     return (
       <div className="container mx-auto max-w-lg px-4 py-20 text-center">
         <CheckCircle className="mx-auto mb-4 h-16 w-16 text-emerald-500" />
-        <h1 className="mb-3 font-display text-3xl font-bold text-foreground">Merci pour votre soutien !</h1>
+        <h1 className="mb-3 font-display text-3xl font-bold text-foreground">{t('soutenir.thankYouTitle')}</h1>
         <p className="mb-8 text-muted-foreground leading-relaxed">
-          Votre don contribue directement au maintien et à l'évolution de cette plateforme.
-          Chaque contribution compte et nous permet de garder ce Lab ouvert et gratuit pour tous les praticiens PNL.
+          {t('soutenir.thankYouMessage')}
         </p>
         <Link
           to="/"
           className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground hover:brightness-110"
         >
-          Retour à l'accueil
+          {t('common.backHome')}
         </Link>
       </div>
     );
@@ -81,35 +82,26 @@ const Soutenir = () => {
   return (
     <div className="container mx-auto max-w-2xl px-4 py-10">
       <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Accueil
+        <ArrowLeft className="h-4 w-4" /> {t('common.home')}
       </Link>
 
       <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold text-foreground">Soutenir le Lab</h1>
+        <h1 className="font-display text-3xl font-bold text-foreground">{t('soutenir.title')}</h1>
       </div>
 
       {canceled && (
         <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-600">
-          Le paiement a été annulé. Vous pouvez réessayer quand vous le souhaitez.
+          {t('soutenir.canceled')}
         </div>
       )}
 
       {/* Pourquoi donner — texte descriptif */}
       <div className="mb-8 rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="mb-3 font-display text-lg font-semibold text-foreground">Pourquoi soutenir ce projet ?</h2>
+        <h2 className="mb-3 font-display text-lg font-semibold text-foreground">{t('soutenir.whyTitle')}</h2>
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
-          <p>
-            Le <strong className="text-foreground">PNL Lab R&D Collective</strong> est un projet indépendant, ouvert et gratuit.
-            Pas de publicité, pas de paywall, pas de revente de données. Juste un espace de travail au service des praticiens PNL.
-          </p>
-          <p>
-            Maintenir cette plateforme a un coût : serveur, base de données, nom de domaine, outils de développement,
-            et surtout le temps consacré à développer de nouvelles fonctionnalités, corriger les bugs et accompagner la communauté.
-          </p>
-          <p>
-            Votre don — même modeste — nous aide à garder ce Lab vivant et à le faire évoluer selon les besoins
-            de la communauté. <strong className="text-foreground">Chaque contribution fait une vraie différence.</strong>
-          </p>
+          <p dangerouslySetInnerHTML={{ __html: t('soutenir.whyP1') }} />
+          <p dangerouslySetInnerHTML={{ __html: t('soutenir.whyP2') }} />
+          <p dangerouslySetInnerHTML={{ __html: t('soutenir.whyP3') }} />
         </div>
       </div>
 
@@ -120,7 +112,7 @@ const Soutenir = () => {
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-amber-500/30 bg-amber-500/5 px-5 py-4 text-sm font-semibold text-foreground transition-colors hover:border-amber-500/50 hover:bg-amber-500/10"
         >
           <Coffee className="h-5 w-5 text-amber-600" />
-          Offrez-moi un café — 5€
+          {t('soutenir.coffeeButton')}
         </button>
       </div>
 
@@ -130,26 +122,26 @@ const Soutenir = () => {
           <div className="mx-4 w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-lg" onClick={e => e.stopPropagation()}>
             <div className="mb-4 text-center">
               <Coffee className="mx-auto mb-2 h-10 w-10 text-amber-500" />
-              <h3 className="font-display text-lg font-bold text-foreground">Un café pour le Lab</h3>
-              <p className="mt-1 text-sm text-muted-foreground">5€ — le prix d'un bon espresso</p>
+              <h3 className="font-display text-lg font-bold text-foreground">{t('soutenir.coffeeTitle')}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{t('soutenir.coffeeSubtitle')}</p>
             </div>
 
             <div className="mb-5 space-y-2">
               <label className="flex items-center gap-3 cursor-pointer rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors">
                 <input type="radio" name="coffee-freq" checked={coffeeRecurring === ''} onChange={() => setCoffeeRecurring('')}
                   className="accent-secondary" />
-                <span className="text-sm text-foreground">Juste une fois</span>
+                <span className="text-sm text-foreground">{t('soutenir.justOnce')}</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors">
                 <input type="radio" name="coffee-freq" checked={coffeeRecurring === 'week'} onChange={() => setCoffeeRecurring('week')}
                   className="accent-secondary" />
-                <span className="text-sm text-foreground">Chaque semaine</span>
+                <span className="text-sm text-foreground">{t('soutenir.everyWeek')}</span>
                 <span className="ml-auto rounded-full bg-secondary/10 px-2 py-0.5 text-[10px] font-medium text-secondary">~20€/mois</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors">
                 <input type="radio" name="coffee-freq" checked={coffeeRecurring === 'month'} onChange={() => setCoffeeRecurring('month')}
                   className="accent-secondary" />
-                <span className="text-sm text-foreground">Chaque mois</span>
+                <span className="text-sm text-foreground">{t('soutenir.everyMonth')}</span>
                 <span className="ml-auto rounded-full bg-secondary/10 px-2 py-0.5 text-[10px] font-medium text-secondary">5€/mois</span>
               </label>
             </div>
@@ -157,7 +149,7 @@ const Soutenir = () => {
             <div className="flex gap-3">
               <button onClick={() => setShowCoffee(false)}
                 className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground">
-                Annuler
+                {t('common.cancel')}
               </button>
               <button
                 onClick={() => handleDonate(5, coffeeRecurring !== '', coffeeRecurring || 'month')}
@@ -165,7 +157,7 @@ const Soutenir = () => {
                 className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-600 disabled:opacity-50"
               >
                 {coffeeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Coffee className="h-4 w-4" />}
-                {coffeeLoading ? 'Redirection...' : 'Offrir le café'}
+                {coffeeLoading ? t('soutenir.redirecting') : t('soutenir.offerCoffee')}
               </button>
             </div>
           </div>
@@ -174,7 +166,7 @@ const Soutenir = () => {
 
       {/* Donation form — montant libre */}
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Ou choisissez un montant</h2>
+        <h2 className="mb-4 font-display text-lg font-semibold text-foreground">{t('soutenir.chooseAmount')}</h2>
 
         {/* Amount buttons */}
         <div className="mb-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-2">
@@ -199,7 +191,7 @@ const Soutenir = () => {
                 : 'border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
             }`}
           >
-            Autre
+            {t('soutenir.other')}
           </button>
         </div>
 
@@ -211,7 +203,7 @@ const Soutenir = () => {
                 type="number"
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
-                placeholder="Montant en €"
+                placeholder={t('soutenir.amountPlaceholder')}
                 min={1}
                 max={1000}
                 className="w-full sm:w-40 rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
@@ -231,7 +223,7 @@ const Soutenir = () => {
               onChange={(e) => setRecurring(e.target.checked)}
               className="rounded border-input"
             />
-            <span className="text-sm text-foreground">Faire ce don régulièrement</span>
+            <span className="text-sm text-foreground">{t('soutenir.recurringDonation')}</span>
           </label>
           {recurring && (
             <div className="ml-7 flex flex-wrap gap-2">
@@ -241,7 +233,7 @@ const Soutenir = () => {
                   recurrenceType === 'week' ? 'bg-secondary text-secondary-foreground' : 'border border-border text-muted-foreground'
                 }`}
               >
-                Chaque semaine
+                {t('soutenir.everyWeek')}
               </button>
               <button
                 onClick={() => setRecurrenceType('month')}
@@ -249,7 +241,7 @@ const Soutenir = () => {
                   recurrenceType === 'month' ? 'bg-secondary text-secondary-foreground' : 'border border-border text-muted-foreground'
                 }`}
               >
-                Chaque mois
+                {t('soutenir.everyMonth')}
               </button>
             </div>
           )}
@@ -262,14 +254,14 @@ const Soutenir = () => {
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-secondary px-5 py-3 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50"
         >
           {loading ? (
-            <><Loader2 className="h-4 w-4 animate-spin" /> Redirection vers Stripe...</>
+            <><Loader2 className="h-4 w-4 animate-spin" /> {t('soutenir.redirecting')}</>
           ) : (
-            <><Heart className="h-4 w-4" /> Donner {effectiveAmount > 0 ? `${effectiveAmount}€` : ''}{recurring ? `/${recurrenceType === 'week' ? 'semaine' : 'mois'}` : ''}</>
+            <><Heart className="h-4 w-4" /> {t('soutenir.donateButton')} {effectiveAmount > 0 ? `${effectiveAmount}€` : ''}{recurring ? (recurrenceType === 'week' ? t('soutenir.perWeek') : t('soutenir.perMonth')) : ''}</>
           )}
         </button>
 
         <p className="mt-3 text-center text-[10px] text-muted-foreground">
-          Paiement sécurisé via Stripe. Aucune donnée bancaire n'est stockée sur nos serveurs.
+          {t('soutenir.securePayment')}
         </p>
       </div>
     </div>

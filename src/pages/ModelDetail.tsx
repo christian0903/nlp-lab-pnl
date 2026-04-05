@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, Eye, GitBranch, MessageSquare, Clock, User, ShieldCheck, Star, Plus, Send, Pencil, X, Save, Trash2, Play, FileText, GraduationCap, ExternalLink, Sparkles, ArrowUpRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft, Eye, GitBranch, MessageSquare, Clock, User, ShieldCheck, Star, Plus, Send, Pencil, X, Save, Trash2, Play, FileText, GraduationCap, ExternalLink, Sparkles, ArrowUpRight, Globe } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +13,7 @@ import TypeBadge from '@/components/lab/TypeBadge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import ImageUploader from '@/components/lab/ImageUploader';
+import LangBadge from '@/components/lab/LangBadge';
 
 interface Feedback {
   id: string;
@@ -24,6 +26,7 @@ interface Feedback {
 }
 
 const ModelDetail = () => {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -36,7 +39,7 @@ const ModelDetail = () => {
   const [childModels, setChildModels] = useState<{ id: string; title: string; author_name: string; created_at: string }[]>([]);
   const [linkedPosts, setLinkedPosts] = useState<{ id: string; title: string; content: string; user_id: string; created_at: string; category: string }[]>([]);
   const [approcheModels, setApprocheModels] = useState<{ id: string; title: string; type: string; version: string; user_id: string }[]>([]);
-
+  const [translationModel, setTranslationModel] = useState<{ id: string; lang: string } | null>(null);
 
   // Feedbacks (legacy, displayed in Discussions)
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -105,7 +108,7 @@ const ModelDetail = () => {
         const { data: childProfs } = await supabase.from('profiles').select('user_id, display_name').in('user_id', childUserIds);
         const childProfMap: Record<string, string> = {};
         childProfs?.forEach((p: any) => { childProfMap[p.user_id] = p.display_name; });
-        setChildModels(childData.map((c: any) => ({ id: c.id, title: c.title, author_name: childProfMap[c.user_id] || 'Anonyme', created_at: c.created_at })));
+        setChildModels(childData.map((c: any) => ({ id: c.id, title: c.title, author_name: childProfMap[c.user_id] || t('common.anonymous'), created_at: c.created_at })));
       }
 
       // Fetch linked forum posts (M:N table + legacy model_id)
@@ -153,6 +156,25 @@ const ModelDetail = () => {
 
       setFeedbacks(fbs.map(f => ({ ...f, author_name: profMap[f.user_id] })));
 
+      // Find translation: either this model is a translation_of another, or another model points to this one
+      const modelLang = m.lang || 'fr';
+      if (m.translation_of) {
+        // This is a translation — link to the original
+        setTranslationModel({ id: m.translation_of, lang: modelLang === 'en' ? 'fr' : 'en' });
+      } else {
+        // Check if a translation of this model exists
+        const { data: translationData } = await supabase
+          .from('models')
+          .select('id, lang')
+          .eq('translation_of', id!)
+          .limit(1);
+        if (translationData && translationData.length > 0) {
+          setTranslationModel({ id: translationData[0].id, lang: translationData[0].lang || 'en' });
+        } else {
+          setTranslationModel(null);
+        }
+      }
+
       setLoading(false);
     };
     fetchAll();
@@ -180,21 +202,21 @@ const ModelDetail = () => {
     if (!model) return;
     await supabase.from('models').update({ status: newStatus } as any).eq('id', model.id);
     setModel({ ...model, status: newStatus });
-    toast.success(`Statut changé en "${MODEL_STATUS_LABELS[newStatus as keyof typeof MODEL_STATUS_LABELS] || newStatus}"`);
+    toast.success(t('modelDetail.statusChanged', { status: t('modelStatuses.' + newStatus, MODEL_STATUS_LABELS[newStatus as keyof typeof MODEL_STATUS_LABELS] || newStatus) }));
   };
 
   const handleApprove = async () => {
     if (!model) return;
     await supabase.from('models').update({ approved: true } as any).eq('id', model.id);
     setModel({ ...model, approved: true });
-    toast.success('Modèle validé !');
+    toast.success(t('modelDetail.approveSuccess'));
   };
 
   const handleUnapprove = async () => {
     if (!model) return;
     await supabase.from('models').update({ approved: false } as any).eq('id', model.id);
     setModel({ ...model, approved: false });
-    toast.success('Modèle remis en attente');
+    toast.success(t('modelDetail.unapproveSuccess'));
   };
 
   const startEditing = () => {
@@ -208,7 +230,7 @@ const ModelDetail = () => {
     setEditSections((model.sections || {}) as Record<string, string>);
     setEditLinks((model.links || []) as ModelLink[]);
     setEditJournalNote('');
-    setEditJournalAuthors([profiles[user?.id || ''] || 'Anonyme']);
+    setEditJournalAuthors([profiles[user?.id || ''] || t('common.anonymous')]);
     setEditOwnerId(model.user_id);
     setEditCreatedAt(model.created_at.split('T')[0]);
     setEditApprocheId(model.approche_id || '');
@@ -221,7 +243,7 @@ const ModelDetail = () => {
 
   const saveEditing = async () => {
     if (!model || !editTitle.trim() || !editDescription.trim()) {
-      toast.error('Le titre et la description sont requis');
+      toast.error(t('modelDetail.titleDescRequired'));
       return;
     }
     setEditSubmitting(true);
@@ -264,7 +286,7 @@ const ModelDetail = () => {
 
     setEditSubmitting(false);
     if (error) {
-      toast.error('Erreur lors de la sauvegarde');
+      toast.error(t('modelDetail.saveError'));
       console.error(error);
       return;
     }
@@ -293,61 +315,65 @@ const ModelDetail = () => {
       setAuthorName(allUsers.find(u => u.user_id === editOwnerId)?.display_name || '');
     }
     setEditing(false);
-    toast.success('Modèle mis à jour !');
+    toast.success(t('modelDetail.saveSuccess'));
   };
 
   const handleDelete = async () => {
     if (!model) return;
     const { error } = await supabase.from('models').delete().eq('id', model.id);
     if (error) {
-      toast.error('Erreur lors de la suppression');
+      toast.error(t('modelDetail.deleteError'));
       console.error(error);
       return;
     }
-    toast.success('Modèle supprimé');
+    toast.success(t('modelDetail.deleteSuccess'));
     navigate('/library');
   };
 
   const complexityOptions = [
-    { value: 'débutant', label: 'Débutant' },
-    { value: 'intermédiaire', label: 'Intermédiaire' },
-    { value: 'avancé', label: 'Avancé' },
+    { value: 'débutant', label: t('contribute.complexityBeginner') },
+    { value: 'intermédiaire', label: t('contribute.complexityIntermediate') },
+    { value: 'avancé', label: t('contribute.complexityAdvanced') },
   ];
 
   const sectionsByType: Record<ModelType, { label: string; key: string; placeholder: string }[]> = {
     problematique: [
-      { label: 'Description du phénomène', key: 'description', placeholder: 'Décrivez le phénomène observé...' },
-      { label: 'Patterns identifiés', key: 'patterns', placeholder: 'Décrivez les patterns comportementaux observés...' },
-      { label: 'Signaux reconnaissables', key: 'signals', placeholder: 'Quels signaux permettent de repérer cette expérience ? (corporels, verbaux, comportementaux...)' },
-      { label: 'Points d\'intervention', key: 'intervention_points', placeholder: 'À quels endroits peut-on intervenir pour modifier l\'expérience ?' },
-      { label: 'Prérequis', key: 'prerequisites', placeholder: 'Connaissances ou compétences nécessaires...' },
+      { label: t('modelDetail.sectionLabels.description'), key: 'description', placeholder: t('contribute.sections.patternsPlaceholder') },
+      { label: t('contribute.sections.patterns'), key: 'patterns', placeholder: t('contribute.sections.patternsPlaceholder') },
+      { label: t('contribute.sections.signals'), key: 'signals', placeholder: t('contribute.sections.signalsPlaceholder') },
+      { label: t('contribute.sections.intervention_points'), key: 'intervention_points', placeholder: t('contribute.sections.intervention_pointsPlaceholder') },
+      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_problematique') },
     ],
     outil: [
-      { label: 'Structure du modèle', key: 'structure', placeholder: 'Décrivez la structure du modèle...' },
-      { label: 'Protocole détaillé', key: 'protocol', placeholder: 'Décrivez les étapes du protocole...' },
-      { label: 'Principe actif', key: 'active_principle', placeholder: 'Quel est le mécanisme central qui produit le changement ?' },
-      { label: 'Points de vigilance', key: 'vigilance', placeholder: 'Situations où l\'outil ne fonctionne pas bien, contre-indications, erreurs fréquentes...' },
-      { label: 'Variantes connues', key: 'variants', placeholder: 'Adaptations ou variantes de cet outil utilisées par d\'autres praticiens...' },
-      { label: 'Prérequis', key: 'prerequisites', placeholder: 'Rapport, état de ressource, calibration...' },
+      { label: t('contribute.sections.structure'), key: 'structure', placeholder: t('contribute.sections.structurePlaceholder') },
+      { label: t('contribute.sections.protocol'), key: 'protocol', placeholder: t('contribute.sections.protocolPlaceholder') },
+      { label: t('contribute.sections.active_principle'), key: 'active_principle', placeholder: t('contribute.sections.active_principlePlaceholder') },
+      { label: t('contribute.sections.vigilance'), key: 'vigilance', placeholder: t('contribute.sections.vigilancePlaceholder') },
+      { label: t('contribute.sections.variants'), key: 'variants', placeholder: t('contribute.sections.variantsPlaceholder') },
+      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_outil') },
     ],
     approche: [
-      { label: 'Philosophie et principes', key: 'philosophy', placeholder: 'Décrivez les fondements philosophiques...' },
-      { label: 'Créateurs', key: 'creators', placeholder: 'Qui a créé ou développé cette approche ?' },
-      { label: 'Structure', key: 'structure', placeholder: 'Architecture ou composants de cette approche, comment elle s\'articule...' },
-      { label: 'Boîte à outils', key: 'toolkit', placeholder: 'Les outils et techniques associés à cette approche...' },
-      { label: 'Prérequis', key: 'prerequisites', placeholder: 'Formations ou expériences recommandées...' },
+      { label: t('contribute.sections.philosophy'), key: 'philosophy', placeholder: t('contribute.sections.philosophyPlaceholder') },
+      { label: t('contribute.sections.creators'), key: 'creators', placeholder: t('contribute.sections.creatorsPlaceholder') },
+      { label: t('contribute.sections.structure'), key: 'structure', placeholder: t('contribute.sections.structurePlaceholder') },
+      { label: t('contribute.sections.toolkit'), key: 'toolkit', placeholder: t('contribute.sections.toolkitPlaceholder') },
+      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_approche') },
     ],
   };
 
+  const sectionLabel = (key: string) => {
+    return t(`modelDetail.sectionLabels.${key}`, key);
+  };
+
   if (loading) {
-    return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
+    return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
   }
 
   if (!model) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
-        <p className="text-muted-foreground">Modèle introuvable</p>
-        <Link to="/library" className="mt-4 inline-block text-sm text-secondary hover:underline">← Retour à la bibliothèque</Link>
+        <p className="text-muted-foreground">{t('modelDetail.notFound')}</p>
+        <Link to="/library" className="mt-4 inline-block text-sm text-secondary hover:underline">{t('modelDetail.backToLibrary')}</Link>
       </div>
     );
   }
@@ -359,25 +385,25 @@ const ModelDetail = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <Link to="/library" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Bibliothèque
+        <ArrowLeft className="h-4 w-4" /> {t('modelDetail.library')}
       </Link>
 
       {/* Admin validation banner */}
       {canManage && !model.approved && (
         <div className="mb-4 flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
           <ShieldCheck className="h-5 w-5 text-amber-600" />
-          <span className="text-sm text-foreground">Ce modèle est en attente de validation.</span>
+          <span className="text-sm text-foreground">{t('modelDetail.pendingValidation')}</span>
           <button onClick={handleApprove} className="ml-auto rounded-lg bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-700">
-            Valider
+            {t('modelDetail.validate')}
           </button>
         </div>
       )}
       {canManage && model.approved && (
         <div className="mb-4 flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4">
           <ShieldCheck className="h-5 w-5 text-emerald-600" />
-          <span className="text-sm text-foreground">Ce modèle est validé.</span>
+          <span className="text-sm text-foreground">{t('modelDetail.validated')}</span>
           <button onClick={handleUnapprove} className="ml-auto rounded-lg border border-amber-500 px-4 py-1.5 text-sm font-medium text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30">
-            Remettre en attente
+            {t('modelDetail.putBack')}
           </button>
         </div>
       )}
@@ -386,7 +412,7 @@ const ModelDetail = () => {
       {parentModel && (
         <div className="mb-4 flex items-center gap-2 rounded-xl border border-secondary/20 bg-secondary/5 p-3">
           <GitBranch className="h-4 w-4 text-secondary" />
-          <span className="text-sm text-foreground">Dérivé de</span>
+          <span className="text-sm text-foreground">{t('modelDetail.derivedFrom')}</span>
           <Link to={`/model/${parentModel.id}`} className="text-sm font-medium text-secondary hover:underline">
             {parentModel.title}
           </Link>
@@ -397,18 +423,18 @@ const ModelDetail = () => {
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowDeleteConfirm(false)}>
           <div className="mx-4 w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg" onClick={e => e.stopPropagation()}>
-            <h3 className="mb-2 font-display text-lg font-bold text-foreground">Supprimer ce modèle ?</h3>
+            <h3 className="mb-2 font-display text-lg font-bold text-foreground">{t('modelDetail.deleteTitle')}</h3>
             <p className="mb-6 text-sm text-muted-foreground">
-              Le modèle <strong>"{model.title}"</strong> sera supprimé définitivement, ainsi que ses variations et feedbacks. Cette action est irréversible.
+              {t('modelDetail.deleteMessage', { title: model.title })}
             </p>
             <div className="flex justify-end gap-3">
               <button onClick={() => setShowDeleteConfirm(false)}
                 className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
-                Annuler
+                {t('common.cancel')}
               </button>
               <button onClick={handleDelete}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors">
-                Supprimer définitivement
+                {t('modelDetail.deleteConfirm')}
               </button>
             </div>
           </div>
@@ -421,21 +447,22 @@ const ModelDetail = () => {
           <>
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <TypeBadge type={model.type as any} />
+              <LangBadge lang={model.lang || 'fr'} />
               <StatusBadge status={model.status as any} />
               {!model.approved && (
-                <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-600">En attente</span>
+                <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-600">{t('modelDetail.pending')}</span>
               )}
               <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-mono font-medium text-muted-foreground">v{model.version}</span>
               {canEdit && (
                 <div className="ml-auto flex items-center gap-2">
                   <button onClick={startEditing}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
-                    <Pencil className="h-3.5 w-3.5" /> Modifier
+                    <Pencil className="h-3.5 w-3.5" /> {t('common.edit')}
                   </button>
                   {isAdmin && (
                     <button onClick={() => setShowDeleteConfirm(true)}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 hover:border-red-400 transition-colors dark:hover:bg-red-950/30">
-                      <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                      <Trash2 className="h-3.5 w-3.5" /> {t('common.delete')}
                     </button>
                   )}
                 </div>
@@ -447,51 +474,68 @@ const ModelDetail = () => {
             </div>
             <div className="flex flex-wrap gap-3 sm:gap-5 text-sm text-muted-foreground">
               <Link to={`/profil/${model.user_id}`} className="flex items-center gap-1.5 hover:text-secondary transition-colors">
-                <User className="h-4 w-4" /> {authorName || 'Anonyme'}
+                <User className="h-4 w-4" /> {authorName || t('common.anonymous')}
               </Link>
               {approcheName && (
                 <Link to={`/model/${model.approche_id}`} className="flex items-center gap-1.5 text-secondary hover:underline">
                   <Sparkles className="h-4 w-4" /> {approcheName}
                 </Link>
               )}
-              <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {new Date(model.updated_at).toLocaleDateString('fr-FR')}</span>
+              <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {new Date(model.updated_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
               <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> {model.views_count}</span>
-              <span className="flex items-center gap-1.5"><GitBranch className="h-4 w-4" /> {childModels.length} variantes</span>
-              <span className="flex items-center gap-1.5"><MessageSquare className="h-4 w-4" /> {linkedPosts.length + feedbacks.length} discussions</span>
+              <span className="flex items-center gap-1.5"><GitBranch className="h-4 w-4" /> {childModels.length} {t('modelDetail.variants').toLowerCase()}</span>
+              <span className="flex items-center gap-1.5"><MessageSquare className="h-4 w-4" /> {linkedPosts.length + feedbacks.length} {t('modelDetail.discussions').toLowerCase()}</span>
             </div>
-            <div className="mt-4 flex flex-wrap gap-1.5">
+            <div className="mt-4 flex flex-wrap items-center gap-1.5">
               {model.tags.map(tag => (
                 <span key={tag} className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">{tag}</span>
               ))}
             </div>
+            {/* Translation link */}
+            {translationModel ? (
+              <Link
+                to={`/model/${translationModel.id}`}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-secondary hover:border-secondary/30 transition-colors"
+              >
+                <Globe className="h-3.5 w-3.5" />
+                {translationModel.lang === 'en' ? t('language.viewInEnglish') : t('language.viewInFrench')}
+              </Link>
+            ) : (
+              <div className="mt-4">
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+                  <Globe className="h-3.5 w-3.5" />
+                  {(model.lang || 'fr') === 'fr' ? t('language.translateToEnglish') : t('language.translateToFrench')}
+                </span>
+              </div>
+            )}
           </>
         ) : (
           <div className="space-y-5">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-bold text-foreground">Modifier le modèle</h2>
+              <h2 className="font-display text-lg font-bold text-foreground">{t('modelDetail.editModel')}</h2>
               <button onClick={cancelEditing} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">Titre *</label>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.titleLabel')}</label>
               <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
                 maxLength={200} className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">Type</label>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.typeLabel')}</label>
                 <select value={editType} onChange={e => setEditType(e.target.value as ModelType)}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
-                  {(Object.entries(MODEL_TYPE_LABELS) as [ModelType, string][]).map(([k, v]) => (
-                    <option key={k} value={k}>{v}</option>
+                  {(Object.entries(MODEL_TYPE_LABELS) as [ModelType, string][]).map(([k]) => (
+                    <option key={k} value={k}>{t('modelTypes.' + k)}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">Complexité</label>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.complexityLabel')}</label>
                 <select value={editComplexity} onChange={e => setEditComplexity(e.target.value)}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
                   {complexityOptions.map(opt => (
@@ -500,14 +544,14 @@ const ModelDetail = () => {
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">Version</label>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.versionLabel')}</label>
                 <input type="text" value={editVersion} onChange={e => setEditVersion(e.target.value)}
                   placeholder="1.0.0" maxLength={20}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
               </div>
               {isAdmin && allUsers.length > 0 && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Propriétaire</label>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.ownerLabel')}</label>
                   <select value={editOwnerId} onChange={e => setEditOwnerId(e.target.value)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
                     {allUsers.map(u => (
@@ -518,17 +562,17 @@ const ModelDetail = () => {
               )}
               {isAdmin && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Date de création</label>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.createdDateLabel')}</label>
                   <input type="date" value={editCreatedAt} onChange={e => setEditCreatedAt(e.target.value)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
                 </div>
               )}
               {editType !== 'approche' && approches.length > 0 && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Approche associée</label>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.associatedApproach')}</label>
                   <select value={editApprocheId} onChange={e => setEditApprocheId(e.target.value)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
-                    <option value="">— Aucune approche —</option>
+                    <option value="">{t('modelDetail.noApproach')}</option>
                     {approches.map(a => (
                       <option key={a.id} value={a.id}>{a.title}</option>
                     ))}
@@ -538,7 +582,7 @@ const ModelDetail = () => {
             </div>
 
             <MarkdownField
-              label="Description *"
+              label={t('modelDetail.descriptionLabel')}
               value={editDescription}
               onChange={setEditDescription}
               maxLength={5000}
@@ -558,7 +602,7 @@ const ModelDetail = () => {
             ))}
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">Tags (séparés par des virgules)</label>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.tagsLabel')}</label>
               <input type="text" value={editTagsInput} onChange={e => setEditTagsInput(e.target.value)}
                 placeholder="ancrage, somatique, dissociation" maxLength={200}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
@@ -567,14 +611,14 @@ const ModelDetail = () => {
             {/* Liens */}
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <label className="text-sm font-medium text-foreground">Liens & ressources</label>
+                <label className="text-sm font-medium text-foreground">{t('modelDetail.linksLabel')}</label>
                 <button type="button" onClick={() => setEditLinks(prev => [...prev, { type: 'video', title: '', url: '', description: '' }])}
                   className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-secondary hover:bg-secondary/10">
-                  <Plus className="h-3.5 w-3.5" /> Ajouter un lien
+                  <Plus className="h-3.5 w-3.5" /> {t('modelDetail.addLink')}
                 </button>
               </div>
               {editLinks.length === 0 && (
-                <p className="text-xs text-muted-foreground">Aucun lien. Ajoutez des vidéos, documents ou formations liés à ce modèle.</p>
+                <p className="text-xs text-muted-foreground">{t('modelDetail.noLinks')}</p>
               )}
               <div className="space-y-3">
                 {editLinks.map((link, i) => (
@@ -582,12 +626,12 @@ const ModelDetail = () => {
                     <div className="flex items-center gap-2">
                       <select value={link.type} onChange={e => setEditLinks(prev => prev.map((l, j) => j === i ? { ...l, type: e.target.value as ModelLinkType } : l))}
                         className="rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none ring-ring focus:ring-2">
-                        <option value="video">Video</option>
-                        <option value="doc">Document</option>
-                        <option value="formation">Formation</option>
+                        <option value="video">{t('modelDetail.video')}</option>
+                        <option value="doc">{t('modelDetail.document')}</option>
+                        <option value="formation">{t('modelDetail.training')}</option>
                       </select>
                       <input type="text" value={link.title} onChange={e => setEditLinks(prev => prev.map((l, j) => j === i ? { ...l, title: e.target.value } : l))}
-                        placeholder="Titre du lien" className="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none ring-ring focus:ring-2" />
+                        placeholder={t('modelDetail.linkTitle')} className="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none ring-ring focus:ring-2" />
                       <button type="button" onClick={() => setEditLinks(prev => prev.filter((_, j) => j !== i))}
                         className="rounded p-1 text-muted-foreground hover:text-red-500">
                         <X className="h-4 w-4" />
@@ -596,7 +640,7 @@ const ModelDetail = () => {
                     <input type="url" value={link.url} onChange={e => setEditLinks(prev => prev.map((l, j) => j === i ? { ...l, url: e.target.value } : l))}
                       placeholder="https://..." className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none ring-ring focus:ring-2" />
                     <input type="text" value={link.description || ''} onChange={e => setEditLinks(prev => prev.map((l, j) => j === i ? { ...l, description: e.target.value } : l))}
-                      placeholder="Description courte (optionnel)" className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none ring-ring focus:ring-2" />
+                      placeholder={t('modelDetail.linkDescription')} className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none ring-ring focus:ring-2" />
                   </div>
                 ))}
               </div>
@@ -604,14 +648,14 @@ const ModelDetail = () => {
 
             {/* Journal d'évolution */}
             <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
-              <label className="block text-sm font-medium text-foreground">Journal d'évolution</label>
-              <p className="text-xs text-muted-foreground">Décrivez ce qui a changé. Cette entrée sera ajoutée au journal avec la version, la date et les contributeurs.</p>
+              <label className="block text-sm font-medium text-foreground">{t('modelDetail.journal')}</label>
+              <p className="text-xs text-muted-foreground">{t('modelDetail.journalDesc')}</p>
               <textarea value={editJournalNote} onChange={e => setEditJournalNote(e.target.value)}
-                placeholder="Ex: Ajout du principe actif, correction des prérequis, variante kinesthésique..."
+                placeholder={t('modelDetail.journalPlaceholder')}
                 rows={2} maxLength={1000}
                 className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
               <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">Contributeurs de cette modification</label>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">{t('modelDetail.journalContributors')}</label>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {editJournalAuthors.map((author, i) => (
                     <span key={i} className="inline-flex items-center gap-1 rounded-full bg-secondary/10 px-2.5 py-1 text-xs text-secondary">
@@ -631,13 +675,13 @@ const ModelDetail = () => {
                       }
                     }}
                     className="rounded border border-input bg-background px-2 py-1.5 text-xs outline-none ring-ring focus:ring-2">
-                    <option value="">+ Ajouter un contributeur</option>
+                    <option value="">{t('modelDetail.addContributor')}</option>
                     {allUsers.filter(u => !editJournalAuthors.includes(u.display_name)).map(u => (
                       <option key={u.user_id} value={u.display_name}>{u.display_name}</option>
                     ))}
                   </select>
                 ) : (
-                  <p className="text-[10px] text-muted-foreground">Vous êtes listé comme contributeur de cette modification.</p>
+                  <p className="text-[10px] text-muted-foreground">{t('modelDetail.youAreContributor')}</p>
                 )}
               </div>
             </div>
@@ -645,11 +689,11 @@ const ModelDetail = () => {
             <div className="flex justify-end gap-3 border-t border-border pt-4">
               <button onClick={cancelEditing}
                 className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
-                Annuler
+                {t('common.cancel')}
               </button>
               <button onClick={saveEditing} disabled={editSubmitting}
                 className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
-                <Save className="h-4 w-4" /> {editSubmitting ? 'Sauvegarde...' : 'Enregistrer'}
+                <Save className="h-4 w-4" /> {editSubmitting ? t('common.saving') : t('common.save')}
               </button>
             </div>
           </div>
@@ -660,7 +704,7 @@ const ModelDetail = () => {
       {model.type === 'approche' && approcheModels.length > 0 && (
         <div className="mb-8 rounded-xl border border-border bg-card p-5 shadow-sm">
           <h3 className="mb-3 font-display text-base font-semibold text-foreground">
-            Modèles de cette approche ({approcheModels.length})
+            {t('modelDetail.approacheModels', { count: approcheModels.length })}
           </h3>
           <div className="grid gap-2 sm:grid-cols-2">
             {approcheModels.map(m => (
@@ -669,7 +713,7 @@ const ModelDetail = () => {
                 <TypeBadge type={m.type as any} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{m.title}</p>
-                  <p className="text-xs text-muted-foreground">v{m.version} · {profiles[m.user_id] || 'Anonyme'}</p>
+                  <p className="text-xs text-muted-foreground">v{m.version} · {profiles[m.user_id] || t('common.anonymous')}</p>
                 </div>
               </Link>
             ))}
@@ -680,12 +724,12 @@ const ModelDetail = () => {
       {/* Status management */}
       {canEdit && model.approved && (
         <div className="mb-8 rounded-xl border border-border bg-card p-4 shadow-sm">
-          <p className="mb-3 text-sm font-medium text-foreground">Changer le statut :</p>
+          <p className="mb-3 text-sm font-medium text-foreground">{t('modelDetail.changeStatus')}</p>
           <div className="flex flex-wrap gap-2">
             {statusFlow.map(s => (
               <button key={s} onClick={() => handleStatusChange(s)} disabled={model.status === s}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${model.status === s ? 'bg-secondary text-secondary-foreground' : 'border border-border text-muted-foreground hover:text-foreground'}`}>
-                {MODEL_STATUS_LABELS[s as keyof typeof MODEL_STATUS_LABELS]}
+                {t('modelStatuses.' + s)}
               </button>
             ))}
           </div>
@@ -696,19 +740,19 @@ const ModelDetail = () => {
       <Tabs defaultValue="presentation" className="w-full">
         <TabsList className="mb-3 w-full justify-start overflow-x-auto border-b border-border bg-transparent p-0">
           <TabsTrigger value="presentation" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            Présentation
+            {t('modelDetail.presentation')}
           </TabsTrigger>
           <TabsTrigger value="liens" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            Liens {(model.links as ModelLink[] || []).length > 0 ? `(${(model.links as ModelLink[]).length})` : ''}
+            {t('modelDetail.links')} {(model.links as ModelLink[] || []).length > 0 ? `(${(model.links as ModelLink[]).length})` : ''}
           </TabsTrigger>
           <TabsTrigger value="historique" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            Historique
+            {t('modelDetail.history')}
           </TabsTrigger>
           <TabsTrigger value="variations" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            Variantes ({childModels.length})
+            {t('modelDetail.variants')} ({childModels.length})
           </TabsTrigger>
           <TabsTrigger value="discussions" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            Discussions ({linkedPosts.length + feedbacks.length})
+            {t('modelDetail.discussions')} ({linkedPosts.length + feedbacks.length})
           </TabsTrigger>
         </TabsList>
 
@@ -719,7 +763,7 @@ const ModelDetail = () => {
             if (filledSections.length === 0) {
               return (
                 <div className="rounded-lg border border-dashed border-border p-10 text-center text-muted-foreground">
-                  Le contenu détaillé sera ajouté prochainement.
+                  {t('modelDetail.noContent')}
                 </div>
               );
             }
@@ -778,7 +822,7 @@ const ModelDetail = () => {
                       <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{link.description}</p>
                     )}
                     <span className="mt-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
-                      {link.type === 'video' ? 'Vidéo' : link.type === 'formation' ? 'Formation' : 'Document'}
+                      {link.type === 'video' ? t('modelDetail.video') : link.type === 'formation' ? t('modelDetail.training') : t('modelDetail.document')}
                     </span>
                   </div>
                 </a>
@@ -786,7 +830,7 @@ const ModelDetail = () => {
             </div>
           ) : (
             <div className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-              Aucun lien pour le moment. Cliquez sur <strong>Modifier</strong> pour ajouter des vidéos, documents ou formations.
+              {t('modelDetail.noLinksYet')}
             </div>
           )}
         </TabsContent>
@@ -797,7 +841,7 @@ const ModelDetail = () => {
             {/* Discussions liées */}
             {linkedPosts.length > 0 && (
               <div>
-                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">Discussions communautaires</h3>
+                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('modelDetail.communityDiscussions')}</h3>
                 <div className="space-y-2">
                   {linkedPosts.map(post => (
                     <Link key={post.id} to={`/community`}
@@ -805,7 +849,7 @@ const ModelDetail = () => {
                       <MessageSquare className="h-5 w-5 text-purple-500" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{post.title}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleDateString('fr-FR')}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</p>
                       </div>
                     </Link>
                   ))}
@@ -816,13 +860,13 @@ const ModelDetail = () => {
             {/* Filiation parent */}
             {parentModel && (
               <div>
-                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">Origine</h3>
+                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('modelDetail.origin')}</h3>
                 <Link to={`/model/${parentModel.id}`}
                   className="flex items-center gap-3 rounded-lg border border-secondary/20 bg-secondary/5 p-4 hover:border-secondary/40 transition-colors">
                   <GitBranch className="h-5 w-5 text-secondary" />
                   <div>
-                    <p className="text-sm font-medium text-foreground">Dérivé de <span className="text-secondary">{parentModel.title}</span></p>
-                    <p className="text-xs text-muted-foreground">Ce modèle a été créé à partir d'une variation du modèle parent</p>
+                    <p className="text-sm font-medium text-foreground">{t('modelDetail.derivedFrom')} <span className="text-secondary">{parentModel.title}</span></p>
+                    <p className="text-xs text-muted-foreground">{t('modelDetail.derivedFromParent')}</p>
                   </div>
                   <ArrowUpRight className="ml-auto h-4 w-4 text-muted-foreground" />
                 </Link>
@@ -841,7 +885,7 @@ const ModelDetail = () => {
               });
               return allContributors.size > 0 ? (
                 <div>
-                  <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">Contributeurs</h3>
+                  <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('modelDetail.contributorsTitle')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {[...allContributors].map(name => (
                       <span key={name} className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-1.5 text-sm text-secondary">
@@ -856,7 +900,7 @@ const ModelDetail = () => {
             {/* Journal d'évolution */}
             {model.changelog && model.changelog.length > 0 && (
               <div>
-                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">Journal d'évolution</h3>
+                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('modelDetail.journal')}</h3>
                 <div className="space-y-3">
                   {model.changelog.map((entry, i) => {
                     const isJournal = 'authors' in entry && Array.isArray((entry as JournalEntry).authors);
@@ -869,10 +913,10 @@ const ModelDetail = () => {
                           <span className="text-xs text-muted-foreground">{entry.date}</span>
                           {isJournal ? (
                             journalEntry.authors.length > 0 && (
-                              <span className="text-xs text-muted-foreground">par {journalEntry.authors.join(', ')}</span>
+                              <span className="text-xs text-muted-foreground">{t('modelDetail.by')} {journalEntry.authors.join(', ')}</span>
                             )
                           ) : (
-                            legacyEntry.author && <span className="text-xs text-muted-foreground">par {legacyEntry.author}</span>
+                            legacyEntry.author && <span className="text-xs text-muted-foreground">{t('modelDetail.by')} {legacyEntry.author}</span>
                           )}
                         </div>
                         <p className="text-sm text-foreground">{isJournal ? journalEntry.note : legacyEntry.changes}</p>
@@ -886,7 +930,7 @@ const ModelDetail = () => {
             {/* Modèles dérivés (enfants) */}
             {childModels.length > 0 && (
               <div>
-                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">Modèles dérivés</h3>
+                <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('modelDetail.derivedModels')}</h3>
                 <div className="space-y-2">
                   {childModels.map(child => (
                     <Link key={child.id} to={`/model/${child.id}`}
@@ -894,7 +938,7 @@ const ModelDetail = () => {
                       <Sparkles className="h-4 w-4 text-purple-500" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{child.title}</p>
-                        <p className="text-xs text-muted-foreground">par {child.author_name} · {new Date(child.created_at).toLocaleDateString('fr-FR')}</p>
+                        <p className="text-xs text-muted-foreground">{t('modelDetail.by')} {child.author_name} · {new Date(child.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</p>
                       </div>
                       <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                     </Link>
@@ -905,7 +949,7 @@ const ModelDetail = () => {
 
             {/* Empty state */}
             {!parentModel && (!model.changelog || model.changelog.length === 0) && childModels.length === 0 && (
-              <Placeholder text="Aucun historique disponible." />
+              <Placeholder text={t('modelDetail.noHistory')} />
             )}
           </div>
         </TabsContent>
@@ -917,10 +961,10 @@ const ModelDetail = () => {
               <Link
                 to={`/contribute?parent=${model.id}`}
                 className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
-                <Plus className="h-4 w-4" /> Créer une variante
+                <Plus className="h-4 w-4" /> {t('modelDetail.createVariation')}
               </Link>
               <p className="mt-2 text-xs text-muted-foreground">
-                Une variante est un modèle complet, dérivé de celui-ci, qui adapte ou enrichit le protocole pour un cas particulier.
+                {t('modelDetail.variantExplanation')}
               </p>
             </div>
           )}
@@ -934,14 +978,14 @@ const ModelDetail = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{child.title}</p>
-                    <p className="text-xs text-muted-foreground">par {child.author_name} · {new Date(child.created_at).toLocaleDateString('fr-FR')}</p>
+                    <p className="text-xs text-muted-foreground">{t('modelDetail.by')} {child.author_name} · {new Date(child.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</p>
                   </div>
                   <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                 </Link>
               ))}
             </div>
           ) : (
-            <Placeholder text="Aucune variante pour le moment. Créez-en une pour adapter ce modèle à un cas particulier." />
+            <Placeholder text={t('modelDetail.noVariants')} />
           )}
         </TabsContent>
 
@@ -952,10 +996,10 @@ const ModelDetail = () => {
               <Link
                 to={`/community?new=1&model=${model.id}&title=${encodeURIComponent('Feedback : ' + model.title)}`}
                 className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
-                <Plus className="h-4 w-4" /> Donner un feedback
+                <Plus className="h-4 w-4" /> {t('modelDetail.giveFeedback')}
               </Link>
               <p className="mt-2 text-xs text-muted-foreground">
-                Votre feedback sera publié comme un post dans la communauté, lié à ce modèle.
+                {t('modelDetail.feedbackExplanation')}
               </p>
             </div>
           )}
@@ -967,14 +1011,14 @@ const ModelDetail = () => {
                 <div key={post.id} className="rounded-lg border border-border bg-card p-5">
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Link to={`/profil/${post.user_id}`} className="text-sm font-medium text-foreground hover:text-secondary">{profiles[post.user_id] || 'Anonyme'}</Link>
+                      <Link to={`/profil/${post.user_id}`} className="text-sm font-medium text-foreground hover:text-secondary">{profiles[post.user_id] || t('common.anonymous')}</Link>
                       <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{post.category}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleDateString('fr-FR')}</span>
+                    <span className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
                   </div>
                   <h4 className="mb-1 text-sm font-semibold text-foreground">{post.title}</h4>
                   <p className="whitespace-pre-line text-sm text-muted-foreground leading-relaxed line-clamp-4">{post.content}</p>
-                  <Link to="/community" className="mt-2 inline-block text-xs text-secondary hover:underline">Voir dans le forum</Link>
+                  <Link to="/community" className="mt-2 inline-block text-xs text-secondary hover:underline">{t('modelDetail.viewInForum')}</Link>
                 </div>
               ))}
             </div>
@@ -984,13 +1028,13 @@ const ModelDetail = () => {
           {feedbacks.length > 0 && (
             <div className="space-y-3">
               {linkedPosts.length > 0 && (
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Feedbacks</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('modelDetail.feedbackTitle')}</h4>
               )}
               {feedbacks.map(f => (
                 <div key={f.id} className="rounded-lg border border-border bg-card p-5">
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">{f.author_name || 'Anonyme'}</span>
+                      <span className="text-sm font-medium text-foreground">{f.author_name || t('common.anonymous')}</span>
                       <div className="flex gap-0.5">
                         {[1, 2, 3, 4, 5].map(n => (
                           <Star key={n} className={`h-3.5 w-3.5 ${n <= f.rating ? 'text-amber-500' : 'text-muted-foreground/20'}`}
@@ -998,7 +1042,7 @@ const ModelDetail = () => {
                         ))}
                       </div>
                     </div>
-                    <span className="text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString('fr-FR')}</span>
+                    <span className="text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
                   </div>
                   <p className="whitespace-pre-line text-sm text-muted-foreground leading-relaxed">{f.content}</p>
                 </div>
@@ -1007,7 +1051,7 @@ const ModelDetail = () => {
           )}
 
           {linkedPosts.length === 0 && feedbacks.length === 0 && (
-            <Placeholder text="Aucune discussion pour le moment. Soyez le premier à partager votre retour d'expérience !" />
+            <Placeholder text={t('modelDetail.noDiscussionsYet')} />
           )}
         </TabsContent>
       </Tabs>
@@ -1015,27 +1059,18 @@ const ModelDetail = () => {
       {/* Donation nudge */}
       <div className="mt-10 rounded-xl border border-border bg-card/50 p-4 text-center">
         <p className="text-sm text-muted-foreground">
-          Ce modèle vous a été utile ?{' '}
+          {t('modelDetail.donationNudge')}{' '}
           <Link to="/soutenir" className="font-medium text-secondary hover:underline">
-            Soutenez le Lab
+            {t('modelDetail.donationLink')}
           </Link>{' '}
-          pour que ce contenu reste gratuit et ouvert.
+          {t('modelDetail.donationSuffix')}
         </p>
       </div>
     </div>
   );
 };
 
-const sectionLabel = (key: string) => {
-  const labels: Record<string, string> = {
-    description: 'Description du phénomène', patterns: 'Patterns identifiés', structure: 'Structure du modèle',
-    protocol: 'Protocole détaillé', prerequisites: 'Prérequis', philosophy: 'Philosophie et principes', toolkit: 'Boîte à outils',
-    signals: 'Signaux reconnaissables', intervention_points: 'Points d\'intervention',
-    active_principle: 'Principe actif', vigilance: 'Points de vigilance', variants: 'Variantes connues',
-    creators: 'Créateurs',
-  };
-  return labels[key] || key;
-};
+// sectionLabel is now defined inside the component as it needs t()
 
 const SectionBlock = ({ title, content }: { title: string; content: string }) => (
   <div className="rounded-lg border border-border bg-card p-5">
@@ -1058,6 +1093,7 @@ const MarkdownField = ({ label, value, onChange, placeholder, maxLength, modelId
   maxLength?: number;
   modelId?: string;
 }) => {
+  const { t } = useTranslation();
   const ref = useRef<HTMLTextAreaElement>(null);
   const handleInsert = useCallback((markdown: string) => {
     const ta = ref.current;
@@ -1078,7 +1114,7 @@ const MarkdownField = ({ label, value, onChange, placeholder, maxLength, modelId
         className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
       <div className="mt-1 flex items-center gap-2">
         <ImageUploader modelId={modelId} textareaRef={ref} onInsert={handleInsert} />
-        <span className="text-[10px] text-muted-foreground">Markdown supporté</span>
+        <span className="text-[10px] text-muted-foreground">{t('common.markdownSupported')}</span>
       </div>
     </div>
   );

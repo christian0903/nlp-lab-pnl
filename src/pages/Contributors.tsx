@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { FlaskConical, MessageSquare, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +15,7 @@ interface Contributor {
 }
 
 const Contributors = () => {
+  const { t } = useTranslation();
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -64,15 +66,14 @@ const Contributors = () => {
     fetchContributors();
   }, []);
 
-  if (loading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
+  if (loading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-10">
       <div className="mb-8">
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Contributeurs</h1>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{t('contributors.title')}</h1>
         <p className="mt-2 text-muted-foreground leading-relaxed">
-          Les praticiens qui font vivre ce Lab. Leur curiosité, leur expertise et leur générosité construisent
-          une bibliothèque PNL unique, ouverte à tous.
+          {t('contributors.subtitle')}
         </p>
       </div>
 
@@ -108,10 +109,10 @@ const Contributors = () => {
                   )}
                   <div className="mt-2 flex items-center gap-3 text-[10px] text-muted-foreground">
                     {c.model_count > 0 && (
-                      <span className="flex items-center gap-1"><FlaskConical className="h-3 w-3" /> {c.model_count} modèle{c.model_count !== 1 ? 's' : ''}</span>
+                      <span className="flex items-center gap-1"><FlaskConical className="h-3 w-3" /> {c.model_count !== 1 ? t('contributors.modelCount_plural', { count: c.model_count }) : t('contributors.modelCount', { count: c.model_count })}</span>
                     )}
                     {c.post_count > 0 && (
-                      <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {c.post_count} post{c.post_count !== 1 ? 's' : ''}</span>
+                      <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {c.post_count !== 1 ? t('contributors.postCount_plural', { count: c.post_count }) : t('contributors.postCount', { count: c.post_count })}</span>
                     )}
                   </div>
                 </div>
@@ -122,8 +123,8 @@ const Contributors = () => {
       ) : (
         <div className="rounded-xl border border-dashed border-border py-16 text-center">
           <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-          <p className="text-muted-foreground">Aucun contributeur pour le moment.</p>
-          <Link to="/contribute" className="mt-2 inline-block text-sm text-secondary hover:underline">Soyez le premier →</Link>
+          <p className="text-muted-foreground">{t('contributors.noContributors')}</p>
+          <Link to="/contribute" className="mt-2 inline-block text-sm text-secondary hover:underline">{t('contributors.beFirst')}</Link>
         </div>
       )}
     </div>

@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
 
-// Question anti-bot : seul un PNListe connaît la réponse
-const PNL_QUESTION = 'En PNL, on dit que « la carte n\'est pas le ... »';
-const PNL_ANSWERS = ['territoire', 'territoir', 'le territoire'];
-
 const Auth = () => {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language?.startsWith('en') ? 'en' : 'fr';
+  const pnlQuestion = t('auth.pnlQuestion');
+  const pnlAnswers = lang === 'en' ? ['territory', 'the territory'] : ['territoire', 'territoir', 'le territoire'];
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,26 +28,26 @@ const Auth = () => {
     // 1. Honeypot : si rempli, c'est un bot
     if (honeypot) {
       // Simuler un succès pour ne pas alerter le bot
-      toast.success('Compte créé ! Vérifiez votre email.');
+      toast.success(t('auth.fakeSuccess'));
       return false;
     }
 
     // 2. Nom d'affichage : validation
     const name = displayName.trim();
     if (!name || name.length < 2) {
-      toast.error('Le nom d\'affichage est requis (minimum 2 caractères)');
+      toast.error(t('auth.displayNameRequired'));
       return false;
     }
     // Rejeter les noms suspects (que des chiffres, caractères spéciaux excessifs, URLs)
     if (/^[\d\s]+$/.test(name) || /https?:\/\//.test(name) || /[<>{}]/.test(name)) {
-      toast.error('Le nom d\'affichage n\'est pas valide');
+      toast.error(t('auth.displayNameInvalid'));
       return false;
     }
 
     // 3. Question PNL
     const answer = pnlAnswer.trim().toLowerCase();
-    if (!PNL_ANSWERS.includes(answer)) {
-      toast.error('La réponse à la question PNL n\'est pas correcte');
+    if (!pnlAnswers.includes(answer)) {
+      toast.error(t('auth.pnlAnswerWrong'));
       return false;
     }
 
@@ -62,11 +63,11 @@ const Auth = () => {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
-        toast.success('Email envoyé ! Vérifiez votre boîte de réception pour réinitialiser votre mot de passe.');
+        toast.success(t('auth.resetEmailSent'));
         setMode('login');
       } else if (mode === 'login') {
         await signIn(email, password);
-        toast.success('Connexion réussie');
+        toast.success(t('auth.loginSuccess'));
         navigate(returnTo);
       } else {
         if (!validateSignup()) {
@@ -74,25 +75,25 @@ const Auth = () => {
           return;
         }
         await signUp(email, password, displayName.trim());
-        toast.success('Compte créé ! Vérifiez votre email pour confirmer votre inscription.');
+        toast.success(t('auth.signupSuccess'));
       }
     } catch (err: any) {
-      toast.error(err.message || 'Une erreur est survenue');
+      toast.error(err.message || t('auth.genericError'));
     } finally {
       setLoading(false);
     }
   };
 
   const titles: Record<AuthMode, string> = {
-    login: 'Connexion',
-    signup: 'Créer un compte',
-    forgot: 'Mot de passe oublié',
+    login: t('auth.loginTitle'),
+    signup: t('auth.signupTitle'),
+    forgot: t('auth.forgotTitle'),
   };
 
   const subtitles: Record<AuthMode, string> = {
-    login: 'Accédez à la communauté Lab R&D PNL',
-    signup: 'Rejoignez la communauté de recherche',
-    forgot: 'Entrez votre email pour recevoir un lien de réinitialisation',
+    login: t('auth.loginSubtitle'),
+    signup: t('auth.signupSubtitle'),
+    forgot: t('auth.forgotSubtitle'),
   };
 
   return (
@@ -104,21 +105,21 @@ const Auth = () => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {mode === 'signup' && (
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">Nom d'affichage *</label>
+              <label className="mb-1 block text-sm font-medium text-foreground">{t('auth.displayName')}</label>
               <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
-                placeholder="Votre nom ou pseudonyme" minLength={2} maxLength={100} required />
+                placeholder={t('auth.displayNamePlaceholder')} minLength={2} maxLength={100} required />
             </div>
           )}
           <div>
-            <label className="mb-1 block text-sm font-medium text-foreground">Email *</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">{t('auth.email')}</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
-              placeholder="vous@exemple.com" required />
+              placeholder={t('auth.emailPlaceholder')} required />
           </div>
           {mode !== 'forgot' && (
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">Mot de passe *</label>
+              <label className="mb-1 block text-sm font-medium text-foreground">{t('auth.password')}</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
                 placeholder="••••••••" minLength={6} required />
@@ -128,11 +129,11 @@ const Auth = () => {
           {/* Question PNL anti-bot */}
           {mode === 'signup' && (
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">Question de vérification *</label>
-              <p className="mb-1.5 text-xs text-muted-foreground">{PNL_QUESTION}</p>
+              <label className="mb-1 block text-sm font-medium text-foreground">{t('auth.verificationQuestion')}</label>
+              <p className="mb-1.5 text-xs text-muted-foreground">{pnlQuestion}</p>
               <input type="text" value={pnlAnswer} onChange={(e) => setPnlAnswer(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
-                placeholder="Votre réponse" maxLength={50} required />
+                placeholder={t('auth.answerPlaceholder')} maxLength={50} required />
             </div>
           )}
 
@@ -153,30 +154,30 @@ const Auth = () => {
           {mode === 'login' && (
             <button type="button" onClick={() => setMode('forgot')}
               className="self-end text-xs text-muted-foreground hover:text-secondary hover:underline">
-              Mot de passe oublié ?
+              {t('auth.forgotPassword')}
             </button>
           )}
 
           <button type="submit" disabled={loading}
             className="mt-2 rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
-            {loading ? '...' : mode === 'login' ? 'Se connecter' : mode === 'signup' ? 'Créer le compte' : 'Envoyer le lien'}
+            {loading ? '...' : mode === 'login' ? t('auth.loginButton') : mode === 'signup' ? t('auth.signupButton') : t('auth.sendLink')}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
           {mode === 'login' && (
-            <>Pas encore de compte ?{' '}
-              <button onClick={() => setMode('signup')} className="font-medium text-secondary hover:underline">S'inscrire</button>
+            <>{t('auth.noAccount')}{' '}
+              <button onClick={() => setMode('signup')} className="font-medium text-secondary hover:underline">{t('auth.signup')}</button>
             </>
           )}
           {mode === 'signup' && (
-            <>Déjà un compte ?{' '}
-              <button onClick={() => setMode('login')} className="font-medium text-secondary hover:underline">Se connecter</button>
+            <>{t('auth.hasAccount')}{' '}
+              <button onClick={() => setMode('login')} className="font-medium text-secondary hover:underline">{t('auth.loginButton')}</button>
             </>
           )}
           {mode === 'forgot' && (
             <button onClick={() => setMode('login')} className="font-medium text-secondary hover:underline">
-              ← Retour à la connexion
+              {t('auth.backToLogin')}
             </button>
           )}
         </div>

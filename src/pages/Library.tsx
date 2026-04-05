@@ -10,11 +10,16 @@ import TypeBadge from '@/components/lab/TypeBadge';
 import KanbanBoard from '@/components/lab/KanbanBoard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, GitBranch, MessageSquare } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LangBadge from '@/components/lab/LangBadge';
 
 const Library = () => {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language?.startsWith('en') ? 'en' : 'fr';
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<ModelType | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<ModelStatus | 'all'>('all');
+  const [langFilter, setLangFilter] = useState<'all' | 'fr' | 'en'>(currentLang);
   const [models, setModels] = useState<DBModel[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -66,9 +71,10 @@ const Library = () => {
       const matchSearch = !search || m.title.toLowerCase().includes(search.toLowerCase()) || m.tags.some(t => t.toLowerCase().includes(search.toLowerCase()));
       const matchType = typeFilter === 'all' || m.type === typeFilter;
       const matchStatus = statusFilter === 'all' || m.status === statusFilter;
-      return matchSearch && matchType && matchStatus;
+      const matchLang = langFilter === 'all' || (m.lang || 'fr') === langFilter;
+      return matchSearch && matchType && matchStatus && matchLang;
     });
-  }, [search, typeFilter, statusFilter, models, canManage, showPending, user]);
+  }, [search, typeFilter, statusFilter, langFilter, models, canManage, showPending, user]);
 
   const toggleApproche = (id: string) => {
     setExpandedApproches(prev => {
@@ -90,9 +96,9 @@ const Library = () => {
     <div className="container mx-auto px-4 py-10">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold text-foreground">Bibliothèque de Modèles</h1>
+          <h1 className="font-display text-3xl font-bold text-foreground">{t('library.title')}</h1>
           <p className="mt-1 text-muted-foreground">
-            {showPending ? 'Modèles en attente de validation' : 'Explorez les modèles PNL validés'}
+            {showPending ? t('library.pendingSubtitle') : t('library.subtitle')}
           </p>
         </div>
         {canManage && (
@@ -105,7 +111,7 @@ const Library = () => {
             }`}
           >
             <ShieldCheck className="h-4 w-4" />
-            {showPending ? 'Voir validés' : `En attente (${models.filter(m => !m.approved).length})`}
+            {showPending ? t('library.showValidated') : t('library.pendingCount', { count: models.filter(m => !m.approved).length })}
           </button>
         )}
       </div>
@@ -113,13 +119,13 @@ const Library = () => {
       <Tabs defaultValue="catalogue" className="w-full">
         <TabsList className="mb-6 w-full justify-start overflow-x-auto border-b border-border bg-transparent p-0">
           <TabsTrigger value="catalogue" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            Catalogue
+            {t('library.catalogue')}
           </TabsTrigger>
           <TabsTrigger value="kanban" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            Pipeline
+            {t('library.pipeline')}
           </TabsTrigger>
           <TabsTrigger value="approches" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            Par approche
+            {t('library.byApproach')}
           </TabsTrigger>
         </TabsList>
 
@@ -131,7 +137,7 @@ const Library = () => {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Rechercher un modèle ou un tag..."
+                placeholder={t('library.searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background py-2.5 pl-10 pr-4 text-sm outline-none ring-ring focus:ring-2"
@@ -143,33 +149,42 @@ const Library = () => {
                 onChange={(e) => setTypeFilter(e.target.value as ModelType | 'all')}
                 className="w-full sm:w-auto rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
               >
-                <option value="all">Tous les types</option>
-                {(Object.entries(MODEL_TYPE_LABELS) as [ModelType, string][]).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+                <option value="all">{t('library.allTypes')}</option>
+                {(Object.keys(MODEL_TYPE_LABELS) as ModelType[]).map((k) => (
+                  <option key={k} value={k}>{t('modelTypes.' + k)}</option>
                 ))}
+              </select>
+              <select
+                value={langFilter}
+                onChange={(e) => setLangFilter(e.target.value as 'all' | 'fr' | 'en')}
+                className="w-full sm:w-auto rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
+              >
+                <option value="all">{t('language.filterAll')}</option>
+                <option value="fr">Français</option>
+                <option value="en">English</option>
               </select>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as ModelStatus | 'all')}
                 className="w-full sm:w-auto rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
               >
-                <option value="all">Tous les statuts</option>
-                {(Object.entries(MODEL_STATUS_LABELS) as [ModelStatus, string][]).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+                <option value="all">{t('library.allStatuses')}</option>
+                {(Object.keys(MODEL_STATUS_LABELS) as ModelStatus[]).map((k) => (
+                  <option key={k} value={k}>{t('modelStatuses.' + k)}</option>
                 ))}
               </select>
             </div>
           </div>
 
           {loading ? (
-            <div className="py-20 text-center text-muted-foreground">Chargement...</div>
+            <div className="py-20 text-center text-muted-foreground">{t('common.loading')}</div>
           ) : filtered.length > 0 ? (
             <div className="space-y-10">
               {([
-                { type: 'approche', label: 'Approches', description: 'Architectures cohérentes regroupant plusieurs modèles autour d\'une vision' },
-                { type: 'outil', label: 'Outils', description: 'Protocoles, formats et techniques utilisables en séance' },
-                { type: 'problematique', label: 'Expériences', description: 'Cartographies d\'expériences vécues, états problèmes ou ressources' },
-              ] as const).map(({ type: sectionType, label, description: desc }) => {
+                { type: 'approche' as const, label: t('library.approachesSection'), description: t('library.approachesDesc') },
+                { type: 'outil' as const, label: t('library.toolsSection'), description: t('library.toolsDesc') },
+                { type: 'problematique' as const, label: t('library.experiencesSection'), description: t('library.experiencesDesc') },
+              ]).map(({ type: sectionType, label, description: desc }) => {
                 const sectionModels = filtered.filter(m => m.type === sectionType);
                 if (sectionModels.length === 0 && typeFilter !== 'all' && typeFilter !== sectionType) return null;
                 return (
@@ -189,7 +204,7 @@ const Library = () => {
                       </div>
                     ) : (
                       <div className="rounded-lg border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
-                        Aucun(e) {label.toLowerCase()} pour le moment
+                        {t('library.noneYet', { label: label.toLowerCase() })}
                       </div>
                     )}
                   </div>
@@ -199,7 +214,7 @@ const Library = () => {
           ) : (
             <div className="py-20 text-center">
               <SlidersHorizontal className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-muted-foreground">Aucun modèle ne correspond à vos critères</p>
+              <p className="text-muted-foreground">{t('library.noResults')}</p>
             </div>
           )}
         </TabsContent>
@@ -207,7 +222,7 @@ const Library = () => {
         {/* Tab 2 — Pipeline Kanban */}
         <TabsContent value="kanban">
           <div className="mb-4">
-            <p className="text-sm text-muted-foreground">Vue d'ensemble du pipeline de recherche — chaque colonne représente un stade du cycle de vie des modèles.</p>
+            <p className="text-sm text-muted-foreground">{t('library.pipelineDesc')}</p>
           </div>
           <KanbanBoard />
         </TabsContent>
@@ -215,11 +230,11 @@ const Library = () => {
         {/* Tab 3 — Par approche */}
         <TabsContent value="approches">
           <div className="mb-6">
-            <p className="text-sm text-muted-foreground">Explorez les modèles organisés par approche. Cliquez sur une approche pour voir les outils et expériences qui en font partie.</p>
+            <p className="text-sm text-muted-foreground">{t('library.byApproachDesc')}</p>
           </div>
 
           {loading ? (
-            <div className="py-20 text-center text-muted-foreground">Chargement...</div>
+            <div className="py-20 text-center text-muted-foreground">{t('common.loading')}</div>
           ) : (
             <div className="space-y-3">
               {approches.map(approche => {
@@ -235,7 +250,7 @@ const Library = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h3 className="font-display text-base font-semibold text-foreground">{approche.title}</h3>
-                          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{children.length} modèle{children.length !== 1 ? 's' : ''}</span>
+                          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{t('library.modelCount', { count: children.length })}</span>
                         </div>
                         <p className="mt-0.5 text-sm text-muted-foreground line-clamp-1">{approche.description}</p>
                       </div>
@@ -244,7 +259,7 @@ const Library = () => {
                         onClick={e => e.stopPropagation()}
                         className="shrink-0 text-xs text-secondary hover:underline"
                       >
-                        Voir la fiche
+                        {t('library.viewSheet')}
                       </Link>
                     </button>
                     {isExpanded && (
@@ -257,13 +272,13 @@ const Library = () => {
                                 <TypeBadge type={model.type as any} />
                                 <div className="min-w-0 flex-1">
                                   <p className="text-sm font-medium text-foreground truncate">{model.title}</p>
-                                  <p className="text-xs text-muted-foreground">v{model.version} · {profiles[model.user_id] || 'Anonyme'}</p>
+                                  <p className="text-xs text-muted-foreground">v{model.version} · {profiles[model.user_id] || t('common.anonymous')}</p>
                                 </div>
                               </Link>
                             ))}
                           </div>
                         ) : (
-                          <p className="py-4 text-center text-sm text-muted-foreground">Aucun modèle rattaché à cette approche</p>
+                          <p className="py-4 text-center text-sm text-muted-foreground">{t('library.noLinkedModels')}</p>
                         )}
                       </div>
                     )}
@@ -281,10 +296,10 @@ const Library = () => {
                     {expandedApproches.has('__unlinked__') ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-display text-base font-semibold text-muted-foreground">Sans approche</h3>
+                        <h3 className="font-display text-base font-semibold text-muted-foreground">{t('library.noApproach')}</h3>
                         <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{unlinkedModels.length}</span>
                       </div>
-                      <p className="mt-0.5 text-sm text-muted-foreground">Modèles non rattachés à une approche</p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{t('library.unlinkedDesc')}</p>
                     </div>
                   </button>
                   {expandedApproches.has('__unlinked__') && (
@@ -296,7 +311,7 @@ const Library = () => {
                             <TypeBadge type={model.type as any} />
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium text-foreground truncate">{model.title}</p>
-                              <p className="text-xs text-muted-foreground">v{model.version} · {profiles[model.user_id] || 'Anonyme'}</p>
+                              <p className="text-xs text-muted-foreground">v{model.version} · {profiles[model.user_id] || t('common.anonymous')}</p>
                             </div>
                           </Link>
                         ))}
@@ -308,8 +323,8 @@ const Library = () => {
 
               {approches.length === 0 && (
                 <div className="py-20 text-center text-muted-foreground">
-                  <p>Aucune approche n'a encore été créée.</p>
-                  <Link to="/contribute" className="mt-2 inline-block text-sm text-secondary hover:underline">Créer une approche →</Link>
+                  <p>{t('library.noApproachYet')}</p>
+                  <Link to="/contribute" className="mt-2 inline-block text-sm text-secondary hover:underline">{t('library.createApproach')}</Link>
                 </div>
               )}
             </div>
@@ -327,6 +342,7 @@ const ModelCardDB = ({ model, authorName, index = 0, canManage, onApprove }: {
   canManage: boolean;
   onApprove: (id: string) => void;
 }) => {
+  const { t } = useTranslation();
   return (
     <div
       className="lab-card block p-5 opacity-0 animate-fade-in"
@@ -334,11 +350,14 @@ const ModelCardDB = ({ model, authorName, index = 0, canManage, onApprove }: {
     >
       <Link to={`/model/${model.id}`} className="block">
         <div className="mb-3 flex items-start justify-between gap-2">
-          <TypeBadge type={model.type as any} />
+          <div className="flex items-center gap-1.5">
+            <TypeBadge type={model.type as any} />
+            <LangBadge lang={model.lang || 'fr'} />
+          </div>
           <div className="flex items-center gap-2">
             {!model.approved && (
               <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-600">
-                En attente
+                {t('library.pending')}
               </span>
             )}
             <StatusBadge status={model.status as any} />
@@ -363,7 +382,7 @@ const ModelCardDB = ({ model, authorName, index = 0, canManage, onApprove }: {
 
         <div className="flex items-center justify-between border-t border-border pt-3">
           <span className="text-xs text-muted-foreground">
-            v{model.version} · <Link to={`/profil/${model.user_id}`} onClick={e => e.stopPropagation()} className="hover:text-secondary">{authorName || 'Anonyme'}</Link>
+            v{model.version} · <Link to={`/profil/${model.user_id}`} onClick={e => e.stopPropagation()} className="hover:text-secondary">{authorName || t('common.anonymous')}</Link>
           </span>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
@@ -384,7 +403,7 @@ const ModelCardDB = ({ model, authorName, index = 0, canManage, onApprove }: {
           onClick={(e) => { e.stopPropagation(); onApprove(model.id); }}
           className="mt-3 w-full rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
         >
-          Valider ce modèle
+          {t('library.validateModel')}
         </button>
       )}
     </div>

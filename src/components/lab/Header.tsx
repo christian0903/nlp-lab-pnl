@@ -2,23 +2,26 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, User, LogOut, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
 import NotificationBell from './NotificationBell';
 import ThemeSwitcher from './ThemeSwitcher';
+import LanguageSwitcher from './LanguageSwitcher';
 
-const navItems = [
-  { label: 'Accueil', path: '/' },
-  { label: 'Bibliothèque', path: '/library' },
-  { label: 'Événements', path: '/events' },
-  { label: 'Contribuer', path: '/contribute' },
-  { label: 'Communauté', path: '/community' },
-  { label: 'Ressources', path: '/resources' },
-  { label: 'Contributeurs', path: '/contributeurs' },
-  { label: 'Aide', path: '/aide' },
+const navKeys = [
+  { key: 'nav.home', path: '/' },
+  { key: 'nav.library', path: '/library' },
+  { key: 'nav.events', path: '/events' },
+  { key: 'nav.contribute', path: '/contribute' },
+  { key: 'nav.community', path: '/community' },
+  { key: 'nav.resources', path: '/resources' },
+  { key: 'nav.contributors', path: '/contributeurs' },
+  { key: 'nav.help', path: '/aide' },
 ];
 
 const Header = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
@@ -33,7 +36,7 @@ const Header = () => {
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {navItems.map((item) => {
+          {navKeys.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
@@ -45,7 +48,7 @@ const Header = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {item.label}
+                {t(item.key)}
                 {isActive && (
                   <motion.div
                     layoutId="nav-indicator"
@@ -56,6 +59,7 @@ const Header = () => {
             );
           })}
           <div className="ml-3 flex items-center gap-2 border-l border-border pl-3">
+            <LanguageSwitcher />
             <ThemeSwitcher />
             {user ? (
               <>
@@ -67,7 +71,7 @@ const Header = () => {
                       location.pathname.startsWith('/admin') ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <ShieldCheck className="h-4 w-4" /> Admin
+                    <ShieldCheck className="h-4 w-4" /> {t('nav.admin')}
                   </Link>
                 )}
                 <Link
@@ -76,7 +80,7 @@ const Header = () => {
                     location.pathname === '/profile' ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <User className="h-4 w-4" /> Profil
+                  <User className="h-4 w-4" /> {t('nav.profile')}
                 </Link>
                 <button
                   onClick={() => signOut()}
@@ -90,7 +94,7 @@ const Header = () => {
                 to="/auth"
                 className="flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground"
               >
-                <User className="h-4 w-4" /> Connexion
+                <User className="h-4 w-4" /> {t('nav.login')}
               </Link>
             )}
           </div>
@@ -113,7 +117,7 @@ const Header = () => {
             className="overflow-hidden border-t border-border bg-card md:hidden"
           >
             <nav className="flex flex-col gap-1 p-3">
-              {navItems.map((item) => (
+              {navKeys.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -124,10 +128,11 @@ const Header = () => {
                       : 'text-muted-foreground'
                   }`}
                 >
-                  {item.label}
+                  {t(item.key)}
                 </Link>
               ))}
               <div className="mt-2 flex items-center gap-3 border-t border-border pt-3 px-3">
+                <LanguageSwitcher />
                 <ThemeSwitcher />
                 {user ? (
                   <>
@@ -135,12 +140,12 @@ const Header = () => {
                     {canManage && (
                       <Link to="/admin" onClick={() => setMobileOpen(false)}
                         className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-                        <ShieldCheck className="h-4 w-4" /> Admin
+                        <ShieldCheck className="h-4 w-4" /> {t('nav.admin')}
                       </Link>
                     )}
                     <Link to="/profile" onClick={() => setMobileOpen(false)}
                       className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-                      <User className="h-4 w-4" /> Profil
+                      <User className="h-4 w-4" /> {t('nav.profile')}
                     </Link>
                     <button onClick={() => { signOut(); setMobileOpen(false); }}
                       className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -150,7 +155,7 @@ const Header = () => {
                 ) : (
                   <Link to="/auth" onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground">
-                    <User className="h-4 w-4" /> Connexion
+                    <User className="h-4 w-4" /> {t('nav.login')}
                   </Link>
                 )}
               </div>

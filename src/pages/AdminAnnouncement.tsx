@@ -7,8 +7,10 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useTranslation } from 'react-i18next';
 
 const AdminAnnouncement = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { isAdmin, canManage, loading: adminLoading } = useAdmin();
   const [content, setContent] = useState('');
@@ -53,7 +55,7 @@ const AdminAnnouncement = () => {
     toast.success('Annonce supprimée');
   };
 
-  if (adminLoading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
+  if (adminLoading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
   if (!canManage) return <Navigate to="/" />;
 
   return (
@@ -70,7 +72,7 @@ const AdminAnnouncement = () => {
       </div>
 
       {loading ? (
-        <div className="py-10 text-center text-muted-foreground">Chargement...</div>
+        <div className="py-10 text-center text-muted-foreground">{t('common.loading')}</div>
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -113,12 +115,12 @@ const AdminAnnouncement = () => {
             <button onClick={handleSave} disabled={saving}
               className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground hover:brightness-110 disabled:opacity-50">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {saving ? 'Sauvegarde...' : 'Publier l\'annonce'}
+              {saving ? t('common.saving') : 'Publier l\'annonce'}
             </button>
             {content.trim() && (
               <button onClick={handleClear} disabled={saving}
                 className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50">
-                <Trash2 className="h-4 w-4" /> Supprimer l'annonce
+                <Trash2 className="h-4 w-4" /> {t('common.delete')}
               </button>
             )}
           </div>

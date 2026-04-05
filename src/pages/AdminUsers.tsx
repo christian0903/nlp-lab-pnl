@@ -7,6 +7,7 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
 interface UserRow {
   user_id: string;
@@ -33,6 +34,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
 };
 
 const AdminUsers = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -69,7 +71,7 @@ const AdminUsers = () => {
     fetchUsers();
   }, [isAdmin]);
 
-  if (adminLoading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
+  if (adminLoading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
   if (!user || !isAdmin) return <Navigate to="/admin" replace />;
 
   const getUserRole = (userId: string): AppRole => {
@@ -183,7 +185,7 @@ const AdminUsers = () => {
         <button onClick={() => setShowAddForm(!showAddForm)}
           className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground hover:brightness-110 transition-all">
           {showAddForm ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-          {showAddForm ? 'Annuler' : 'Ajouter un utilisateur'}
+          {showAddForm ? t('common.cancel') : 'Ajouter un utilisateur'}
         </button>
       </div>
 
@@ -232,11 +234,11 @@ const AdminUsers = () => {
             <div className="flex justify-end gap-3">
               <button onClick={() => setDeleteUserId(null)}
                 className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
-                Annuler
+                {t('common.cancel')}
               </button>
               <button onClick={() => handleDeleteUser(deleteUserId)}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors">
-                Supprimer
+                {t('common.delete')}
               </button>
             </div>
           </div>
@@ -245,7 +247,7 @@ const AdminUsers = () => {
 
       {/* Users list */}
       {loading ? (
-        <div className="py-10 text-center text-muted-foreground">Chargement...</div>
+        <div className="py-10 text-center text-muted-foreground">{t('common.loading')}</div>
       ) : (
         <div className="space-y-3">
           {users.map(p => {
@@ -304,9 +306,9 @@ const AdminUsers = () => {
                     {/* Meta */}
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> Inscrit {formatDistanceToNow(new Date(p.created_at), { addSuffix: true, locale: fr })}
+                        <Clock className="h-3 w-3" /> Inscrit {formatDistanceToNow(new Date(p.created_at), { addSuffix: true, locale: i18n.language?.startsWith('en') ? undefined : fr })}
                       </span>
-                      <span>Dernière connexion : {p.last_sign_in_at ? formatDistanceToNow(new Date(p.last_sign_in_at), { addSuffix: true, locale: fr }) : <em className="text-muted-foreground/40">jamais</em>}</span>
+                      <span>Dernière connexion : {p.last_sign_in_at ? formatDistanceToNow(new Date(p.last_sign_in_at), { addSuffix: true, locale: i18n.language?.startsWith('en') ? undefined : fr }) : <em className="text-muted-foreground/40">jamais</em>}</span>
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                       <span className="truncate max-w-[400px]" title={p.bio || ''}>Bio : {p.bio || <em className="text-muted-foreground/40">non renseignée</em>}</span>
@@ -338,7 +340,7 @@ const AdminUsers = () => {
                         <button onClick={() => { setDeleteUserId(p.user_id); setDeleteUserName(p.display_name); }}
                           className="inline-flex items-center gap-1 rounded-md border border-red-300 px-2 py-1 text-[10px] font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
                           title="Supprimer l'utilisateur">
-                          <Trash2 className="h-3 w-3" /> Supprimer
+                          <Trash2 className="h-3 w-3" /> {t('common.delete')}
                         </button>
                       </div>
                     )}

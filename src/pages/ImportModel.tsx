@@ -9,6 +9,8 @@ import { MODEL_TYPE_LABELS, MODEL_STATUS_LABELS } from '@/types/model';
 import { toast } from 'sonner';
 import TypeBadge from '@/components/lab/TypeBadge';
 import StatusBadge from '@/components/lab/StatusBadge';
+import LangBadge from '@/components/lab/LangBadge';
+import { useTranslation } from 'react-i18next';
 
 const EXAMPLE_FICHE = `---
 action: create
@@ -42,6 +44,7 @@ Structure et composants du modèle.
 Prérequis pour utiliser ce modèle.`;
 
 const ImportModel = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { canManage } = useAdmin();
   const navigate = useNavigate();
@@ -63,6 +66,7 @@ const ImportModel = () => {
   const [submitting, setSubmitting] = useState(false);
   const [matchedModelId, setMatchedModelId] = useState<string | null>(null);
   const [matchedModelTitle, setMatchedModelTitle] = useState('');
+  const [importLang, setImportLang] = useState<'fr' | 'en'>('fr');
 
   if (!user || !canManage) {
     return (
@@ -138,6 +142,7 @@ const ImportModel = () => {
         ...payload,
         user_id: user.id,
         approved: true,
+        lang: importLang,
       };
       if (parentId) insertData.parent_model_id = parentId;
       const res = await supabase.from('models').insert(insertData).select('id').single();
@@ -215,10 +220,32 @@ const ImportModel = () => {
             rows={24}
             className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 font-mono text-sm outline-none ring-ring focus:ring-2"
           />
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center rounded-md border border-border text-xs font-medium">
+              <button
+                onClick={() => setImportLang('fr')}
+                className={`rounded-l-md px-3 py-2 transition-colors ${
+                  importLang === 'fr'
+                    ? 'bg-secondary text-secondary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                🇫🇷 FR
+              </button>
+              <button
+                onClick={() => setImportLang('en')}
+                className={`rounded-r-md px-3 py-2 transition-colors ${
+                  importLang === 'en'
+                    ? 'bg-secondary text-secondary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                🇬🇧 EN
+              </button>
+            </div>
             <button onClick={handleParse} disabled={!markdown.trim()}
               className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
-              <Eye className="h-4 w-4" /> Prévisualiser
+              <Eye className="h-4 w-4" /> {t('common.preview')}
             </button>
           </div>
         </div>
@@ -276,6 +303,7 @@ const ImportModel = () => {
 
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <TypeBadge type={parsed.type as any} />
+                  <LangBadge lang={importLang} />
                   <StatusBadge status={parsed.status as any} />
                   <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-mono font-medium text-muted-foreground">
                     v{parsed.version}

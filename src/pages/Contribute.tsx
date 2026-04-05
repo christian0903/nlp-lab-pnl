@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -7,40 +8,41 @@ import { Send, User, FileText, Lightbulb, GitBranch, MessageSquare, Upload } fro
 import { MODEL_TYPE_LABELS, ModelType } from '@/types/model';
 import { useAdmin } from '@/hooks/useAdmin';
 
-const complexityOptions = [
-  { value: 'débutant', label: 'Débutant' },
-  { value: 'intermédiaire', label: 'Intermédiaire' },
-  { value: 'avancé', label: 'Avancé' },
-];
-
-const sectionsByType: Record<ModelType, { label: string; key: string; placeholder: string }[]> = {
-  problematique: [
-    { label: 'Patterns identifiés', key: 'patterns', placeholder: 'Décrivez les patterns comportementaux observés...' },
-    { label: 'Signaux reconnaissables', key: 'signals', placeholder: 'Quels signaux permettent de repérer cette expérience ? (corporels, verbaux, comportementaux...)' },
-    { label: 'Points d\'intervention', key: 'intervention_points', placeholder: 'À quels endroits peut-on intervenir pour modifier l\'expérience ?' },
-    { label: 'Prérequis', key: 'prerequisites', placeholder: 'Connaissances ou compétences nécessaires...' },
-  ],
-  outil: [
-    { label: 'Protocole détaillé', key: 'protocol', placeholder: 'Décrivez les étapes du protocole...' },
-    { label: 'Principe actif', key: 'active_principle', placeholder: 'Quel est le mécanisme central qui produit le changement ?' },
-    { label: 'Points de vigilance', key: 'vigilance', placeholder: 'Situations où l\'outil ne fonctionne pas bien, contre-indications, erreurs fréquentes...' },
-    { label: 'Variantes connues', key: 'variants', placeholder: 'Adaptations ou variantes de cet outil utilisées par d\'autres praticiens...' },
-    { label: 'Prérequis', key: 'prerequisites', placeholder: 'Rapport, état de ressource, calibration...' },
-  ],
-  approche: [
-    { label: 'Philosophie et principes', key: 'philosophy', placeholder: 'Décrivez les fondements philosophiques...' },
-    { label: 'Créateurs', key: 'creators', placeholder: 'Qui a créé ou développé cette approche ?' },
-    { label: 'Structure', key: 'structure', placeholder: 'Architecture ou composants de cette approche, comment elle s\'articule...' },
-    { label: 'Boîte à outils', key: 'toolkit', placeholder: 'Les outils et modèles associés à cette approche...' },
-    { label: 'Prérequis', key: 'prerequisites', placeholder: 'Formations ou expériences recommandées...' },
-  ],
-};
-
 const Contribute = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const complexityOptions = [
+    { value: 'débutant', label: t('contribute.complexityBeginner') },
+    { value: 'intermédiaire', label: t('contribute.complexityIntermediate') },
+    { value: 'avancé', label: t('contribute.complexityAdvanced') },
+  ];
+
+  const sectionsByType: Record<ModelType, { label: string; key: string; placeholder: string }[]> = {
+    problematique: [
+      { label: t('contribute.sections.patterns'), key: 'patterns', placeholder: t('contribute.sections.patternsPlaceholder') },
+      { label: t('contribute.sections.signals'), key: 'signals', placeholder: t('contribute.sections.signalsPlaceholder') },
+      { label: t('contribute.sections.intervention_points'), key: 'intervention_points', placeholder: t('contribute.sections.intervention_pointsPlaceholder') },
+      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_problematique') },
+    ],
+    outil: [
+      { label: t('contribute.sections.protocol'), key: 'protocol', placeholder: t('contribute.sections.protocolPlaceholder') },
+      { label: t('contribute.sections.active_principle'), key: 'active_principle', placeholder: t('contribute.sections.active_principlePlaceholder') },
+      { label: t('contribute.sections.vigilance'), key: 'vigilance', placeholder: t('contribute.sections.vigilancePlaceholder') },
+      { label: t('contribute.sections.variants'), key: 'variants', placeholder: t('contribute.sections.variantsPlaceholder') },
+      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_outil') },
+    ],
+    approche: [
+      { label: t('contribute.sections.philosophy'), key: 'philosophy', placeholder: t('contribute.sections.philosophyPlaceholder') },
+      { label: t('contribute.sections.creators'), key: 'creators', placeholder: t('contribute.sections.creatorsPlaceholder') },
+      { label: t('contribute.sections.structure'), key: 'structure', placeholder: t('contribute.sections.structurePlaceholder') },
+      { label: t('contribute.sections.toolkit'), key: 'toolkit', placeholder: t('contribute.sections.toolkitPlaceholder') },
+      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_approche') },
+    ],
+  };
 
   const parentId = searchParams.get('parent');
   const fromPostId = searchParams.get('from_post');
@@ -76,13 +78,13 @@ const Contribute = () => {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground/40" />
-        <h1 className="mb-2 font-display text-2xl font-bold text-foreground">Contribuer au Lab R&D</h1>
-        <p className="mb-6 text-muted-foreground">Connectez-vous pour proposer un nouveau modèle PNL</p>
+        <h1 className="mb-2 font-display text-2xl font-bold text-foreground">{t('contribute.loginTitle')}</h1>
+        <p className="mb-6 text-muted-foreground">{t('contribute.loginSubtitle')}</p>
         <Link
           to="/auth"
           className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground"
         >
-          <User className="h-4 w-4" /> Se connecter
+          <User className="h-4 w-4" /> {t('contribute.loginButton')}
         </Link>
       </div>
     );
@@ -93,7 +95,7 @@ const Contribute = () => {
     const trimmedTitle = title.trim();
     const trimmedDesc = description.trim();
     if (!trimmedTitle || !trimmedDesc) {
-      toast.error('Le titre et la description sont requis');
+      toast.error(t('contribute.titleDescRequired'));
       return;
     }
 
@@ -122,7 +124,7 @@ const Contribute = () => {
 
     if (error) {
       setSubmitting(false);
-      toast.error('Erreur lors de la soumission');
+      toast.error(t('contribute.submitError'));
       console.error(error);
       return;
     }
@@ -136,16 +138,16 @@ const Contribute = () => {
     }
 
     setSubmitting(false);
-    toast.success('Modèle soumis ! Un administrateur doit le valider avant qu\'il apparaisse dans la bibliothèque.');
+    toast.success(t('contribute.submitSuccess'));
     navigate('/library');
   };
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-10">
       <div className="mb-8">
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Proposer un modèle</h1>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{t('contribute.title')}</h1>
         <p className="mt-1 text-muted-foreground">
-          Votre modèle sera soumis à validation par un administrateur avant d'être visible dans la bibliothèque.
+          {t('contribute.subtitle')}
         </p>
       </div>
 
@@ -154,7 +156,7 @@ const Contribute = () => {
         <div className="mb-6 flex items-center gap-2 rounded-xl border border-secondary/20 bg-secondary/5 p-4">
           <GitBranch className="h-5 w-5 text-secondary" />
           <div className="text-sm">
-            <span className="text-foreground">Ce modèle sera dérivé de </span>
+            <span className="text-foreground">{t('contribute.derivedFrom')} </span>
             <Link to={`/model/${parentId}`} className="font-medium text-secondary hover:underline">{parentTitle}</Link>
           </div>
         </div>
@@ -165,8 +167,8 @@ const Contribute = () => {
         <div className="mb-6 flex items-center gap-2 rounded-xl border border-purple-500/20 bg-purple-500/5 p-4">
           <MessageSquare className="h-5 w-5 text-purple-500" />
           <div className="text-sm">
-            <span className="text-foreground">Issu de la discussion communautaire : </span>
-            <span className="font-medium text-purple-600">{sourcePostTitle || 'Discussion forum'}</span>
+            <span className="text-foreground">{t('contribute.fromDiscussion')} </span>
+            <span className="font-medium text-purple-600">{sourcePostTitle || t('contribute.forumDiscussion')}</span>
           </div>
         </div>
       )}
@@ -174,23 +176,23 @@ const Contribute = () => {
       <div className="mb-8 flex items-start gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
         <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-lab-warm" />
         <div className="text-sm text-muted-foreground">
-          <p className="mb-1 font-medium text-foreground">Workflow de publication :</p>
+          <p className="mb-1 font-medium text-foreground">{t('contribute.workflowTitle')}</p>
           <ol className="list-inside list-decimal space-y-1">
-            <li>Vous soumettez votre modèle → <strong>En attente de validation</strong></li>
-            <li>Un admin valide → le modèle passe en <strong>Brouillon</strong></li>
-            <li>Cycle de vie : Brouillon → En révision → En test → <strong>Publié</strong></li>
+            <li dangerouslySetInnerHTML={{ __html: t('contribute.workflowStep1') }} />
+            <li dangerouslySetInnerHTML={{ __html: t('contribute.workflowStep2') }} />
+            <li dangerouslySetInnerHTML={{ __html: t('contribute.workflowStep3') }} />
           </ol>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Titre du modèle *</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.modelTitle')}</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ex: Recadrage Somatique en 4 Étapes"
+            placeholder={t('contribute.modelTitlePlaceholder')}
             maxLength={200}
             className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
             required
@@ -199,19 +201,19 @@ const Contribute = () => {
 
         <div className={`grid gap-4 ${type !== 'approche' && approches.length > 0 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Type de modèle *</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.modelType')}</label>
             <select
               value={type}
               onChange={(e) => { setType(e.target.value as ModelType); if (e.target.value === 'approche') setSelectedApproche(''); }}
               className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
             >
-              {(Object.entries(MODEL_TYPE_LABELS) as [ModelType, string][]).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
+              {(Object.entries(MODEL_TYPE_LABELS) as [ModelType, string][]).map(([k]) => (
+                <option key={k} value={k}>{t('modelTypes.' + k)}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Complexité</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.complexity')}</label>
             <select
               value={complexity}
               onChange={(e) => setComplexity(e.target.value)}
@@ -224,13 +226,13 @@ const Contribute = () => {
           </div>
           {type !== 'approche' && approches.length > 0 && (
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">Approche associée</label>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.associatedApproach')}</label>
               <select
                 value={selectedApproche}
                 onChange={(e) => setSelectedApproche(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
               >
-                <option value="">— Aucune approche —</option>
+                <option value="">{t('contribute.noApproach')}</option>
                 {approches.map((a) => (
                   <option key={a.id} value={a.id}>{a.title}</option>
                 ))}
@@ -240,11 +242,11 @@ const Contribute = () => {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Description *</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.description')}</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Décrivez votre modèle : quel problème résout-il ? Comment fonctionne-t-il ?"
+            placeholder={t('contribute.descriptionPlaceholder')}
             maxLength={5000}
             rows={5}
             className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
@@ -267,12 +269,12 @@ const Contribute = () => {
         ))}
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Tags (séparés par des virgules)</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.tags')}</label>
           <input
             type="text"
             value={tagsInput}
             onChange={(e) => setTagsInput(e.target.value)}
-            placeholder="ancrage, somatique, dissociation, ressource"
+            placeholder={t('contribute.tagsPlaceholder')}
             maxLength={200}
             className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
           />
@@ -280,7 +282,7 @@ const Contribute = () => {
 
         <div className="flex justify-end gap-3 border-t border-border pt-6">
           <Link to="/" className="rounded-lg px-5 py-2.5 text-sm text-muted-foreground hover:text-foreground">
-            Annuler
+            {t('common.cancel')}
           </Link>
           {isAdmin && (
             <Link
@@ -288,7 +290,7 @@ const Contribute = () => {
               className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
             >
               <Upload className="h-4 w-4" />
-              Importer une fiche
+              {t('contribute.importSheet')}
             </Link>
           )}
           <button
@@ -297,7 +299,7 @@ const Contribute = () => {
             className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
-            {submitting ? 'Envoi...' : 'Soumettre le modèle'}
+            {submitting ? t('contribute.submitting') : t('contribute.submitModel')}
           </button>
         </div>
       </form>

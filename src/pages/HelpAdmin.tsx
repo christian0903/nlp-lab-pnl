@@ -4,21 +4,25 @@ import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useTranslation } from 'react-i18next';
 
 const HelpAdmin = () => {
+  const { t, i18n } = useTranslation();
   const { canManage, loading: adminLoading } = useAdmin();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const lang = i18n.language?.startsWith('en') ? 'en' : 'fr';
   useEffect(() => {
-    fetch('/guide-admin.md')
+    const file = lang === 'en' ? '/guide-admin-en.md' : '/guide-admin.md';
+    fetch(file)
       .then(res => res.text())
       .then(text => { setContent(text); setLoading(false); })
-      .catch(() => { setContent('Impossible de charger le guide.'); setLoading(false); });
-  }, []);
+      .catch(() => { setContent(lang === 'en' ? 'Unable to load the guide.' : 'Impossible de charger le guide.'); setLoading(false); });
+  }, [lang]);
 
   if (adminLoading || loading) {
-    return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
+    return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
   }
 
   if (!canManage) return <Navigate to="/" />;

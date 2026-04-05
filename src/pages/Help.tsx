@@ -3,26 +3,30 @@ import { ArrowLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useTranslation } from 'react-i18next';
 
 const Help = () => {
+  const { t, i18n } = useTranslation();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const lang = i18n.language?.startsWith('en') ? 'en' : 'fr';
   useEffect(() => {
-    fetch('/guide-utilisateur.md')
+    const file = lang === 'en' ? '/guide-utilisateur-en.md' : '/guide-utilisateur.md';
+    fetch(file)
       .then(res => res.text())
       .then(text => { setContent(text); setLoading(false); })
-      .catch(() => { setContent('Impossible de charger le guide.'); setLoading(false); });
-  }, []);
+      .catch(() => { setContent(lang === 'en' ? 'Unable to load the guide.' : 'Impossible de charger le guide.'); setLoading(false); });
+  }, [lang]);
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
+    return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
   }
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-10">
       <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Accueil
+        <ArrowLeft className="h-4 w-4" /> {t('common.home')}
       </Link>
       <article className="prose prose-sm max-w-none dark:prose-invert
         prose-headings:font-display prose-headings:text-foreground

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Navigate, Link, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +22,7 @@ interface ProfileData {
 }
 
 const Profile = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
   const [searchParams] = useSearchParams();
@@ -66,21 +68,21 @@ const Profile = () => {
     if (!editUserId) return;
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { toast.error('L\'image ne doit pas dépasser 2 Mo'); return; }
-    if (!file.type.startsWith('image/')) { toast.error('Seules les images sont acceptées'); return; }
+    if (file.size > 2 * 1024 * 1024) { toast.error(t('profile.avatarTooBig')); return; }
+    if (!file.type.startsWith('image/')) { toast.error(t('profile.onlyImages')); return; }
 
     setUploading(true);
     const ext = file.name.split('.').pop();
     const path = `${editUserId}/avatar.${ext}`;
     const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
-    if (uploadError) { toast.error('Erreur lors de l\'upload'); setUploading(false); return; }
+    if (uploadError) { toast.error(t('profile.uploadError')); setUploading(false); return; }
 
     const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
     const avatarUrl = `${publicUrl}?t=${Date.now()}`;
     await supabase.from('profiles').update({ avatar_url: avatarUrl } as any).eq('user_id', editUserId);
     setProfile(prev => ({ ...prev, avatar_url: avatarUrl }));
     setUploading(false);
-    toast.success('Avatar mis à jour !');
+    toast.success(t('profile.avatarUpdated'));
   };
 
   const addExpertise = () => {
@@ -110,7 +112,7 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
-    if (!profile.display_name.trim()) { toast.error('Le nom d\'affichage est requis'); return; }
+    if (!profile.display_name.trim()) { toast.error(t('profile.displayNameRequired')); return; }
     setSaving(true);
     const savedLinks = profile.personal_links.filter(l => l.url.trim() && l.label.trim());
     const { error } = await supabase.from('profiles').update({
@@ -122,20 +124,20 @@ const Profile = () => {
     } as any).eq('user_id', editUserId);
 
     setSaving(false);
-    if (error) { toast.error('Erreur lors de la sauvegarde'); return; }
-    toast.success('Profil mis à jour !');
+    if (error) { toast.error(t('profile.saveError')); return; }
+    toast.success(t('profile.saved'));
   };
 
-  if (loading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
+  if (loading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-10">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">
-          {isEditingOther ? `Modifier le profil de ${profile.display_name}` : 'Mon profil'}
+          {isEditingOther ? t('profile.editOther', { name: profile.display_name }) : t('profile.title')}
         </h1>
         <Link to={`/profil/${editUserId}`} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary">
-          <Eye className="h-3.5 w-3.5" /> Voir le profil public
+          <Eye className="h-3.5 w-3.5" /> {t('profile.viewPublic')}
         </Link>
       </div>
 
@@ -159,16 +161,16 @@ const Profile = () => {
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
         </div>
         <div>
-          <p className="font-medium text-foreground">{profile.display_name || 'Sans nom'}</p>
+          <p className="font-medium text-foreground">{profile.display_name || t('profile.noName')}</p>
           <p className="text-sm text-muted-foreground">{user.email}</p>
-          {uploading && <p className="mt-1 text-xs text-secondary">Upload en cours...</p>}
+          {uploading && <p className="mt-1 text-xs text-secondary">{t('profile.uploadInProgress')}</p>}
         </div>
       </div>
 
       {/* Form */}
       <div className="space-y-5">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Nom d'affichage *</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('profile.displayName')}</label>
           <input type="text" value={profile.display_name}
             onChange={(e) => setProfile(prev => ({ ...prev, display_name: e.target.value }))}
             maxLength={100}
@@ -176,28 +178,28 @@ const Profile = () => {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Bio courte</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('profile.bio')}</label>
           <textarea value={profile.bio}
             onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
             maxLength={500} rows={3}
-            placeholder="Une phrase ou deux pour vous présenter..."
+            placeholder={t('profile.bioPlaceholder')}
             className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
           <p className="mt-1 text-xs text-muted-foreground">{profile.bio.length}/500</p>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Parcours et compétences</label>
-          <p className="mb-1.5 text-xs text-muted-foreground">Décrivez votre parcours, vos formations, votre expérience. Visible sur votre profil public.</p>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('profile.cv')}</label>
+          <p className="mb-1.5 text-xs text-muted-foreground">{t('profile.cvDesc')}</p>
           <textarea value={profile.cv}
             onChange={(e) => setProfile(prev => ({ ...prev, cv: e.target.value }))}
             maxLength={5000} rows={8}
-            placeholder="Votre parcours en PNL, vos formations, certifications, domaines de prédilection, expériences marquantes..."
+            placeholder={t('profile.cvPlaceholder')}
             className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
-          <p className="mt-1 text-xs text-muted-foreground">{profile.cv.length}/5000 — Markdown supporté</p>
+          <p className="mt-1 text-xs text-muted-foreground">{profile.cv.length}/5000 — {t('common.markdownSupported')}</p>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Domaines d'expertise</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('profile.expertise')}</label>
           <div className="mb-2 flex flex-wrap gap-2">
             {profile.expertise.map(item => (
               <span key={item} className="inline-flex items-center gap-1 rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary">
@@ -212,12 +214,12 @@ const Profile = () => {
             <input type="text" value={newExpertise}
               onChange={(e) => setNewExpertise(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addExpertise())}
-              placeholder="Ex: Hypnose, Coaching, Modélisation..."
+              placeholder={t('profile.expertisePlaceholder')}
               maxLength={50}
               className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
             <button onClick={addExpertise}
               className="flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
-              <Plus className="h-4 w-4" /> Ajouter
+              <Plus className="h-4 w-4" /> {t('common.add')}
             </button>
           </div>
         </div>
@@ -225,22 +227,22 @@ const Profile = () => {
         {/* Liens personnels */}
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <label className="text-sm font-medium text-foreground">Liens personnels</label>
+            <label className="text-sm font-medium text-foreground">{t('profile.personalLinks')}</label>
             <button onClick={addLink}
               className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-secondary hover:bg-secondary/10">
-              <Plus className="h-3.5 w-3.5" /> Ajouter un lien
+              <Plus className="h-3.5 w-3.5" /> {t('profile.addLink')}
             </button>
           </div>
-          <p className="mb-2 text-xs text-muted-foreground">Site web, LinkedIn, chaîne YouTube, page de formation...</p>
+          <p className="mb-2 text-xs text-muted-foreground">{t('profile.personalLinksDesc')}</p>
           {profile.personal_links.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Aucun lien. Ajoutez vos liens pour que les visiteurs puissent vous contacter ou vous suivre.</p>
+            <p className="text-xs text-muted-foreground">{t('profile.noLinks')}</p>
           ) : (
             <div className="space-y-2">
               {profile.personal_links.map((link, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <input type="text" value={link.label}
                     onChange={(e) => updateLink(i, 'label', e.target.value)}
-                    placeholder="Titre (ex: Mon site)"
+                    placeholder={t('profile.linkLabel')}
                     className="w-1/3 rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none ring-ring focus:ring-2" />
                   <input type="url" value={link.url}
                     onChange={(e) => updateLink(i, 'url', e.target.value)}
@@ -259,7 +261,7 @@ const Profile = () => {
           <button onClick={handleSave} disabled={saving}
             className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
             <Save className="h-4 w-4" />
-            {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+            {saving ? t('common.saving') : t('common.save')}
           </button>
         </div>
       </div>

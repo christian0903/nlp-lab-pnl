@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
 interface ProfileRow {
   user_id: string;
@@ -25,6 +26,7 @@ interface RoleRow {
 const STATUS_ORDER: ModelStatus[] = ['brouillon', 'en_revision', 'en_test', 'publie', 'en_evolution'];
 
 const Admin = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { isAdmin, canManage, loading: adminLoading } = useAdmin();
   const [models, setModels] = useState<(DBModel & { author_name?: string })[]>([]);
@@ -128,20 +130,20 @@ const Admin = () => {
 
   const handleDeleteImage = async (path: string) => {
     const { error } = await supabase.storage.from('model-images').remove([path]);
-    if (error) { toast.error('Erreur de suppression'); return; }
+    if (error) { toast.error(t('admin.deleteError')); return; }
     setImages(prev => prev.filter(i => i.path !== path));
-    toast.success('Image supprimée');
+    toast.success(t('admin.imageDeleted'));
   };
 
   const handleReplaceImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !replacingPath) return;
-    if (!file.type.startsWith('image/')) { toast.error('Seules les images sont acceptées'); return; }
+    if (!file.type.startsWith('image/')) { toast.error(t('profile.onlyImages')); return; }
     if (file.size > maxImageSizeMb * 1024 * 1024) { toast.error(`Max ${maxImageSizeMb} Mo`); return; }
 
     const { error } = await supabase.storage.from('model-images').update(replacingPath, file, { upsert: true });
-    if (error) { toast.error('Erreur de remplacement'); console.error(error); return; }
-    toast.success('Image remplacée');
+    if (error) { toast.error(t('admin.replaceError')); console.error(error); return; }
+    toast.success(t('admin.imageReplaced'));
     setReplacingPath(null);
     loadImages();
     if (replaceInputRef.current) replaceInputRef.current.value = '';
@@ -151,22 +153,22 @@ const Admin = () => {
     setSettingsSaving(true);
     const { error } = await supabase.from('app_settings').update({ value: maxImageSizeMb, updated_at: new Date().toISOString() } as any).eq('key', 'max_image_size_mb');
     setSettingsSaving(false);
-    if (error) { toast.error('Erreur de sauvegarde'); return; }
-    toast.success('Paramètres sauvegardés');
+    if (error) { toast.error(t('admin.settingsError')); return; }
+    toast.success(t('admin.settingsSaved'));
   };
 
   const handleApprove = async (id: string) => {
     const { error } = await supabase.from('models').update({ approved: true } as any).eq('id', id);
-    if (error) { toast.error('Erreur'); return; }
+    if (error) { toast.error(t('auth.error')); return; }
     setModels(prev => prev.map(m => m.id === id ? { ...m, approved: true } : m));
-    toast.success('Modèle validé !');
+    toast.success(t('admin.validated'));
   };
 
   const handleReject = async (id: string) => {
     const { error } = await supabase.from('models').delete().eq('id', id);
-    if (error) { toast.error('Erreur'); return; }
+    if (error) { toast.error(t('auth.error')); return; }
     setModels(prev => prev.filter(m => m.id !== id));
-    toast.success('Modèle rejeté et supprimé.');
+    toast.success(t('admin.rejected'));
   };
 
   const downloadCSV = (filename: string, headers: string[], rows: string[][]) => {
@@ -176,7 +178,7 @@ const Admin = () => {
     const a = document.createElement('a');
     a.href = url; a.download = filename; a.click();
     URL.revokeObjectURL(url);
-    toast.success(`${filename} exporté !`);
+    toast.success(t('admin.exported', { filename }));
   };
 
   const exportModels = () => {
@@ -193,13 +195,13 @@ const Admin = () => {
 
   const exportPosts = async () => {
     const { data } = await supabase.from('forum_posts').select('*').order('created_at', { ascending: false });
-    if (!data || data.length === 0) { toast.error('Aucun post à exporter'); return; }
+    if (!data || data.length === 0) { toast.error(t('admin.noActivity')); return; }
     const headers = ['ID', 'Titre', 'Catégorie', 'Contenu', 'Likes', 'Commentaires', 'User ID', 'Créé le'];
     const rows = data.map((p: any) => [p.id, p.title, p.category, p.content, String(p.likes_count), String(p.comments_count), p.user_id, p.created_at]);
     downloadCSV('posts_export.csv', headers, rows);
   };
 
-  if (adminLoading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
+  if (adminLoading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
   if (!user || !canManage) return <Navigate to="/" replace />;
 
   const pending = models.filter(m => !m.approved);
@@ -217,65 +219,65 @@ const Admin = () => {
             <ShieldCheck className="h-5 w-5 text-secondary" />
           </div>
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Administration</h1>
-            <p className="text-sm text-muted-foreground">Vue d'ensemble et gestion de la plateforme</p>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{t('admin.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('admin.subtitle')}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {isAdmin && (
             <Link to="/admin/users"
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:brightness-110 transition-all">
-              <Users className="h-3.5 w-3.5" /> Gérer les utilisateurs
+              <Users className="h-3.5 w-3.5" /> {t('admin.manageUsers')}
             </Link>
           )}
           <Link to="/admin/annonce"
             className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-all">
-            <Activity className="h-3.5 w-3.5" /> Annonce
+            <Activity className="h-3.5 w-3.5" /> {t('admin.announcement')}
           </Link>
           <Link to="/admin/donations"
             className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition-all">
-            <Heart className="h-3.5 w-3.5" /> Donations
+            <Heart className="h-3.5 w-3.5" /> {t('admin.donations')}
           </Link>
           <Link to="/admin/import"
             className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground hover:brightness-110 transition-all">
-            <Upload className="h-3.5 w-3.5" /> Importer un modèle
+            <Upload className="h-3.5 w-3.5" /> {t('admin.importModel')}
           </Link>
           <button onClick={exportModels}
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-            <Download className="h-3.5 w-3.5" /> Modèles CSV
+            <Download className="h-3.5 w-3.5" /> {t('admin.modelsCSV')}
           </button>
           <button onClick={exportUsers}
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-            <Download className="h-3.5 w-3.5" /> Utilisateurs CSV
+            <Download className="h-3.5 w-3.5" /> {t('admin.usersCSV')}
           </button>
           <button onClick={exportPosts}
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-            <Download className="h-3.5 w-3.5" /> Posts CSV
+            <Download className="h-3.5 w-3.5" /> {t('admin.postsCSV')}
           </button>
           <Link to="/admin/guide"
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-            <FileText className="h-3.5 w-3.5" /> Guide admin
+            <FileText className="h-3.5 w-3.5" /> {t('admin.adminGuide')}
           </Link>
         </div>
       </div>
 
       {/* Stats grid */}
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <StatBox label="En attente" value={pending.length} icon={<Clock className="h-5 w-5 text-amber-500" />} highlight={pending.length > 0} />
-        <StatBox label="Modèles validés" value={approved.length} icon={<Check className="h-5 w-5 text-emerald-500" />} />
-        <StatBox label="Total modèles" value={models.length} icon={<FileText className="h-5 w-5 text-secondary" />} />
-        <StatBox label="Utilisateurs" value={usersCount} icon={<Users className="h-5 w-5 text-primary" />} />
-        <StatBox label="Posts forum" value={postsCount} icon={<MessageSquare className="h-5 w-5 text-accent" />} />
-        <StatBox label="Publiés" value={statusCounts['publie'] || 0} icon={<BarChart3 className="h-5 w-5 text-lab-teal" />} />
+        <StatBox label={t('admin.pending')} value={pending.length} icon={<Clock className="h-5 w-5 text-amber-500" />} highlight={pending.length > 0} />
+        <StatBox label={t('admin.validatedModels')} value={approved.length} icon={<Check className="h-5 w-5 text-emerald-500" />} />
+        <StatBox label={t('admin.totalModels')} value={models.length} icon={<FileText className="h-5 w-5 text-secondary" />} />
+        <StatBox label={t('admin.users')} value={usersCount} icon={<Users className="h-5 w-5 text-primary" />} />
+        <StatBox label={t('admin.forumPosts')} value={postsCount} icon={<MessageSquare className="h-5 w-5 text-accent" />} />
+        <StatBox label={t('admin.publishedStat')} value={statusCounts['publie'] || 0} icon={<BarChart3 className="h-5 w-5 text-lab-teal" />} />
       </div>
 
       {/* Models by status breakdown */}
       <div className="mb-8 rounded-xl border border-border bg-card p-5">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">Répartition par statut</h2>
+        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('admin.statusBreakdown')}</h2>
         <div className="flex flex-wrap gap-3">
           {STATUS_ORDER.map(s => (
             <div key={s} className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2">
-              <span className="text-sm font-medium text-foreground">{MODEL_STATUS_LABELS[s]}</span>
+              <span className="text-sm font-medium text-foreground">{t('modelStatuses.' + s)}</span>
               <span className="rounded-full bg-background px-2 py-0.5 text-xs font-bold text-foreground">{statusCounts[s] || 0}</span>
             </div>
           ))}
@@ -285,20 +287,20 @@ const Admin = () => {
       <Tabs defaultValue="pending" className="w-full">
         <TabsList className="mb-6 w-full justify-start border-b border-border bg-transparent p-0">
           <TabsTrigger value="pending" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            🔔 En attente ({pending.length})
+            {t('admin.pendingTab', { count: pending.length })}
           </TabsTrigger>
           <TabsTrigger value="approved" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            ✅ Validés ({approved.length})
+            {t('admin.validatedTab', { count: approved.length })}
           </TabsTrigger>
           <TabsTrigger value="activity" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            <Activity className="mr-1.5 inline h-3.5 w-3.5" /> Activité récente
+            <Activity className="mr-1.5 inline h-3.5 w-3.5" /> {t('admin.recentActivity')}
           </TabsTrigger>
           <TabsTrigger value="images" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-            <ImageIcon className="mr-1.5 inline h-3.5 w-3.5" /> Images ({images.length})
+            <ImageIcon className="mr-1.5 inline h-3.5 w-3.5" /> {t('admin.imagesCount', { count: images.length })}
           </TabsTrigger>
           {isAdmin && (
             <TabsTrigger value="settings" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
-              <Settings className="mr-1.5 inline h-3.5 w-3.5" /> Paramètres
+              <Settings className="mr-1.5 inline h-3.5 w-3.5" /> {t('admin.settings')}
             </TabsTrigger>
           )}
         </TabsList>
@@ -306,13 +308,13 @@ const Admin = () => {
         {/* PENDING */}
         <TabsContent value="pending">
           {loading ? (
-            <div className="py-10 text-center text-muted-foreground">Chargement...</div>
+            <div className="py-10 text-center text-muted-foreground">{t('common.loading')}</div>
           ) : pending.length === 0 ? (
-            <EmptyState icon={<ShieldCheck className="h-10 w-10" />} text="Aucun modèle en attente de validation" />
+            <EmptyState icon={<ShieldCheck className="h-10 w-10" />} text={t('admin.noPending')} />
           ) : (
             <div className="space-y-4">
               {pending.map(model => (
-                <PendingCard key={model.id} model={model} onApprove={handleApprove} onReject={handleReject} />
+                <PendingCard key={model.id} model={model} onApprove={handleApprove} onReject={handleReject} t={t} i18n={i18n} />
               ))}
             </div>
           )}
@@ -321,7 +323,7 @@ const Admin = () => {
         {/* APPROVED */}
         <TabsContent value="approved">
           {approved.length === 0 ? (
-            <EmptyState icon={<FileText className="h-10 w-10" />} text="Aucun modèle validé" />
+            <EmptyState icon={<FileText className="h-10 w-10" />} text={t('admin.noValidated')} />
           ) : (
             <div className="space-y-3">
               {approved.map(model => (
@@ -330,11 +332,11 @@ const Admin = () => {
                   <TypeBadge type={model.type as any} />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground truncate">{model.title}</p>
-                    <p className="text-xs text-muted-foreground">par {model.author_name || 'Anonyme'} · {MODEL_STATUS_LABELS[model.status as keyof typeof MODEL_STATUS_LABELS]}</p>
+                    <p className="text-xs text-muted-foreground">par {model.author_name || t('common.anonymous')} · {t('modelStatuses.' + model.status)}</p>
                   </div>
                   <div className="hidden text-right sm:block">
                     <p className="text-xs text-muted-foreground">{model.views_count} vues · {model.feedback_count} feedbacks</p>
-                    <p className="text-xs text-muted-foreground">{new Date(model.created_at).toLocaleDateString('fr-FR')}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(model.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</p>
                   </div>
                 </Link>
               ))}
@@ -345,7 +347,7 @@ const Admin = () => {
         {/* ACTIVITY */}
         <TabsContent value="activity">
           {recentModels.length === 0 ? (
-            <EmptyState icon={<Activity className="h-10 w-10" />} text="Pas encore d'activité" />
+            <EmptyState icon={<Activity className="h-10 w-10" />} text={t('admin.noActivity')} />
           ) : (
             <div className="space-y-2">
               {recentModels.map(m => (
@@ -353,8 +355,8 @@ const Admin = () => {
                   <div className={`h-2 w-2 rounded-full ${m.approved ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                   <TypeBadge type={m.type as any} />
                   <Link to={`/model/${m.id}`} className="flex-1 truncate text-sm font-medium text-foreground hover:text-secondary">{m.title}</Link>
-                  <span className="text-xs text-muted-foreground">{m.author_name || 'Anonyme'}</span>
-                  <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(m.updated_at), { addSuffix: true, locale: fr })}</span>
+                  <span className="text-xs text-muted-foreground">{m.author_name || t('common.anonymous')}</span>
+                  <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(m.updated_at), { addSuffix: true, locale: i18n.language?.startsWith('en') ? undefined : fr })}</span>
                 </div>
               ))}
             </div>
@@ -367,16 +369,16 @@ const Admin = () => {
         <TabsContent value="images">
           <input ref={replaceInputRef} type="file" accept=".png,.jpg,.jpeg" className="hidden" onChange={handleReplaceImage} />
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{images.length} image(s) stockée(s)</p>
+            <p className="text-sm text-muted-foreground">{t('admin.imagesStored', { count: images.length })}</p>
             <button onClick={loadImages} disabled={imagesLoading}
               className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
-              <RefreshCw className={`h-3.5 w-3.5 ${imagesLoading ? 'animate-spin' : ''}`} /> Actualiser
+              <RefreshCw className={`h-3.5 w-3.5 ${imagesLoading ? 'animate-spin' : ''}`} /> {t('admin.refresh')}
             </button>
           </div>
           {imagesLoading ? (
-            <div className="py-10 text-center text-muted-foreground">Chargement...</div>
+            <div className="py-10 text-center text-muted-foreground">{t('common.loading')}</div>
           ) : images.length === 0 ? (
-            <EmptyState icon={<ImageIcon className="h-10 w-10" />} text="Aucune image uploadée" />
+            <EmptyState icon={<ImageIcon className="h-10 w-10" />} text={t('admin.noImages')} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {images.map(img => (
@@ -388,20 +390,20 @@ const Admin = () => {
                     <p className="text-xs font-medium text-foreground truncate" title={img.path}>{img.name}</p>
                     <p className="text-[10px] text-muted-foreground">{img.path}</p>
                     <p className="text-[10px] text-muted-foreground">
-                      {img.size > 0 ? `${(img.size / 1024).toFixed(0)} Ko` : ''}{img.updated_at ? ` · ${new Date(img.updated_at).toLocaleDateString('fr-FR')}` : ''}
+                      {img.size > 0 ? `${(img.size / 1024).toFixed(0)} Ko` : ''}{img.updated_at ? ` · ${new Date(img.updated_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}` : ''}
                     </p>
                     <div className="mt-2 flex gap-2">
                       <button onClick={() => { setReplacingPath(img.path); replaceInputRef.current?.click(); }}
                         className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground">
-                        <RefreshCw className="h-3 w-3" /> Remplacer
+                        <RefreshCw className="h-3 w-3" /> {t('admin.replace')}
                       </button>
                       <button onClick={() => handleDeleteImage(img.path)}
                         className="inline-flex items-center gap-1 rounded-md border border-red-300 px-2 py-1 text-[10px] font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30">
-                        <Trash2 className="h-3 w-3" /> Supprimer
+                        <Trash2 className="h-3 w-3" /> {t('common.delete')}
                       </button>
-                      <button onClick={() => { navigator.clipboard.writeText(img.url); toast.success('URL copiée'); }}
+                      <button onClick={() => { navigator.clipboard.writeText(img.url); toast.success(t('admin.urlCopied')); }}
                         className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground">
-                        Copier URL
+                        {t('admin.copyUrl')}
                       </button>
                     </div>
                   </div>
@@ -414,11 +416,11 @@ const Admin = () => {
         {/* PARAMÈTRES */}
         <TabsContent value="settings">
           <div className="max-w-lg rounded-xl border border-border bg-card p-6 shadow-sm">
-            <h3 className="mb-4 font-display text-lg font-semibold text-foreground">Paramètres de l'application</h3>
+            <h3 className="mb-4 font-display text-lg font-semibold text-foreground">{t('admin.appSettings')}</h3>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">Taille maximale des images (Mo)</label>
-                <p className="mb-2 text-xs text-muted-foreground">Les images uploadées dans les modèles qui dépassent cette taille seront rejetées.</p>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">{t('admin.maxImageSize')}</label>
+                <p className="mb-2 text-xs text-muted-foreground">{t('admin.maxImageSizeDesc')}</p>
                 <input type="number" value={maxImageSizeMb} onChange={e => setMaxImageSizeMb(Math.max(0.1, Number(e.target.value)))}
                   min={0.1} max={50} step={0.5}
                   className="w-32 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
@@ -428,7 +430,7 @@ const Admin = () => {
                 <button onClick={saveSettings} disabled={settingsSaving}
                   className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
                   {settingsSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  {settingsSaving ? 'Sauvegarde...' : 'Enregistrer'}
+                  {settingsSaving ? t('common.saving') : t('common.save')}
                 </button>
               </div>
             </div>
@@ -446,18 +448,20 @@ const EmptyState = ({ icon, text }: { icon: React.ReactNode; text: string }) => 
   </div>
 );
 
-const PendingCard = ({ model, onApprove, onReject }: {
+const PendingCard = ({ model, onApprove, onReject, t, i18n }: {
   model: DBModel & { author_name?: string };
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  t: (key: string, options?: any) => string;
+  i18n: { language?: string };
 }) => (
   <div className="rounded-xl border border-amber-500/20 bg-card p-5 shadow-sm">
     <div className="mb-3 flex items-start justify-between gap-3">
       <div className="flex items-center gap-2">
         <TypeBadge type={model.type as any} />
-        <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-600">En attente</span>
+        <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-600">{t('admin.pending')}</span>
       </div>
-      <span className="text-xs text-muted-foreground">{new Date(model.created_at).toLocaleDateString('fr-FR')}</span>
+      <span className="text-xs text-muted-foreground">{new Date(model.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
     </div>
     <h3 className="mb-1 font-display text-lg font-semibold text-foreground">{model.title}</h3>
     <p className="mb-3 text-sm text-muted-foreground line-clamp-3">{model.description}</p>
@@ -467,19 +471,19 @@ const PendingCard = ({ model, onApprove, onReject }: {
       ))}
     </div>
     <div className="flex items-center justify-between border-t border-border pt-4">
-      <span className="text-xs text-muted-foreground">par {model.author_name || 'Anonyme'} · {model.complexity}</span>
+      <span className="text-xs text-muted-foreground">par {model.author_name || t('common.anonymous')} · {model.complexity}</span>
       <div className="flex gap-2">
         <Link to={`/model/${model.id}`}
           className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
-          <Eye className="h-3.5 w-3.5" /> Voir
+          <Eye className="h-3.5 w-3.5" /> {t('admin.view')}
         </Link>
         <button onClick={() => onReject(model.id)}
           className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/5">
-          <X className="h-3.5 w-3.5" /> Rejeter
+          <X className="h-3.5 w-3.5" /> {t('admin.reject')}
         </button>
         <button onClick={() => onApprove(model.id)}
           className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700">
-          <Check className="h-3.5 w-3.5" /> Valider
+          <Check className="h-3.5 w-3.5" /> {t('admin.validate')}
         </button>
       </div>
     </div>

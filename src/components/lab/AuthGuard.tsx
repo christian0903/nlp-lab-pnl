@@ -1,10 +1,12 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Pages accessibles sans connexion
 const PUBLIC_PATHS = ['/', '/auth', '/reset-password', '/soutenir'];
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
+  const { t } = useTranslation();
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -15,7 +17,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
   // Chargement en cours
   if (loading) {
-    return <div className="flex min-h-[50vh] items-center justify-center text-muted-foreground">Chargement...</div>;
+    return <div className="flex min-h-[50vh] items-center justify-center text-muted-foreground">{t('common.loading')}</div>;
   }
 
   // Non connecté : rediriger vers login

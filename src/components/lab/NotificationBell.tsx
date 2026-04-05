@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bell, MessageSquare, GitBranch, FileText, RefreshCw, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -22,6 +23,7 @@ const typeIcons: Record<string, typeof Bell> = {
 };
 
 const NotificationBell = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
@@ -102,11 +104,11 @@ const NotificationBell = () => {
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "À l'instant";
-    if (mins < 60) return `Il y a ${mins}min`;
+    if (mins < 1) return t('notifications.justNow');
+    if (mins < 60) return t('notifications.minutesAgo', { count: mins });
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `Il y a ${hours}h`;
-    return `Il y a ${Math.floor(hours / 24)}j`;
+    if (hours < 24) return t('notifications.hoursAgo', { count: hours });
+    return t('notifications.daysAgo', { count: Math.floor(hours / 24) });
   };
 
   return (
@@ -137,13 +139,13 @@ const NotificationBell = () => {
               style={dropStyle}
             >
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                <span className="text-sm font-semibold text-foreground">Notifications</span>
+                <span className="text-sm font-semibold text-foreground">{t('notifications.title')}</span>
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllRead}
                     className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                   >
-                    <Check className="h-3 w-3" /> Tout lire
+                    <Check className="h-3 w-3" /> {t('notifications.markAllRead')}
                   </button>
                 )}
               </div>
@@ -151,7 +153,7 @@ const NotificationBell = () => {
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length === 0 ? (
                   <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                    Aucune notification
+                    {t('notifications.empty')}
                   </div>
                 ) : (
                   notifications.map((n) => {

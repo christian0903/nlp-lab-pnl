@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FlaskConical, BookOpen, Users, GitBranch, ArrowRight, Microscope, FileText, Clock, Sparkles, Plus, Heart, Megaphone } from 'lucide-react';
@@ -21,6 +22,7 @@ interface NewsItem {
 }
 
 const Index = () => {
+  const { t, i18n } = useTranslation();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ models: 0, published: 0, contributors: 0 });
@@ -105,7 +107,7 @@ const Index = () => {
             type: 'new_resource',
             date: r.created_at,
             title: r.title,
-            subtitle: r.category === 'guide' ? 'Guide' : r.category === 'glossaire' ? 'Glossaire' : r.category === 'technique' ? 'Technique' : 'Article',
+            subtitle: t('resources.categories.' + r.category),
             link: '/resources',
           });
         }
@@ -139,15 +141,16 @@ const Index = () => {
 
   const newsLabel = (type: NewsItem['type']) => {
     switch (type) {
-      case 'new_model': return 'Nouveau modèle';
-      case 'model_update': return 'Mise à jour';
-      case 'new_resource': return 'Ressource';
+      case 'new_model': return t('news.newModel');
+      case 'model_update': return t('news.modelUpdate');
+      case 'new_resource': return t('news.resource');
     }
   };
 
   const formatDate = (date: string) => {
     try {
-      return new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+      const locale = i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR';
+      return new Date(date).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
     } catch {
       return date;
     }
@@ -167,28 +170,27 @@ const Index = () => {
           >
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/5 px-4 py-1.5 text-sm text-primary-foreground/80">
               <Microscope className="h-4 w-4" />
-              Laboratoire de Recherche & Développement
+              {t('hero.badge')}
             </div>
             <h1 className="mb-4 font-display text-3xl md:text-4xl font-bold leading-tight lg:text-5xl">
-              Modéliser l'excellence{' '}
-              <span className="text-lab-teal-light">ensemble</span>
+              {t('hero.title')}{' '}
+              <span className="text-lab-teal-light">{t('hero.titleHighlight')}</span>
             </h1>
             <p className="mb-8 text-base md:text-lg text-primary-foreground/70 leading-relaxed">
-              Un espace collaboratif où praticiens et chercheurs en PNL créent, testent et font évoluer
-              des modèles au service de la transformation humaine.
+              {t('hero.subtitle')}
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 to="/library"
                 className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110"
               >
-                Explorer la bibliothèque <ArrowRight className="h-4 w-4" />
+                {t('hero.explore')} <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/contribute"
                 className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/20 px-5 py-2.5 text-sm font-medium text-primary-foreground/90 transition-colors hover:bg-primary-foreground/10"
               >
-                Contribuer
+                {t('hero.contribute')}
               </Link>
             </div>
           </motion.div>
@@ -215,17 +217,17 @@ const Index = () => {
           <div className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm text-center">
             <FlaskConical className="mx-auto mb-1 h-5 w-5 text-secondary" />
             <p className="font-display text-xl sm:text-2xl font-bold text-foreground">{stats.models}</p>
-            <p className="text-xs text-muted-foreground">Modèles</p>
+            <p className="text-xs text-muted-foreground">{t('stats.models')}</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm text-center">
             <BookOpen className="mx-auto mb-1 h-5 w-5 text-secondary" />
             <p className="font-display text-xl sm:text-2xl font-bold text-foreground">{stats.published}</p>
-            <p className="text-xs text-muted-foreground">Publiés</p>
+            <p className="text-xs text-muted-foreground">{t('stats.published')}</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm text-center">
             <Users className="mx-auto mb-1 h-5 w-5 text-secondary" />
             <p className="font-display text-xl sm:text-2xl font-bold text-foreground">{stats.contributors}</p>
-            <p className="text-xs text-muted-foreground">Contributeurs</p>
+            <p className="text-xs text-muted-foreground">{t('stats.contributors')}</p>
           </div>
         </div>
       </section>
@@ -233,38 +235,37 @@ const Index = () => {
       {/* Bienvenue */}
       <section className="container mx-auto px-4 pt-16 pb-6">
         <div className="rounded-xl border border-secondary/20 bg-secondary/5 p-6">
-          <h2 className="mb-3 font-display text-xl font-bold text-foreground">Vous découvrez le Lab ?</h2>
+          <h2 className="mb-3 font-display text-xl font-bold text-foreground">{t('welcome.title')}</h2>
           <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
-            Ce site est un laboratoire collaboratif où les praticiens PNL partagent, testent et font évoluer des modèles.
-            Voici par où commencer :
+            {t('welcome.subtitle')}
           </p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Link to="/library" className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 hover:border-secondary/40 transition-colors">
               <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-secondary" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Explorer la bibliothèque</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">Parcourez les approches, outils et expériences documentés par la communauté.</p>
+                <p className="text-sm font-semibold text-foreground">{t('welcome.exploreLibrary')}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t('welcome.exploreLibraryDesc')}</p>
               </div>
             </Link>
             <Link to="/resources" className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 hover:border-secondary/40 transition-colors">
               <FileText className="mt-0.5 h-5 w-5 shrink-0 text-secondary" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Lire les ressources</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">Guides, glossaire PNL et méthodologie pour comprendre notre démarche.</p>
+                <p className="text-sm font-semibold text-foreground">{t('welcome.readResources')}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t('welcome.readResourcesDesc')}</p>
               </div>
             </Link>
             <Link to="/community" className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 hover:border-secondary/40 transition-colors">
               <Users className="mt-0.5 h-5 w-5 shrink-0 text-secondary" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Rejoindre la communauté</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">Échangez avec les praticiens, posez vos questions et partagez vos découvertes.</p>
+                <p className="text-sm font-semibold text-foreground">{t('welcome.joinCommunity')}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t('welcome.joinCommunityDesc')}</p>
               </div>
             </Link>
             <Link to="/soutenir" className="flex items-start gap-3 rounded-lg border border-secondary/20 bg-secondary/5 p-4 hover:border-secondary/40 transition-colors">
               <Heart className="mt-0.5 h-5 w-5 shrink-0 text-secondary" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Soutenir le projet</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">Ce Lab est gratuit et ouvert. Votre don aide à le maintenir.</p>
+                <p className="text-sm font-semibold text-foreground">{t('welcome.support')}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t('welcome.supportDesc')}</p>
               </div>
             </Link>
           </div>
@@ -274,11 +275,11 @@ const Index = () => {
       {/* News feed */}
       <section className="container mx-auto px-4 py-10 pb-20">
         <div className="mb-6">
-          <h2 className="font-display text-2xl font-bold text-foreground">Dernières nouvelles</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Nouveaux modèles, mises à jour et ressources</p>
+          <h2 className="font-display text-2xl font-bold text-foreground">{t('news.title')}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t('news.subtitle')}</p>
         </div>
         {loading ? (
-          <div className="py-10 text-center text-muted-foreground">Chargement...</div>
+          <div className="py-10 text-center text-muted-foreground">{t('common.loading')}</div>
         ) : news.length > 0 ? (
           <div className="space-y-3">
             {news.map((item, i) => (
@@ -310,7 +311,7 @@ const Index = () => {
                     <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{item.subtitle}</p>
                   )}
                   {item.authors && item.authors.length > 0 && (
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">par {item.authors.join(', ')}</p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">{t('news.by')} {item.authors.join(', ')}</p>
                   )}
                 </div>
                 <div className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground mt-1">
@@ -322,9 +323,9 @@ const Index = () => {
           </div>
         ) : (
           <div className="rounded-xl border border-dashed border-border p-16 text-center">
-            <p className="mb-3 text-muted-foreground">Aucune activité pour le moment</p>
+            <p className="mb-3 text-muted-foreground">{t('news.empty')}</p>
             <Link to="/contribute" className="text-sm font-medium text-secondary hover:underline">
-              Créer le premier modèle →
+              {t('news.createFirst')}
             </Link>
           </div>
         )}

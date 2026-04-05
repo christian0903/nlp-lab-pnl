@@ -1,4 +1,5 @@
-import { ModelType, MODEL_TYPE_LABELS } from '@/data/mockModels';
+import { ModelType } from '@/data/mockModels';
+import { useTranslation } from 'react-i18next';
 
 const typeClassMap: Record<ModelType, string> = {
   problematique: 'lab-type-problematique',
@@ -6,10 +7,13 @@ const typeClassMap: Record<ModelType, string> = {
   approche: 'lab-type-approche',
 };
 
-const TypeBadge = ({ type }: { type: ModelType }) => (
-  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${typeClassMap[type]}`}>
-    {MODEL_TYPE_LABELS[type]}
-  </span>
-);
+const TypeBadge = ({ type }: { type: ModelType }) => {
+  const { t } = useTranslation();
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${typeClassMap[type]}`}>
+      {t('modelTypes.' + type)}
+    </span>
+  );
+};
 
 export default TypeBadge;

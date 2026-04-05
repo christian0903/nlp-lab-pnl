@@ -7,6 +7,7 @@ import { Heart, MessageSquare, Plus, Send, User, LogOut, Beaker, FlaskConical, P
 import { useAdmin } from '@/hooks/useAdmin';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
 interface Profile {
   user_id: string;
@@ -39,14 +40,15 @@ interface ModelOption {
 }
 
 const CATEGORIES = [
-  { value: 'general', label: '💬 Général' },
-  { value: 'modeles', label: '🔬 Modèles' },
-  { value: 'experiences', label: '🧪 Expériences' },
-  { value: 'questions', label: '❓ Questions' },
-  { value: 'ressources', label: '📚 Ressources' },
+  { value: 'general', key: 'community.categories.general' },
+  { value: 'modeles', key: 'community.categories.modeles' },
+  { value: 'experiences', key: 'community.categories.experiences' },
+  { value: 'questions', key: 'community.categories.questions' },
+  { value: 'ressources', key: 'community.categories.ressources' },
 ];
 
 const Community = () => {
+  const { t, i18n } = useTranslation();
   const { user, signOut } = useAuth();
   const { canManage } = useAdmin();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -122,7 +124,7 @@ const Community = () => {
 
     const { data, error } = await query;
     if (error) {
-      toast.error('Erreur chargement des posts');
+      toast.error(t('community.errorLoadingPosts'));
       setLoading(false);
       return;
     }
@@ -178,7 +180,7 @@ const Community = () => {
     const title = newTitle.trim();
     const content = newContent.trim();
     if (!title || !content) {
-      toast.error('Titre et contenu requis');
+      toast.error(t('community.titleContentRequired'));
       return;
     }
 
@@ -195,7 +197,7 @@ const Community = () => {
     const { error } = await supabase.from('forum_posts').insert(insertData);
 
     if (error) {
-      toast.error('Erreur création du post');
+      toast.error(t('community.errorCreatingPost'));
       return;
     }
 
@@ -204,12 +206,12 @@ const Community = () => {
     setNewCategory('general');
     setNewModelId('');
     setShowForm(false);
-    toast.success('Post publié !');
+    toast.success(t('community.postPublished'));
     fetchPosts();
   };
 
   const toggleLike = async (postId: string) => {
-    if (!user) { toast.error('Connectez-vous pour liker'); return; }
+    if (!user) { toast.error(t('community.loginToLike')); return; }
     if (likedPosts.has(postId)) {
       await supabase.from('post_likes').delete().eq('post_id', postId).eq('user_id', user.id);
       setLikedPosts((prev) => { const next = new Set(prev); next.delete(postId); return next; });
@@ -251,11 +253,11 @@ const Community = () => {
   };
 
   const handleComment = async (postId: string) => {
-    if (!user) { toast.error('Connectez-vous pour commenter'); return; }
+    if (!user) { toast.error(t('community.loginToComment')); return; }
     const content = commentText.trim();
     if (!content) return;
     const { error } = await supabase.from('post_comments').insert({ post_id: postId, user_id: user.id, content });
-    if (error) { toast.error('Erreur ajout commentaire'); return; }
+    if (error) { toast.error(t('community.errorAddingComment')); return; }
     setCommentText('');
     const { data } = await supabase.from('post_comments').select('*').eq('post_id', postId).order('created_at', { ascending: true });
     if (data) {
@@ -281,7 +283,7 @@ const Community = () => {
     const trimmedTitle = editPostTitle.trim();
     const trimmedContent = editPostContent.trim();
     if (!trimmedTitle || !trimmedContent) {
-      toast.error('Titre et contenu requis');
+      toast.error(t('community.titleContentRequired'));
       return;
     }
     setEditPostSaving(true);
@@ -292,7 +294,7 @@ const Community = () => {
     } as any).eq('id', editingPostId);
     setEditPostSaving(false);
     if (error) {
-      toast.error('Erreur lors de la modification');
+      toast.error(t('community.errorEditingPost'));
       console.error(error);
       return;
     }
@@ -301,25 +303,25 @@ const Community = () => {
       : p
     ));
     setEditingPostId(null);
-    toast.success('Post modifié');
+    toast.success(t('community.postEdited'));
   };
 
   const handleDeletePost = async () => {
     if (!deletePostId) return;
     const { error } = await supabase.from('forum_posts').delete().eq('id', deletePostId);
     if (error) {
-      toast.error('Erreur lors de la suppression');
+      toast.error(t('community.errorDeletingPost'));
       console.error(error);
       setDeletePostId(null);
       return;
     }
     setPosts(prev => prev.filter(p => p.id !== deletePostId));
     setDeletePostId(null);
-    toast.success('Post supprimé');
+    toast.success(t('community.postDeleted'));
   };
 
   const getProfile = (userId: string) => profiles[userId];
-  const timeAgo = (date: string) => formatDistanceToNow(new Date(date), { addSuffix: true, locale: fr });
+  const timeAgo = (date: string) => formatDistanceToNow(new Date(date), { addSuffix: true, locale: i18n.language?.startsWith('en') ? undefined : fr });
 
   return (
     <div className="container mx-auto px-4 py-10">
@@ -327,11 +329,11 @@ const Community = () => {
       {deletePostId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setDeletePostId(null)}>
           <div className="mx-4 w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg" onClick={e => e.stopPropagation()}>
-            <h3 className="mb-2 font-display text-lg font-bold text-foreground">Supprimer ce post ?</h3>
-            <p className="mb-6 text-sm text-muted-foreground">Le post et tous ses commentaires seront supprimés. Cette action est irréversible.</p>
+            <h3 className="mb-2 font-display text-lg font-bold text-foreground">{t('community.deletePostTitle')}</h3>
+            <p className="mb-6 text-sm text-muted-foreground">{t('community.deletePostMessage')}</p>
             <div className="flex justify-end gap-3">
-              <button onClick={() => setDeletePostId(null)} className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">Annuler</button>
-              <button onClick={handleDeletePost} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Supprimer</button>
+              <button onClick={() => setDeletePostId(null)} className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">{t('common.cancel')}</button>
+              <button onClick={handleDeletePost} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">{t('common.delete')}</button>
             </div>
           </div>
         </div>
@@ -339,15 +341,15 @@ const Community = () => {
 
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold text-foreground">Communauté</h1>
-          <p className="mt-1 text-muted-foreground">Échangez avec les praticiens et chercheurs PNL</p>
+          <h1 className="font-display text-3xl font-bold text-foreground">{t('community.title')}</h1>
+          <p className="mt-1 text-muted-foreground">{t('community.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">
           {user ? (
             <>
               <button onClick={() => setShowForm(!showForm)}
                 className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110">
-                <Plus className="h-4 w-4" /> Nouveau post
+                <Plus className="h-4 w-4" /> {t('community.newPost')}
               </button>
               <button onClick={() => signOut()}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground">
@@ -356,7 +358,7 @@ const Community = () => {
             </>
           ) : (
             <Link to="/auth" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-secondary-foreground">
-              <User className="h-4 w-4" /> Se connecter
+              <User className="h-4 w-4" /> {t('community.loginToPost')}
             </Link>
           )}
         </div>
@@ -366,12 +368,12 @@ const Community = () => {
       <div className="mb-6 flex flex-wrap gap-2">
         <button onClick={() => setCategoryFilter('all')}
           className={`rounded-full px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors ${categoryFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
-          Tous
+          {t('community.allCategories')}
         </button>
         {CATEGORIES.map((cat) => (
           <button key={cat.value} onClick={() => setCategoryFilter(cat.value)}
             className={`rounded-full px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors ${categoryFilter === cat.value ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
-            {cat.label}
+            {t(cat.key)}
           </button>
         ))}
       </div>
@@ -379,30 +381,30 @@ const Community = () => {
       {/* New post form */}
       {showForm && user && (
         <form onSubmit={handleCreatePost} className="mb-8 rounded-xl border border-border bg-card p-5 shadow-sm">
-          <h3 className="mb-4 font-display text-lg font-semibold text-foreground">Nouveau post</h3>
+          <h3 className="mb-4 font-display text-lg font-semibold text-foreground">{t('community.newPostTitle')}</h3>
           <div className="mb-3">
-            <input type="text" placeholder="Titre" value={newTitle} onChange={(e) => setNewTitle(e.target.value)}
+            <input type="text" placeholder={t('community.titlePlaceholder')} value={newTitle} onChange={(e) => setNewTitle(e.target.value)}
               maxLength={200} className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" required />
           </div>
           <div className="mb-3">
-            <textarea placeholder="Partagez vos réflexions, questions ou découvertes..." value={newContent} onChange={(e) => setNewContent(e.target.value)}
+            <textarea placeholder={t('community.contentPlaceholder')} value={newContent} onChange={(e) => setNewContent(e.target.value)}
               maxLength={5000} rows={4} className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" required />
           </div>
           <div className="mb-3 grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Catégorie</label>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">{t('community.category')}</label>
               <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm">
                 {CATEGORIES.map((cat) => (
-                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  <option key={cat.value} value={cat.value}>{t(cat.key)}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Lier à un modèle (optionnel)</label>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">{t('community.linkModel')}</label>
               <select value={newModelId} onChange={(e) => setNewModelId(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm">
-                <option value="">— Aucun modèle —</option>
+                <option value="">{t('community.noModel')}</option>
                 {modelOptions.map((m) => (
                   <option key={m.id} value={m.id}>{m.title}</option>
                 ))}
@@ -412,11 +414,11 @@ const Community = () => {
           <div className="flex items-center justify-end gap-2">
             <button type="button" onClick={() => setShowForm(false)}
               className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
-              Annuler
+              {t('common.cancel')}
             </button>
             <button type="submit"
               className="rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground hover:brightness-110">
-              Publier
+              {t('common.publish')}
             </button>
           </div>
         </form>
@@ -424,11 +426,11 @@ const Community = () => {
 
       {/* Posts list */}
       {loading ? (
-        <div className="py-20 text-center text-muted-foreground">Chargement...</div>
+        <div className="py-20 text-center text-muted-foreground">{t('common.loading')}</div>
       ) : posts.length === 0 ? (
         <div className="py-20 text-center">
           <MessageSquare className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-          <p className="text-muted-foreground">Aucun post pour le moment. Soyez le premier à publier !</p>
+          <p className="text-muted-foreground">{t('community.noPosts')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -445,7 +447,7 @@ const Community = () => {
                     {profile?.display_name?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div>
-                    <Link to={`/profil/${post.user_id}`} className="text-sm font-medium text-foreground hover:text-secondary">{profile?.display_name || 'Anonyme'}</Link>
+                    <Link to={`/profil/${post.user_id}`} className="text-sm font-medium text-foreground hover:text-secondary">{profile?.display_name || t('common.anonymous')}</Link>
                     <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
                   </div>
                   <div className="ml-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -456,7 +458,7 @@ const Community = () => {
                       </Link>
                     ) : null)}
                     <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
-                      {CATEGORIES.find((c) => c.value === post.category)?.label || post.category}
+                      {(() => { const cat = CATEGORIES.find((c) => c.value === post.category); return cat ? t(cat.key) : post.category; })()}
                     </span>
                   </div>
                 </div>
@@ -474,17 +476,17 @@ const Community = () => {
                       <select value={editPostCategory} onChange={e => setEditPostCategory(e.target.value)}
                         className="rounded-lg border border-input bg-background px-2 py-1.5 text-xs">
                         {CATEGORIES.map(cat => (
-                          <option key={cat.value} value={cat.value}>{cat.label}</option>
+                          <option key={cat.value} value={cat.value}>{t(cat.key)}</option>
                         ))}
                       </select>
                       <div className="ml-auto flex gap-2">
                         <button onClick={cancelEditPost}
                           className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
-                          <X className="h-3.5 w-3.5" /> Annuler
+                          <X className="h-3.5 w-3.5" /> {t('common.cancel')}
                         </button>
                         <button onClick={saveEditPost} disabled={editPostSaving}
                           className="inline-flex items-center gap-1 rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold text-secondary-foreground disabled:opacity-50">
-                          <Save className="h-3.5 w-3.5" /> {editPostSaving ? 'Sauvegarde...' : 'Enregistrer'}
+                          <Save className="h-3.5 w-3.5" /> {editPostSaving ? t('common.saving') : t('common.save')}
                         </button>
                       </div>
                     </div>
@@ -497,12 +499,12 @@ const Community = () => {
                         <>
                           <button onClick={() => startEditPost(post)}
                             className="rounded p-1 text-muted-foreground/40 hover:text-foreground transition-colors"
-                            title="Modifier">
+                            title={t('common.edit')}>
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
                           <button onClick={() => setDeletePostId(post.id)}
                             className="rounded p-1 text-muted-foreground/40 hover:text-red-500 transition-colors"
-                            title="Supprimer">
+                            title={t('common.delete')}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </>
@@ -521,7 +523,7 @@ const Community = () => {
                   <button onClick={() => loadComments(post.id)}
                     className={`flex items-center gap-1.5 text-sm transition-colors ${expandedPost === post.id ? 'font-medium text-secondary' : 'text-muted-foreground hover:text-foreground'}`}>
                     <MessageSquare className="h-4 w-4" />
-                    {post.comments_count} commentaire{post.comments_count !== 1 ? 's' : ''}
+                    {post.comments_count} {post.comments_count !== 1 ? t('community.comments') : t('community.comment')}
                   </button>
                   {canManage && (
                     <Link
@@ -529,7 +531,7 @@ const Community = () => {
                       className="ml-auto flex items-center gap-1.5 text-sm text-muted-foreground hover:text-secondary transition-colors"
                     >
                       <FlaskConical className="h-4 w-4" />
-                      Proposer comme modèle
+                      {t('community.proposeAsModel')}
                     </Link>
                   )}
                 </div>
@@ -545,7 +547,7 @@ const Community = () => {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-baseline gap-2">
-                              <span className="text-sm font-medium text-foreground">{cProfile?.display_name || 'Anonyme'}</span>
+                              <span className="text-sm font-medium text-foreground">{cProfile?.display_name || t('common.anonymous')}</span>
                               <span className="text-xs text-muted-foreground">{timeAgo(comment.created_at)}</span>
                             </div>
                             <p className="text-sm text-muted-foreground">{comment.content}</p>
@@ -557,7 +559,7 @@ const Community = () => {
                       <div className="flex gap-2 pt-2">
                         <input type="text" value={commentText} onChange={(e) => setCommentText(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && handleComment(post.id)}
-                          placeholder="Ajouter un commentaire..." maxLength={1000}
+                          placeholder={t('community.addComment')} maxLength={1000}
                           className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2" />
                         <button onClick={() => handleComment(post.id)}
                           className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-secondary-foreground hover:brightness-110">

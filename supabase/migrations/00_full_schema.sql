@@ -26,6 +26,8 @@ CREATE TABLE public.profiles (
   display_name TEXT NOT NULL DEFAULT '',
   avatar_url TEXT,
   bio TEXT,
+  cv TEXT DEFAULT '',
+  personal_links JSONB DEFAULT '[]',
   expertise TEXT[] DEFAULT '{}',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -121,14 +123,14 @@ LANGUAGE sql SECURITY DEFINER
 AS $$
   SELECT p.user_id, a.email::text, p.display_name, p.bio, p.avatar_url, p.expertise, p.created_at, a.last_sign_in_at
   FROM profiles p JOIN auth.users a ON a.id = p.user_id
-  WHERE has_role('admin', auth.uid())
+  WHERE has_role(auth.uid(), 'admin')
   ORDER BY p.created_at DESC;
 $$;
 
 CREATE OR REPLACE FUNCTION admin_update_user_email(_user_id UUID, _new_email TEXT)
 RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  IF NOT has_role('admin', auth.uid()) THEN RAISE EXCEPTION 'Not authorized'; END IF;
+  IF NOT has_role(auth.uid(), 'admin') THEN RAISE EXCEPTION 'Not authorized'; END IF;
   UPDATE auth.users SET email = _new_email, updated_at = now() WHERE id = _user_id;
 END;
 $$;
@@ -156,6 +158,8 @@ CREATE TABLE public.models (
   feedback_count INTEGER NOT NULL DEFAULT 0,
   parent_model_id UUID REFERENCES public.models(id) ON DELETE SET NULL,
   approche_id UUID REFERENCES public.models(id) ON DELETE SET NULL,
+  lang TEXT NOT NULL DEFAULT 'fr',
+  translation_of UUID REFERENCES public.models(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -175,6 +179,8 @@ CREATE TRIGGER models_updated_at BEFORE UPDATE ON public.models
 FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 CREATE INDEX idx_models_approche ON public.models(approche_id);
+CREATE INDEX idx_models_lang ON public.models(lang);
+CREATE INDEX idx_models_translation ON public.models(translation_of);
 
 -- ============================================================
 -- 5. VARIATIONS ET FEEDBACKS
@@ -208,7 +214,7 @@ CREATE TABLE public.variation_replies (
 ALTER TABLE public.variation_replies ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read variation replies" ON public.variation_replies FOR SELECT TO public USING (true);
 CREATE POLICY "Authenticated insert variation replies" ON public.variation_replies FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Own or admin delete variation replies" ON public.variation_replies FOR DELETE TO authenticated USING (user_id = auth.uid() OR has_role('admin', auth.uid()));
+CREATE POLICY "Own or admin delete variation replies" ON public.variation_replies FOR DELETE TO authenticated USING (user_id = auth.uid() OR has_role(auth.uid(), 'admin'));
 
 CREATE TABLE public.model_feedbacks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -405,6 +411,8 @@ CREATE TABLE public.resources (
   sort_order INT DEFAULT 0,
   published BOOLEAN DEFAULT true,
   created_by UUID,
+  lang TEXT NOT NULL DEFAULT 'fr',
+  translation_of UUID REFERENCES public.resources(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -412,13 +420,13 @@ CREATE TABLE public.resources (
 ALTER TABLE public.resources ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read published resources" ON public.resources FOR SELECT TO public USING (published = true);
 CREATE POLICY "Manager read all resources" ON public.resources FOR SELECT TO authenticated
-  USING (has_role('admin', auth.uid()) OR has_role('moderator', auth.uid()));
+  USING (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'moderator'));
 CREATE POLICY "Manager insert resources" ON public.resources FOR INSERT TO authenticated
-  WITH CHECK (has_role('admin', auth.uid()) OR has_role('moderator', auth.uid()));
+  WITH CHECK (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'moderator'));
 CREATE POLICY "Manager update resources" ON public.resources FOR UPDATE TO authenticated
-  USING (has_role('admin', auth.uid()) OR has_role('moderator', auth.uid()));
+  USING (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'moderator'));
 CREATE POLICY "Manager delete resources" ON public.resources FOR DELETE TO authenticated
-  USING (has_role('admin', auth.uid()) OR has_role('moderator', auth.uid()));
+  USING (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'moderator'));
 
 -- ============================================================
 -- 9. NOTIFICATIONS (TEMPS REEL)
@@ -514,8 +522,8 @@ CREATE TABLE IF NOT EXISTS public.app_settings (
 
 ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read app_settings" ON public.app_settings FOR SELECT TO public USING (true);
-CREATE POLICY "Admin update app_settings" ON public.app_settings FOR UPDATE TO authenticated USING (has_role('admin', auth.uid()));
-CREATE POLICY "Admin insert app_settings" ON public.app_settings FOR INSERT TO authenticated WITH CHECK (has_role('admin', auth.uid()));
+CREATE POLICY "Admin update app_settings" ON public.app_settings FOR UPDATE TO authenticated USING (has_role(auth.uid(), 'admin'));
+CREATE POLICY "Admin insert app_settings" ON public.app_settings FOR INSERT TO authenticated WITH CHECK (has_role(auth.uid(), 'admin'));
 
 -- Parametres par defaut
 INSERT INTO public.app_settings (key, value) VALUES ('max_image_size_mb', '2'::jsonb) ON CONFLICT (key) DO NOTHING;
@@ -539,8 +547,8 @@ INSERT INTO storage.buckets (id, name, public) VALUES ('model-images', 'model-im
 CREATE POLICY "Public read model images" ON storage.objects FOR SELECT TO public
   USING (bucket_id = 'model-images');
 CREATE POLICY "Admin upload model images" ON storage.objects FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'model-images' AND (SELECT has_role('admin', auth.uid())));
+  WITH CHECK (bucket_id = 'model-images' AND (SELECT has_role(auth.uid(), 'admin')));
 CREATE POLICY "Admin update model images" ON storage.objects FOR UPDATE TO authenticated
-  USING (bucket_id = 'model-images' AND (SELECT has_role('admin', auth.uid())));
+  USING (bucket_id = 'model-images' AND (SELECT has_role(auth.uid(), 'admin')));
 CREATE POLICY "Admin delete model images" ON storage.objects FOR DELETE TO authenticated
-  USING (bucket_id = 'model-images' AND (SELECT has_role('admin', auth.uid())));
+  USING (bucket_id = 'model-images' AND (SELECT has_role(auth.uid(), 'admin')));

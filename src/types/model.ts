@@ -46,6 +46,8 @@ export interface DBModel {
   feedback_count: number;
   created_at: string;
   updated_at: string;
+  lang: string;
+  translation_of: string | null;
   // joined
   author_name?: string;
 }

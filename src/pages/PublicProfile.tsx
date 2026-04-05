@@ -9,6 +9,7 @@ import TypeBadge from '@/components/lab/TypeBadge';
 import StatusBadge from '@/components/lab/StatusBadge';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useTranslation } from 'react-i18next';
 
 interface PersonalLink {
   label: string;
@@ -33,6 +34,7 @@ interface Post {
 }
 
 const PublicProfile = () => {
+  const { t, i18n } = useTranslation();
   const { userId } = useParams();
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
@@ -87,11 +89,11 @@ const PublicProfile = () => {
   }, [userId]);
 
   const formatDate = (date: string) => {
-    try { return new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); }
+    try { return new Date(date).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); }
     catch { return date; }
   };
 
-  if (loading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Chargement...</div>;
+  if (loading) return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
   if (!profile) return (
     <div className="container mx-auto px-4 py-20 text-center">
       <p className="text-muted-foreground">Profil introuvable</p>
@@ -110,7 +112,7 @@ const PublicProfile = () => {
         {(isAdmin || (user && user.id === userId)) && (
           <Link to={isAdmin && user?.id !== userId ? `/profile?user=${userId}` : '/profile'}
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary">
-            <Pencil className="h-3.5 w-3.5" /> Modifier le profil
+            <Pencil className="h-3.5 w-3.5" /> {t('common.edit')}
           </Link>
         )}
       </div>

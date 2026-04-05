@@ -491,8 +491,8 @@ const ModelDetail = () => {
                 <span key={tag} className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">{tag}</span>
               ))}
             </div>
-            {/* Translation link */}
-            {translationModel ? (
+            {/* Translation link — only shown if a translation exists */}
+            {translationModel && (
               <Link
                 to={`/model/${translationModel.id}`}
                 className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-secondary hover:border-secondary/30 transition-colors"
@@ -500,13 +500,6 @@ const ModelDetail = () => {
                 <Globe className="h-3.5 w-3.5" />
                 {translationModel.lang === 'en' ? t('language.viewInEnglish') : t('language.viewInFrench')}
               </Link>
-            ) : (
-              <div className="mt-4">
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
-                  <Globe className="h-3.5 w-3.5" />
-                  {(model.lang || 'fr') === 'fr' ? t('language.translateToEnglish') : t('language.translateToFrench')}
-                </span>
-              </div>
             )}
           </>
         ) : (

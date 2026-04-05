@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, SlidersHorizontal, ShieldCheck, ChevronDown, ChevronRight } from 'lucide-react';
+import { Search, SlidersHorizontal, ShieldCheck, ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { DBModel, ModelType, ModelStatus, MODEL_TYPE_LABELS, MODEL_STATUS_LABELS } from '@/types/model';
@@ -88,6 +88,8 @@ const Library = () => {
   // For "Par approche" tab
   const approvedModels = models.filter(m => m.approved);
   const approches = approvedModels.filter(m => m.type === 'approche');
+  const approcheNames: Record<string, string> = {};
+  approches.forEach(a => { approcheNames[a.id] = a.title; });
   const getModelsForApproche = (approcheId: string) =>
     approvedModels.filter(m => m.approche_id === approcheId && m.type !== 'approche');
   const unlinkedModels = approvedModels.filter(m => m.type !== 'approche' && !m.approche_id);
@@ -196,7 +198,7 @@ const Library = () => {
                     {sectionModels.length > 0 ? (
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {sectionModels.map((model, i) => (
-                          <ModelCardDB key={model.id} model={model} authorName={profiles[model.user_id]} index={i} canManage={canManage} onApprove={async (id) => {
+                          <ModelCardDB key={model.id} model={model} authorName={profiles[model.user_id]} approcheName={model.approche_id ? approcheNames[model.approche_id] : undefined} index={i} canManage={canManage} onApprove={async (id) => {
                             await supabase.from('models').update({ approved: true } as any).eq('id', id);
                             setModels(prev => prev.map(m => m.id === id ? { ...m, approved: true } : m));
                           }} />
@@ -335,9 +337,10 @@ const Library = () => {
   );
 };
 
-const ModelCardDB = ({ model, authorName, index = 0, canManage, onApprove }: {
+const ModelCardDB = ({ model, authorName, approcheName, index = 0, canManage, onApprove }: {
   model: DBModel;
   authorName?: string;
+  approcheName?: string;
   index?: number;
   canManage: boolean;
   onApprove: (id: string) => void;
@@ -368,6 +371,12 @@ const ModelCardDB = ({ model, authorName, index = 0, canManage, onApprove }: {
           {model.title}
         </h3>
         <p className="mb-3 text-sm text-muted-foreground line-clamp-2">{model.description}</p>
+
+        {approcheName && (
+          <p className="mb-2 inline-flex items-center gap-1 text-xs text-secondary">
+            <Sparkles className="h-3 w-3" /> {approcheName}
+          </p>
+        )}
 
         <div className="mb-3 flex flex-wrap gap-1.5">
           {model.tags.slice(0, 3).map((tag) => (

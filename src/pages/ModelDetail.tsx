@@ -330,6 +330,34 @@ const ModelDetail = () => {
     navigate('/library');
   };
 
+  const handleCreateTranslation = async () => {
+    if (!model || !user) return;
+    const targetLang = (model.lang || 'fr') === 'fr' ? 'en' : 'fr';
+    const { data, error } = await supabase.from('models').insert({
+      user_id: user.id,
+      title: model.title,
+      type: model.type,
+      status: 'brouillon',
+      version: '1.0.0',
+      complexity: model.complexity,
+      tags: model.tags,
+      description: '',
+      sections: {},
+      links: [],
+      lang: targetLang,
+      translation_of: model.id,
+      approved: true,
+      approche_id: model.approche_id || null,
+    } as any).select('id').single();
+    if (error) {
+      toast.error(t('language.translationError'));
+      console.error(error);
+      return;
+    }
+    toast.success(t('language.translationCreated'));
+    if (data) navigate(`/model/${data.id}`);
+  };
+
   const complexityOptions = [
     { value: 'débutant', label: t('contribute.complexityBeginner') },
     { value: 'intermédiaire', label: t('contribute.complexityIntermediate') },
@@ -491,16 +519,26 @@ const ModelDetail = () => {
                 <span key={tag} className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">{tag}</span>
               ))}
             </div>
-            {/* Translation link — only shown if a translation exists */}
-            {translationModel && (
-              <Link
-                to={`/model/${translationModel.id}`}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-secondary hover:border-secondary/30 transition-colors"
-              >
-                <Globe className="h-3.5 w-3.5" />
-                {translationModel.lang === 'en' ? t('language.viewInEnglish') : t('language.viewInFrench')}
-              </Link>
-            )}
+            {/* Translation link or create button */}
+            <div className="mt-4 flex items-center gap-2">
+              {translationModel ? (
+                <Link
+                  to={`/model/${translationModel.id}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-secondary hover:border-secondary/30 transition-colors"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {translationModel.lang === 'en' ? t('language.viewInEnglish') : t('language.viewInFrench')}
+                </Link>
+              ) : canManage && (
+                <button
+                  onClick={handleCreateTranslation}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-secondary/40 px-3 py-2 text-xs font-medium text-secondary hover:bg-secondary/5 transition-colors"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {(model.lang || 'fr') === 'fr' ? t('language.translateToEnglish') : t('language.translateToFrench')}
+                </button>
+              )}
+            </div>
           </>
         ) : (
           <div className="space-y-5">

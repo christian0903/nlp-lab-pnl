@@ -570,10 +570,12 @@
     "badge_en": "EN",
     "viewInEnglish": "View in English",
     "viewInFrench": "Voir en français",
-    "translateToEnglish": "Translate to English",
-    "translateToFrench": "Translate to French",
+    "translateToEnglish": "Create English version",
+    "translateToFrench": "Create French version",
     "translationOf": "Translation of",
-    "originalVersion": "Original version"
+    "originalVersion": "Original version",
+    "translationCreated": "Version created! You can now write the translation.",
+    "translationError": "Error creating translation"
   },
   "lang": {
     "fr": "FR",

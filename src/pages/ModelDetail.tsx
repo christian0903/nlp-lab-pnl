@@ -801,7 +801,7 @@ const ModelDetail = () => {
                         className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground hover:brightness-110">
                         <Pencil className="h-3.5 w-3.5" /> {t('common.edit')}
                       </button>
-                      <Link to={`/admin/import`}
+                      <Link to={`/admin/import?lang=${model.lang || 'fr'}`}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                         <Upload className="h-3.5 w-3.5" /> {t('contribute.importSheet')}
                       </Link>

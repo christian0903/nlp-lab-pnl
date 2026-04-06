@@ -50,6 +50,7 @@ const ImportModel = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const parentId = searchParams.get('parent');
+  const urlLang = searchParams.get('lang');
   const [parentTitle, setParentTitle] = useState('');
 
   useEffect(() => {
@@ -66,7 +67,7 @@ const ImportModel = () => {
   const [submitting, setSubmitting] = useState(false);
   const [matchedModelId, setMatchedModelId] = useState<string | null>(null);
   const [matchedModelTitle, setMatchedModelTitle] = useState('');
-  const [importLang, setImportLang] = useState<'fr' | 'en'>('fr');
+  const [importLang, setImportLang] = useState<'fr' | 'en'>(urlLang === 'en' ? 'en' : 'fr');
 
   if (!user || !canManage) {
     return (

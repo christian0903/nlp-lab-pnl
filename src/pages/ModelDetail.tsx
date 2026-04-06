@@ -640,13 +640,18 @@ const ModelDetail = () => {
             {/* Translation link or create button */}
             <div className="mt-4 flex items-center gap-2">
               {translationModel ? (
-                <Link
-                  to={`/model/${translationModel.id}`}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-secondary hover:border-secondary/30 transition-colors"
-                >
-                  <Globe className="h-3.5 w-3.5" />
-                  {translationModel.lang === 'en' ? t('language.viewInEnglish') : t('language.viewInFrench')}
-                </Link>
+                <>
+                  <span className="text-xs text-muted-foreground">
+                    {model.translation_of ? t('language.translationOf') : t('language.originalVersion')}
+                  </span>
+                  <Link
+                    to={`/model/${translationModel.id}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-secondary hover:border-secondary/30 transition-colors"
+                  >
+                    <Globe className="h-3.5 w-3.5" />
+                    {translationModel.lang === 'en' ? t('language.viewInEnglish') : t('language.viewInFrench')}
+                  </Link>
+                </>
               ) : canManage && (
                 <button
                   onClick={handleCreateTranslation}

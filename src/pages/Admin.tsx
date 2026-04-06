@@ -263,13 +263,15 @@ const Admin = () => {
       </div>
 
       {/* Stats grid */}
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
         <StatBox label={t('admin.pending')} value={pending.length} icon={<Clock className="h-5 w-5 text-amber-500" />} highlight={pending.length > 0} />
-        <StatBox label={t('admin.validatedModels')} value={approved.length} icon={<Check className="h-5 w-5 text-emerald-500" />} />
+        <StatBox label={`${t('admin.validatedModels')} FR`} value={approved.filter(m => (m.lang || 'fr') === 'fr').length} icon={<Check className="h-5 w-5 text-emerald-500" />} />
+        <StatBox label={`${t('admin.validatedModels')} EN`} value={approved.filter(m => (m.lang || 'fr') === 'en').length} icon={<Check className="h-5 w-5 text-blue-500" />} />
         <StatBox label={t('admin.totalModels')} value={models.length} icon={<FileText className="h-5 w-5 text-secondary" />} />
         <StatBox label={t('admin.users')} value={usersCount} icon={<Users className="h-5 w-5 text-primary" />} />
         <StatBox label={t('admin.forumPosts')} value={postsCount} icon={<MessageSquare className="h-5 w-5 text-accent" />} />
-        <StatBox label={t('admin.publishedStat')} value={statusCounts['publie'] || 0} icon={<BarChart3 className="h-5 w-5 text-lab-teal" />} />
+        <StatBox label={`${t('admin.publishedStat')} FR`} value={models.filter(m => m.status === 'publie' && (m.lang || 'fr') === 'fr').length} icon={<BarChart3 className="h-5 w-5 text-lab-teal" />} />
+        <StatBox label={`${t('admin.publishedStat')} EN`} value={models.filter(m => m.status === 'publie' && (m.lang || 'fr') === 'en').length} icon={<BarChart3 className="h-5 w-5 text-blue-500" />} />
       </div>
 
       {/* Models by status breakdown */}

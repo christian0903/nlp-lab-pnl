@@ -65,6 +65,9 @@ const ModelDetail = () => {
   const [approcheName, setApprocheName] = useState('');
   const [allUsers, setAllUsers] = useState<{ user_id: string; display_name: string }[]>([]);
   const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editTranslationId, setEditTranslationId] = useState<string>('');
+  const [editIsOriginal, setEditIsOriginal] = useState(true);
+  const [otherLangModels, setOtherLangModels] = useState<{ id: string; title: string }[]>([]);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -219,7 +222,7 @@ const ModelDetail = () => {
     toast.success(t('modelDetail.unapproveSuccess'));
   };
 
-  const startEditing = () => {
+  const startEditing = async () => {
     if (!model) return;
     setEditTitle(model.title);
     setEditDescription(model.description);
@@ -234,6 +237,32 @@ const ModelDetail = () => {
     setEditOwnerId(model.user_id);
     setEditCreatedAt(model.created_at.split('T')[0]);
     setEditApprocheId(model.approche_id || '');
+
+    // Translation link setup
+    const modelLang = model.lang || 'fr';
+    const otherLang = modelLang === 'fr' ? 'en' : 'fr';
+    const isOriginal = !model.translation_of;
+    setEditIsOriginal(isOriginal);
+
+    // Find current linked translation
+    if (model.translation_of) {
+      setEditTranslationId(model.translation_of);
+    } else if (translationModel) {
+      setEditTranslationId(translationModel.id);
+    } else {
+      setEditTranslationId('');
+    }
+
+    // Load candidate models in the other language (same type)
+    const { data: candidates } = await supabase
+      .from('models')
+      .select('id, title')
+      .eq('type', model.type)
+      .eq('lang', otherLang)
+      .eq('approved', true)
+      .order('title');
+    setOtherLangModels(candidates || []);
+
     setEditing(true);
   };
 
@@ -284,6 +313,46 @@ const ModelDetail = () => {
 
     const { error } = await supabase.from('models').update(updateData).eq('id', model.id);
 
+    // Handle translation link changes
+    if (canManage) {
+      const oldTranslationId = model.translation_of || (translationModel?.id ?? '');
+      const newTranslationId = editTranslationId;
+
+      if (newTranslationId !== oldTranslationId) {
+        // Unlink old translation if any
+        if (oldTranslationId) {
+          if (model.translation_of === oldTranslationId) {
+            // This model was the translation → clear its translation_of
+            await supabase.from('models').update({ translation_of: null } as any).eq('id', model.id);
+          } else {
+            // The other model pointed to this one → clear its translation_of
+            await supabase.from('models').update({ translation_of: null } as any).eq('id', oldTranslationId);
+          }
+        }
+
+        // Link new translation
+        if (newTranslationId) {
+          if (editIsOriginal) {
+            // This model is the original → the other is the translation
+            await supabase.from('models').update({ translation_of: model.id } as any).eq('id', newTranslationId);
+            await supabase.from('models').update({ translation_of: null } as any).eq('id', model.id);
+          } else {
+            // This model is the translation → it points to the other
+            await supabase.from('models').update({ translation_of: newTranslationId } as any).eq('id', model.id);
+            await supabase.from('models').update({ translation_of: null } as any).eq('id', newTranslationId);
+          }
+        }
+
+        // Update local translation state
+        if (newTranslationId) {
+          const otherLang = (model.lang || 'fr') === 'fr' ? 'en' : 'fr';
+          setTranslationModel({ id: newTranslationId, lang: otherLang });
+        } else {
+          setTranslationModel(null);
+        }
+      }
+    }
+
     setEditSubmitting(false);
     if (error) {
       toast.error(t('modelDetail.saveError'));
@@ -302,6 +371,7 @@ const ModelDetail = () => {
       links: savedLinks,
       changelog: updatedChangelog,
       approche_id: editApprocheId || null,
+      translation_of: editIsOriginal ? null : (editTranslationId || null),
       user_id: isAdmin && editOwnerId ? editOwnerId : model.user_id,
       created_at: isAdmin && editCreatedAt ? new Date(editCreatedAt).toISOString() : model.created_at,
     });
@@ -676,6 +746,42 @@ const ModelDetail = () => {
                 ))}
               </div>
             </div>
+
+            {/* Lien traduction (admin only) */}
+            {canManage && (
+              <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4 space-y-3">
+                <label className="block text-sm font-medium text-foreground">{t('language.linkedTranslation')}</label>
+                <p className="text-xs text-muted-foreground">{t('language.linkedTranslationDesc')}</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <select
+                      value={editTranslationId}
+                      onChange={e => setEditTranslationId(e.target.value)}
+                      className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
+                    >
+                      <option value="">{t('language.noTranslation')}</option>
+                      {otherLangModels.map(m => (
+                        <option key={m.id} value={m.id}>{m.title}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {editTranslationId && (
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-border px-3 py-2 hover:bg-muted/50 transition-colors">
+                        <input type="radio" name="translation-direction" checked={editIsOriginal}
+                          onChange={() => setEditIsOriginal(true)} className="accent-secondary" />
+                        <span className="text-xs text-foreground">{t('language.isOriginal')}</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-border px-3 py-2 hover:bg-muted/50 transition-colors">
+                        <input type="radio" name="translation-direction" checked={!editIsOriginal}
+                          onChange={() => setEditIsOriginal(false)} className="accent-secondary" />
+                        <span className="text-xs text-foreground">{t('language.isTranslation')}</span>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Journal d'évolution */}
             <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">

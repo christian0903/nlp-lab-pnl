@@ -575,7 +575,12 @@
     "translationOf": "Translation of",
     "originalVersion": "Original version",
     "translationCreated": "Version created! You can now write the translation.",
-    "translationError": "Error creating translation"
+    "translationError": "Error creating translation",
+    "linkedTranslation": "Linked translation",
+    "linkedTranslationDesc": "Link this model to its translation in the other language",
+    "noTranslation": "— No translation —",
+    "isOriginal": "This model is the original",
+    "isTranslation": "This model is the translation"
   },
   "lang": {
     "fr": "FR",

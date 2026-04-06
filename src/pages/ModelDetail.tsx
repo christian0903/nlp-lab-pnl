@@ -715,6 +715,33 @@ const ModelDetail = () => {
                   placeholder="1.0.0" maxLength={20}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
               </div>
+              {/* Traduction liée */}
+              {canManage && (
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">{t('language.linkedTranslation')}</label>
+                  <select value={editTranslationId} onChange={e => setEditTranslationId(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
+                    <option value="">{t('language.noTranslation')}</option>
+                    {otherLangModels.map(m => (
+                      <option key={m.id} value={m.id}>{m.title}</option>
+                    ))}
+                  </select>
+                  {editTranslationId && (
+                    <label className="mt-1.5 flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={editIsOriginal} onChange={e => setEditIsOriginal(e.target.checked)}
+                        className="rounded border-input accent-secondary" />
+                      <span className="text-xs text-muted-foreground">{t('language.isOriginal')}</span>
+                    </label>
+                  )}
+                </div>
+              )}
+              {isAdmin && (
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.createdDateLabel')}</label>
+                  <input type="date" value={editCreatedAt} onChange={e => setEditCreatedAt(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
+                </div>
+              )}
               {isAdmin && allUsers.length > 0 && (
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.ownerLabel')}</label>
@@ -724,13 +751,6 @@ const ModelDetail = () => {
                       <option key={u.user_id} value={u.user_id}>{u.display_name}</option>
                     ))}
                   </select>
-                </div>
-              )}
-              {isAdmin && (
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.createdDateLabel')}</label>
-                  <input type="date" value={editCreatedAt} onChange={e => setEditCreatedAt(e.target.value)}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
                 </div>
               )}
               {editType !== 'approche' && approches.length > 0 && (
@@ -811,42 +831,6 @@ const ModelDetail = () => {
                 ))}
               </div>
             </div>
-
-            {/* Lien traduction (admin only) */}
-            {canManage && (
-              <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4 space-y-3">
-                <label className="block text-sm font-medium text-foreground">{t('language.linkedTranslation')}</label>
-                <p className="text-xs text-muted-foreground">{t('language.linkedTranslationDesc')}</p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <select
-                      value={editTranslationId}
-                      onChange={e => setEditTranslationId(e.target.value)}
-                      className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
-                    >
-                      <option value="">{t('language.noTranslation')}</option>
-                      {otherLangModels.map(m => (
-                        <option key={m.id} value={m.id}>{m.title}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {editTranslationId && (
-                    <div className="flex items-center gap-3">
-                      <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-border px-3 py-2 hover:bg-muted/50 transition-colors">
-                        <input type="radio" name="translation-direction" checked={editIsOriginal}
-                          onChange={() => setEditIsOriginal(true)} className="accent-secondary" />
-                        <span className="text-xs text-foreground">{t('language.isOriginal')}</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-border px-3 py-2 hover:bg-muted/50 transition-colors">
-                        <input type="radio" name="translation-direction" checked={!editIsOriginal}
-                          onChange={() => setEditIsOriginal(false)} className="accent-secondary" />
-                        <span className="text-xs text-foreground">{t('language.isTranslation')}</span>
-                      </label>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* Journal d'évolution */}
             <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">

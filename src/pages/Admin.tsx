@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ShieldCheck, Check, X, Eye, Users, BarChart3, Clock, UserCog, Activity, GitBranch, MessageSquare, FileText, Download, Upload, ImageIcon, Settings, Trash2, RefreshCw, Save, Loader2, Heart } from 'lucide-react';
+import { ShieldCheck, Check, X, Eye, Users, BarChart3, Clock, UserCog, Activity, GitBranch, MessageSquare, FileText, Download, Upload, ImageIcon, Settings, Trash2, RefreshCw, Save, Loader2, Heart, Globe, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
 import { DBModel, MODEL_TYPE_LABELS, MODEL_STATUS_LABELS, ModelStatus } from '@/types/model';
 import TypeBadge from '@/components/lab/TypeBadge';
+import LangBadge from '@/components/lab/LangBadge';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDistanceToNow } from 'date-fns';
@@ -298,6 +299,9 @@ const Admin = () => {
           <TabsTrigger value="images" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             <ImageIcon className="mr-1.5 inline h-3.5 w-3.5" /> {t('admin.imagesCount', { count: images.length })}
           </TabsTrigger>
+          <TabsTrigger value="translations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+            <Globe className="mr-1.5 inline h-3.5 w-3.5" /> {t('admin.translations')}
+          </TabsTrigger>
           {isAdmin && (
             <TabsTrigger value="settings" className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
               <Settings className="mr-1.5 inline h-3.5 w-3.5" /> {t('admin.settings')}
@@ -413,6 +417,11 @@ const Admin = () => {
           )}
         </TabsContent>
 
+        {/* TRANSLATIONS */}
+        <TabsContent value="translations">
+          <TranslationDashboard models={models} t={t} />
+        </TabsContent>
+
         {/* PARAMÈTRES */}
         <TabsContent value="settings">
           <div className="max-w-lg rounded-xl border border-border bg-card p-6 shadow-sm">
@@ -497,5 +506,220 @@ const StatBox = ({ label, value, icon, highlight }: { label: string; value: numb
     <p className="text-xs text-muted-foreground">{label}</p>
   </div>
 );
+
+const TranslationDashboard = ({ models, t }: {
+  models: (DBModel & { author_name?: string })[];
+  t: (key: string, options?: any) => string;
+}) => {
+  const approvedModels = models.filter(m => m.approved);
+  const modelMap = new Map(approvedModels.map(m => [m.id, m]));
+
+  // Build translation pairs
+  interface TranslationPair {
+    original: DBModel & { author_name?: string };
+    translation: DBModel & { author_name?: string };
+  }
+  const pairs: TranslationPair[] = [];
+  const pairedIds = new Set<string>();
+
+  for (const m of approvedModels) {
+    if (m.translation_of && modelMap.has(m.translation_of) && !pairedIds.has(m.id)) {
+      pairs.push({ original: modelMap.get(m.translation_of)!, translation: m });
+      pairedIds.add(m.id);
+      pairedIds.add(m.translation_of);
+    }
+  }
+
+  const withoutTranslation = approvedModels.filter(m => !pairedIds.has(m.id));
+
+  // Detect inconsistencies
+  interface Inconsistency {
+    type: 'approach_mismatch' | 'orphan' | 'bidirectional';
+    models: (DBModel & { author_name?: string })[];
+    detail: string;
+  }
+  const inconsistencies: Inconsistency[] = [];
+
+  // Check approach mismatches in pairs
+  for (const pair of pairs) {
+    const origApproche = pair.original.approche_id;
+    const transApproche = pair.translation.approche_id;
+    if (origApproche && transApproche) {
+      // Both have approaches — check if they're translations of each other
+      const origApp = modelMap.get(origApproche);
+      const transApp = modelMap.get(transApproche);
+      if (origApp && transApp) {
+        const linked = origApp.translation_of === transApp.id || transApp.translation_of === origApp.id;
+        if (!linked) {
+          inconsistencies.push({
+            type: 'approach_mismatch',
+            models: [pair.original, pair.translation],
+            detail: `${pair.original.title} → ${origApp.title} | ${pair.translation.title} → ${transApp.title}`,
+          });
+        }
+      }
+    } else if ((origApproche && !transApproche) || (!origApproche && transApproche)) {
+      inconsistencies.push({
+        type: 'approach_mismatch',
+        models: [pair.original, pair.translation],
+        detail: origApproche
+          ? `${pair.original.title}: ${modelMap.get(origApproche)?.title || '?'} | ${pair.translation.title}: ${t('admin.noApproach')}`
+          : `${pair.original.title}: ${t('admin.noApproach')} | ${pair.translation.title}: ${modelMap.get(transApproche!)?.title || '?'}`,
+      });
+    }
+  }
+
+  // Check orphan translations
+  for (const m of approvedModels) {
+    if (m.translation_of && !modelMap.has(m.translation_of)) {
+      inconsistencies.push({
+        type: 'orphan',
+        models: [m],
+        detail: `translation_of = ${m.translation_of.slice(0, 8)}...`,
+      });
+    }
+  }
+
+  // Check bidirectional links
+  for (const pair of pairs) {
+    if (pair.original.translation_of === pair.translation.id) {
+      inconsistencies.push({
+        type: 'bidirectional',
+        models: [pair.original, pair.translation],
+        detail: `${pair.original.title} ↔ ${pair.translation.title}`,
+      });
+    }
+  }
+
+  // Group models without translation by type
+  const approchesWithout = withoutTranslation.filter(m => m.type === 'approche');
+  const outilsWithout = withoutTranslation.filter(m => m.type === 'outil');
+  const probsWithout = withoutTranslation.filter(m => m.type === 'problematique');
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="mb-1 font-display text-lg font-bold text-foreground">{t('admin.translationDashboard')}</h2>
+        <p className="text-sm text-muted-foreground">{t('admin.translationDashboardDesc')}</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="rounded-xl border border-border bg-card p-4 text-center">
+          <p className="font-display text-2xl font-bold text-emerald-600">{pairs.length}</p>
+          <p className="text-xs text-muted-foreground">{t('admin.withTranslation')}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4 text-center">
+          <p className="font-display text-2xl font-bold text-amber-600">{withoutTranslation.length}</p>
+          <p className="text-xs text-muted-foreground">{t('admin.withoutTranslation')}</p>
+        </div>
+        <div className={`rounded-xl border p-4 text-center ${inconsistencies.length > 0 ? 'border-red-500/30 bg-red-500/5' : 'border-border bg-card'}`}>
+          <p className={`font-display text-2xl font-bold ${inconsistencies.length > 0 ? 'text-red-600' : 'text-emerald-600'}`}>{inconsistencies.length}</p>
+          <p className="text-xs text-muted-foreground">{t('admin.inconsistencies')}</p>
+        </div>
+      </div>
+
+      {/* Inconsistencies */}
+      {inconsistencies.length > 0 && (
+        <div>
+          <h3 className="mb-3 flex items-center gap-2 font-display text-base font-semibold text-red-600">
+            <AlertTriangle className="h-4 w-4" /> {t('admin.inconsistencies')} ({inconsistencies.length})
+          </h3>
+          <div className="space-y-2">
+            {inconsistencies.map((inc, i) => (
+              <div key={i} className="flex items-start gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-3">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground">
+                    {inc.type === 'approach_mismatch' && t('admin.inconsistencyApproachMismatch')}
+                    {inc.type === 'orphan' && t('admin.inconsistencyOrphanTranslation')}
+                    {inc.type === 'bidirectional' && t('admin.inconsistencyBidirectional')}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{inc.detail}</p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {inc.models.map(m => (
+                      <Link key={m.id} to={`/model/${m.id}`}
+                        className="inline-flex items-center gap-1 rounded-full bg-card border border-border px-2 py-0.5 text-xs text-secondary hover:underline">
+                        <LangBadge lang={m.lang || 'fr'} /> {m.title}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {inconsistencies.length === 0 && (
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 text-center text-sm text-emerald-600">
+          <Check className="inline h-4 w-4 mr-1" /> {t('admin.noInconsistencies')}
+        </div>
+      )}
+
+      {/* Pairs with translation */}
+      <div>
+        <h3 className="mb-3 font-display text-base font-semibold text-foreground">
+          {t('admin.withTranslation')} ({pairs.length})
+        </h3>
+        {pairs.length > 0 ? (
+          <div className="space-y-2">
+            {pairs.map(pair => (
+              <div key={pair.original.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
+                <TypeBadge type={pair.original.type as any} />
+                <div className="flex-1 min-w-0 grid gap-1 sm:grid-cols-2">
+                  <Link to={`/model/${pair.original.id}`} className="flex items-center gap-1.5 text-sm truncate hover:text-secondary">
+                    <LangBadge lang={pair.original.lang || 'fr'} />
+                    <span className="truncate">{pair.original.title}</span>
+                    <span className="shrink-0 text-[10px] text-emerald-600">({t('admin.original')})</span>
+                  </Link>
+                  <Link to={`/model/${pair.translation.id}`} className="flex items-center gap-1.5 text-sm truncate hover:text-secondary">
+                    <LangBadge lang={pair.translation.lang || 'fr'} />
+                    <span className="truncate">{pair.translation.title}</span>
+                  </Link>
+                </div>
+                {pair.original.approche_id && modelMap.get(pair.original.approche_id) && (
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                    {t('admin.approach')}: {modelMap.get(pair.original.approche_id)?.title}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState icon={<Globe className="h-10 w-10" />} text={t('admin.noInconsistencies')} />
+        )}
+      </div>
+
+      {/* Without translation */}
+      <div>
+        <h3 className="mb-3 font-display text-base font-semibold text-foreground">
+          {t('admin.withoutTranslation')} ({withoutTranslation.length})
+        </h3>
+        {[
+          { label: t('modelTypes.approche'), items: approchesWithout },
+          { label: t('modelTypes.outil'), items: outilsWithout },
+          { label: t('modelTypes.problematique'), items: probsWithout },
+        ].filter(g => g.items.length > 0).map(group => (
+          <div key={group.label} className="mb-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group.label} ({group.items.length})</p>
+            <div className="space-y-1">
+              {group.items.map(m => (
+                <Link key={m.id} to={`/model/${m.id}`}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 hover:border-secondary/30 transition-colors">
+                  <LangBadge lang={m.lang || 'fr'} />
+                  <span className="text-sm text-foreground truncate flex-1">{m.title}</span>
+                  {m.approche_id && modelMap.get(m.approche_id) && (
+                    <span className="text-[10px] text-muted-foreground">{modelMap.get(m.approche_id)?.title}</span>
+                  )}
+                  <span className="text-[10px] text-amber-600">{t('admin.missingTranslation')}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default Admin;

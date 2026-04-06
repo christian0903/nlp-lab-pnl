@@ -463,7 +463,22 @@
     "maxImageSizeDesc": "Les images uploadées dans les modèles qui dépassent cette taille seront rejetées.",
     "settingsSaved": "Paramètres sauvegardés",
     "settingsError": "Erreur de sauvegarde",
-    "exported": "{{filename}} exporté !"
+    "exported": "{{filename}} exporté !",
+    "translations": "Traductions",
+    "translationDashboard": "État des traductions",
+    "translationDashboardDesc": "Vue d'ensemble des modèles, traductions et incohérences entre langues",
+    "withTranslation": "Avec traduction",
+    "withoutTranslation": "Sans traduction",
+    "inconsistencies": "Incohérences",
+    "inconsistencyApproachMismatch": "Approche différente entre les deux langues",
+    "inconsistencyOrphanTranslation": "Traduction orpheline (l'original n'existe plus)",
+    "inconsistencyBidirectional": "Les deux modèles pointent l'un vers l'autre (boucle)",
+    "noInconsistencies": "Aucune incohérence détectée",
+    "original": "Original",
+    "translation": "Traduction",
+    "approach": "Approche",
+    "noApproach": "Aucune approche",
+    "missingTranslation": "Traduction manquante"
   },
   "modelDetail": {
     "notFound": "Modèle introuvable",

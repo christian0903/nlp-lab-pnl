@@ -463,7 +463,22 @@
     "maxImageSizeDesc": "Images uploaded to models that exceed this size will be rejected.",
     "settingsSaved": "Settings saved",
     "settingsError": "Save error",
-    "exported": "{{filename}} exported!"
+    "exported": "{{filename}} exported!",
+    "translations": "Translations",
+    "translationDashboard": "Translation status",
+    "translationDashboardDesc": "Overview of models, translations and cross-language inconsistencies",
+    "withTranslation": "With translation",
+    "withoutTranslation": "Without translation",
+    "inconsistencies": "Inconsistencies",
+    "inconsistencyApproachMismatch": "Different approach between the two languages",
+    "inconsistencyOrphanTranslation": "Orphan translation (original no longer exists)",
+    "inconsistencyBidirectional": "Both models point to each other (loop)",
+    "noInconsistencies": "No inconsistencies detected",
+    "original": "Original",
+    "translation": "Translation",
+    "approach": "Approach",
+    "noApproach": "No approach",
+    "missingTranslation": "Missing translation"
   },
   "modelDetail": {
     "notFound": "Model not found",

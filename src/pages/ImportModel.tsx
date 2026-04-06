@@ -188,11 +188,41 @@ const ImportModel = () => {
         <ArrowLeft className="h-4 w-4" /> Admin
       </Link>
 
-      <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold text-foreground">Importer un modèle</h1>
-        <p className="mt-1 text-muted-foreground">
-          Collez une fiche modèle au format markdown pour créer ou mettre à jour un modèle.
-        </p>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-display text-3xl font-bold text-foreground">Importer un modèle</h1>
+          <p className="mt-1 text-muted-foreground">
+            Collez une fiche modèle au format markdown pour créer ou mettre à jour un modèle.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center rounded-md border border-border text-xs font-medium">
+            <button
+              onClick={() => setImportLang('fr')}
+              className={`rounded-l-md px-3 py-2 transition-colors ${
+                importLang === 'fr'
+                  ? 'bg-secondary text-secondary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              FR
+            </button>
+            <button
+              onClick={() => setImportLang('en')}
+              className={`rounded-r-md px-3 py-2 transition-colors ${
+                importLang === 'en'
+                  ? 'bg-secondary text-secondary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              EN
+            </button>
+          </div>
+          <button onClick={handleParse} disabled={!markdown.trim()}
+            className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
+            <Eye className="h-4 w-4" /> {t('common.preview')}
+          </button>
+        </div>
       </div>
 
       {parentId && parentTitle && (
@@ -221,34 +251,6 @@ const ImportModel = () => {
             rows={24}
             className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 font-mono text-sm outline-none ring-ring focus:ring-2"
           />
-          <div className="flex items-center gap-3">
-            <div className="flex items-center rounded-md border border-border text-xs font-medium">
-              <button
-                onClick={() => setImportLang('fr')}
-                className={`rounded-l-md px-3 py-2 transition-colors ${
-                  importLang === 'fr'
-                    ? 'bg-secondary text-secondary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                🇫🇷 FR
-              </button>
-              <button
-                onClick={() => setImportLang('en')}
-                className={`rounded-r-md px-3 py-2 transition-colors ${
-                  importLang === 'en'
-                    ? 'bg-secondary text-secondary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                🇬🇧 EN
-              </button>
-            </div>
-            <button onClick={handleParse} disabled={!markdown.trim()}
-              className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
-              <Eye className="h-4 w-4" /> {t('common.preview')}
-            </button>
-          </div>
         </div>
 
         {/* Preview */}

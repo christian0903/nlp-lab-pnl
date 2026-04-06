@@ -614,9 +614,16 @@ const ModelDetail = () => {
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-lg font-bold text-foreground">{t('modelDetail.editModel')}</h2>
-              <button onClick={cancelEditing} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground">
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={cancelEditing}
+                  className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
+                  {t('common.cancel')}
+                </button>
+                <button onClick={saveEditing} disabled={editSubmitting}
+                  className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
+                  <Save className="h-4 w-4" /> {editSubmitting ? t('common.saving') : t('common.save')}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -823,16 +830,6 @@ const ModelDetail = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 border-t border-border pt-4">
-              <button onClick={cancelEditing}
-                className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
-                {t('common.cancel')}
-              </button>
-              <button onClick={saveEditing} disabled={editSubmitting}
-                className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
-                <Save className="h-4 w-4" /> {editSubmitting ? t('common.saving') : t('common.save')}
-              </button>
-            </div>
           </div>
         )}
       </div>

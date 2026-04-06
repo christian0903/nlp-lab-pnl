@@ -579,8 +579,8 @@
     "linkedTranslation": "Linked translation",
     "linkedTranslationDesc": "Link this model to its translation in the other language",
     "noTranslation": "— No translation —",
-    "isOriginal": "This model is the original",
-    "isTranslation": "This model is the translation",
+    "isOriginal": "is the original",
+    "isTranslation": "is the translation",
     "importOverwrite": "Import (overwrite)",
     "export": "Export"
   },

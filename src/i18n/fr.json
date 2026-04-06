@@ -579,8 +579,8 @@
     "linkedTranslation": "Traduction liée",
     "linkedTranslationDesc": "Associer ce modèle à sa traduction dans l'autre langue",
     "noTranslation": "— Aucune traduction —",
-    "isOriginal": "Ce modèle est l'original",
-    "isTranslation": "Ce modèle est la traduction",
+    "isOriginal": "est l'original",
+    "isTranslation": "est la traduction",
     "importOverwrite": "Importer (écraser)",
     "export": "Exporter"
   },

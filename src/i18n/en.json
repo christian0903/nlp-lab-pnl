@@ -582,7 +582,17 @@
     "isOriginal": "is the original",
     "isTranslation": "is the translation",
     "importOverwrite": "Import (overwrite)",
-    "export": "Export"
+    "export": "Export",
+    "approcheSyncTitle": "Sync approach in the other language?",
+    "approcheSyncBothExist": "The model '{{modelTitle}}' ({{modelLang}}) and the approach '{{approcheTitle}}' ({{approcheLang}}) exist in the other language. Do you want to associate them too?",
+    "approcheSyncMissingModel": "The model doesn't exist yet in {{lang}}. Do you want to create it (empty) and associate it with '{{approcheTitle}}' ({{approcheLang}})?",
+    "approcheSyncMissingApproche": "The approach '{{approcheTitle}}' doesn't exist yet in {{lang}}. Do you want to create it (empty) and associate '{{modelTitle}}' ({{modelLang}}) with it?",
+    "approcheSyncMissingBoth": "Neither the model nor the approach '{{approcheTitle}}' exist in {{lang}}.",
+    "syncYes": "Yes, associate",
+    "syncCreate": "Create and associate",
+    "syncSkip": "Skip",
+    "syncDone": "Association created in the other language",
+    "syncCreated": "Model created and associated in the other language"
   },
   "lang": {
     "fr": "FR",

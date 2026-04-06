@@ -69,6 +69,16 @@ const ModelDetail = () => {
   const [editIsOriginal, setEditIsOriginal] = useState(true);
   const [otherLangModels, setOtherLangModels] = useState<{ id: string; title: string }[]>([]);
 
+  // Approche sync popup
+  const [approcheSyncPopup, setApprocheSyncPopup] = useState<{
+    type: 'both_exist' | 'missing_model' | 'missing_approche' | 'missing_both';
+    otherModelId?: string;
+    otherModelTitle?: string;
+    otherApprocheId?: string;
+    otherApprocheTitle?: string;
+    approcheTitle: string;
+  } | null>(null);
+
   useEffect(() => {
     const fetchAll = async () => {
       const { data, error } = await supabase
@@ -386,6 +396,51 @@ const ModelDetail = () => {
     }
     setEditing(false);
     toast.success(t('modelDetail.saveSuccess'));
+
+    // Check approche sync in other language if approche changed
+    if (canManage && editApprocheId && editApprocheId !== (model.approche_id || '')) {
+      const modelLang = model.lang || 'fr';
+      const otherLang = modelLang === 'fr' ? 'en' : 'fr';
+      const approcheTitle = approches.find(a => a.id === editApprocheId)?.title || '';
+
+      // Find model translation
+      const otherModelId = model.translation_of || translationModel?.id;
+      let otherModel: { id: string; title: string } | null = null;
+      if (otherModelId) {
+        const { data } = await supabase.from('models').select('id, title, approche_id').eq('id', otherModelId).single();
+        if (data && data.approche_id !== editApprocheId) otherModel = data;
+        else otherModel = null; // already associated or not found
+      }
+
+      // Find approche translation
+      let otherApproche: { id: string; title: string } | null = null;
+      const { data: approcheData } = await supabase.from('models').select('id, title, translation_of, lang')
+        .eq('type', 'approche').or(`translation_of.eq.${editApprocheId},id.eq.${editApprocheId}`);
+      if (approcheData) {
+        // Find the approche in the other language
+        const originalApproche = approcheData.find(a => a.id === editApprocheId);
+        if (originalApproche?.translation_of) {
+          // The selected approche is itself a translation, find its original's other translation
+          const { data: otherA } = await supabase.from('models').select('id, title, lang')
+            .or(`id.eq.${originalApproche.translation_of},translation_of.eq.${originalApproche.translation_of}`)
+            .eq('lang', otherLang).limit(1);
+          if (otherA?.[0]) otherApproche = otherA[0];
+        } else {
+          // The selected approche is the original, find its translation
+          const translatedA = approcheData.find(a => a.translation_of === editApprocheId && (a.lang || 'fr') === otherLang);
+          if (translatedA) otherApproche = translatedA;
+        }
+      }
+
+      if (otherModel && otherApproche) {
+        setApprocheSyncPopup({ type: 'both_exist', otherModelId: otherModel.id, otherModelTitle: otherModel.title, otherApprocheId: otherApproche.id, otherApprocheTitle: otherApproche.title, approcheTitle });
+      } else if (otherModel && !otherApproche) {
+        setApprocheSyncPopup({ type: 'missing_approche', otherModelId: otherModel.id, otherModelTitle: otherModel.title, approcheTitle });
+      } else if (!otherModel && otherApproche) {
+        setApprocheSyncPopup({ type: 'missing_model', otherApprocheId: otherApproche.id, otherApprocheTitle: otherApproche.title, approcheTitle });
+      }
+      // missing_both: don't show popup, nothing to do
+    }
   };
 
   const handleDelete = async () => {
@@ -582,6 +637,93 @@ const ModelDetail = () => {
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors">
                 {t('modelDetail.deleteConfirm')}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approche sync popup */}
+      {approcheSyncPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setApprocheSyncPopup(null)}>
+          <div className="mx-4 w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-lg" onClick={e => e.stopPropagation()}>
+            <h3 className="mb-3 font-display text-lg font-bold text-foreground">
+              <Globe className="inline h-5 w-5 mr-1.5 text-secondary" />
+              {t('language.approcheSyncTitle')}
+            </h3>
+            <p className="mb-6 text-sm text-muted-foreground leading-relaxed">
+              {approcheSyncPopup.type === 'both_exist' && t('language.approcheSyncBothExist', {
+                modelTitle: approcheSyncPopup.otherModelTitle,
+                modelLang: (model.lang || 'fr') === 'fr' ? 'EN' : 'FR',
+                approcheTitle: approcheSyncPopup.otherApprocheTitle,
+                approcheLang: (model.lang || 'fr') === 'fr' ? 'EN' : 'FR',
+              })}
+              {approcheSyncPopup.type === 'missing_model' && t('language.approcheSyncMissingModel', {
+                lang: (model.lang || 'fr') === 'fr' ? 'EN' : 'FR',
+                approcheTitle: approcheSyncPopup.otherApprocheTitle,
+                approcheLang: (model.lang || 'fr') === 'fr' ? 'EN' : 'FR',
+              })}
+              {approcheSyncPopup.type === 'missing_approche' && t('language.approcheSyncMissingApproche', {
+                lang: (model.lang || 'fr') === 'fr' ? 'EN' : 'FR',
+                approcheTitle: approcheSyncPopup.approcheTitle,
+                modelTitle: approcheSyncPopup.otherModelTitle,
+                modelLang: (model.lang || 'fr') === 'fr' ? 'EN' : 'FR',
+              })}
+              {approcheSyncPopup.type === 'missing_both' && t('language.approcheSyncMissingBoth', {
+                lang: (model.lang || 'fr') === 'fr' ? 'EN' : 'FR',
+                approcheTitle: approcheSyncPopup.approcheTitle,
+              })}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setApprocheSyncPopup(null)}
+                className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
+                {t('language.syncSkip')}
+              </button>
+              {approcheSyncPopup.type === 'both_exist' && (
+                <button onClick={async () => {
+                  await supabase.from('models').update({ approche_id: approcheSyncPopup.otherApprocheId } as any).eq('id', approcheSyncPopup.otherModelId!);
+                  toast.success(t('language.syncDone'));
+                  setApprocheSyncPopup(null);
+                }} className="rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground hover:brightness-110">
+                  {t('language.syncYes')}
+                </button>
+              )}
+              {approcheSyncPopup.type === 'missing_model' && (
+                <button onClick={async () => {
+                  const otherLang = (model.lang || 'fr') === 'fr' ? 'en' : 'fr';
+                  const { data: newModel } = await supabase.from('models').insert({
+                    user_id: user!.id, title: model.title, type: model.type, status: 'brouillon',
+                    version: '1.0.0', complexity: model.complexity, tags: model.tags,
+                    description: '', sections: {}, links: [], lang: otherLang,
+                    translation_of: model.id, approved: true,
+                    approche_id: approcheSyncPopup.otherApprocheId,
+                  } as any).select('id').single();
+                  if (newModel) {
+                    setTranslationModel({ id: newModel.id, lang: otherLang });
+                    toast.success(t('language.syncCreated'));
+                  }
+                  setApprocheSyncPopup(null);
+                }} className="rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground hover:brightness-110">
+                  {t('language.syncCreate')}
+                </button>
+              )}
+              {approcheSyncPopup.type === 'missing_approche' && (
+                <button onClick={async () => {
+                  const otherLang = (model.lang || 'fr') === 'fr' ? 'en' : 'fr';
+                  const { data: newApproche } = await supabase.from('models').insert({
+                    user_id: user!.id, title: approcheSyncPopup.approcheTitle, type: 'approche', status: 'brouillon',
+                    version: '1.0.0', complexity: 'intermédiaire', tags: [],
+                    description: '', sections: {}, links: [], lang: otherLang,
+                    translation_of: editApprocheId, approved: true,
+                  } as any).select('id').single();
+                  if (newApproche) {
+                    await supabase.from('models').update({ approche_id: newApproche.id } as any).eq('id', approcheSyncPopup.otherModelId!);
+                    toast.success(t('language.syncCreated'));
+                  }
+                  setApprocheSyncPopup(null);
+                }} className="rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground hover:brightness-110">
+                  {t('language.syncCreate')}
+                </button>
+              )}
             </div>
           </div>
         </div>

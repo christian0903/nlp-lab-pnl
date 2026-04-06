@@ -582,7 +582,17 @@
     "isOriginal": "est l'original",
     "isTranslation": "est la traduction",
     "importOverwrite": "Importer (écraser)",
-    "export": "Exporter"
+    "export": "Exporter",
+    "approcheSyncTitle": "Synchroniser l'approche dans l'autre langue ?",
+    "approcheSyncBothExist": "Le modèle «{{modelTitle}}» ({{modelLang}}) et l'approche «{{approcheTitle}}» ({{approcheLang}}) existent dans l'autre langue. Voulez-vous les associer aussi ?",
+    "approcheSyncMissingModel": "Le modèle n'existe pas encore en {{lang}}. Voulez-vous le créer (vide) et l'associer à «{{approcheTitle}}» ({{approcheLang}}) ?",
+    "approcheSyncMissingApproche": "L'approche «{{approcheTitle}}» n'existe pas encore en {{lang}}. Voulez-vous la créer (vide) et y associer «{{modelTitle}}» ({{modelLang}}) ?",
+    "approcheSyncMissingBoth": "Ni le modèle ni l'approche «{{approcheTitle}}» n'existent en {{lang}}.",
+    "syncYes": "Oui, associer",
+    "syncCreate": "Créer et associer",
+    "syncSkip": "Ignorer",
+    "syncDone": "Association créée dans l'autre langue",
+    "syncCreated": "Modèle créé et associé dans l'autre langue"
   },
   "lang": {
     "fr": "FR",

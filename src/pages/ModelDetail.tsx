@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Eye, GitBranch, MessageSquare, Clock, User, ShieldCheck, Star, Plus, Send, Pencil, X, Save, Trash2, Play, FileText, GraduationCap, ExternalLink, Sparkles, ArrowUpRight, Globe, Upload } from 'lucide-react';
+import { ArrowLeft, Eye, GitBranch, MessageSquare, Clock, User, ShieldCheck, Star, Plus, Send, Pencil, X, Save, Trash2, Play, FileText, GraduationCap, ExternalLink, Sparkles, ArrowUpRight, Globe, Upload, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from '@/integrations/supabase/client';
@@ -428,6 +428,54 @@ const ModelDetail = () => {
     if (data) navigate(`/model/${data.id}`);
   };
 
+  const handleExport = () => {
+    if (!model) return;
+    const sections = (model.sections || {}) as Record<string, string>;
+    const tags = model.tags.map(t => `  - ${t}`).join('\n');
+    let md = `---\naction: update\ntitle: "${model.title}"\ntype: ${model.type}\nstatus: ${model.status}\nversion: "${model.version}"\ncomplexity: ${model.complexity}\ntags:\n${tags}\n---\n\n## Description\n\n${model.description}\n`;
+    const filledSections = Object.entries(sections).filter(([_, v]) => v);
+    if (filledSections.length > 0) {
+      md += '\n## Sections\n';
+      for (const [key, content] of filledSections) {
+        md += `\n### ${key}\n\n${content}\n`;
+      }
+    }
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${model.title.replace(/[^a-zA-Z0-9àâéèêëïîôùûüçÀÂÉÈÊËÏÎÔÙÛÜÇ\s-]/g, '').trim()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportOverwrite = () => {
+    if (!model) return;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.md,.txt';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const text = await file.text();
+      try {
+        const { parseModelFiche } = await import('@/lib/parseModelFiche');
+        const result = parseModelFiche(text);
+        setEditTitle(result.title);
+        setEditDescription(result.description);
+        setEditType(result.type as ModelType);
+        setEditComplexity(result.complexity);
+        setEditVersion(result.version);
+        setEditTagsInput(result.tags.join(', '));
+        setEditSections(result.sections);
+        toast.success('Fiche importée — vérifiez puis sauvegardez');
+      } catch (err: any) {
+        toast.error('Erreur de parsing : ' + err.message);
+      }
+    };
+    input.click();
+  };
+
   const complexityOptions = [
     { value: 'débutant', label: t('contribute.complexityBeginner') },
     { value: 'intermédiaire', label: t('contribute.complexityIntermediate') },
@@ -615,6 +663,16 @@ const ModelDetail = () => {
             <div className="flex items-center justify-between">
               <h2 className="font-display text-lg font-bold text-foreground">{t('modelDetail.editModel')}</h2>
               <div className="flex items-center gap-2">
+                {!model.approved && (
+                  <button onClick={handleImportOverwrite}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    <Upload className="h-3.5 w-3.5" /> {t('language.importOverwrite')}
+                  </button>
+                )}
+                <button onClick={handleExport}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  <Download className="h-3.5 w-3.5" /> {t('language.export')}
+                </button>
                 <button onClick={cancelEditing}
                   className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
                   {t('common.cancel')}

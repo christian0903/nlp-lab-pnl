@@ -722,16 +722,17 @@ const ModelDetail = () => {
                   <select value={editTranslationId} onChange={e => setEditTranslationId(e.target.value)}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2">
                     <option value="">{t('language.noTranslation')}</option>
-                    {otherLangModels.map(m => (
-                      <option key={m.id} value={m.id}>{m.title}</option>
-                    ))}
+                    {otherLangModels.map(m => {
+                      const otherLang = (model.lang || 'fr') === 'fr' ? 'EN' : 'FR';
+                      return <option key={m.id} value={m.id}>{m.title} ({otherLang})</option>;
+                    })}
                   </select>
                   {editTranslationId && (
                     <label className="mt-1.5 flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" checked={!editIsOriginal} onChange={e => setEditIsOriginal(!e.target.checked)}
                         className="rounded border-input accent-secondary" />
                       <span className="text-xs text-muted-foreground">
-                        {otherLangModels.find(m => m.id === editTranslationId)?.title || '?'} {t('language.isOriginal').toLowerCase()}
+                        {otherLangModels.find(m => m.id === editTranslationId)?.title || '?'} ({(model.lang || 'fr') === 'fr' ? 'EN' : 'FR'}) {t('language.isOriginal').toLowerCase()}
                       </span>
                     </label>
                   )}

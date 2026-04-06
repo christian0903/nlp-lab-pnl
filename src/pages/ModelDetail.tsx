@@ -730,7 +730,9 @@ const ModelDetail = () => {
                     <label className="mt-1.5 flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" checked={editIsOriginal} onChange={e => setEditIsOriginal(e.target.checked)}
                         className="rounded border-input accent-secondary" />
-                      <span className="text-xs text-muted-foreground">{t('language.isOriginal')}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {editIsOriginal ? t('language.isOriginal') : t('language.isTranslation')}
+                      </span>
                     </label>
                   )}
                 </div>

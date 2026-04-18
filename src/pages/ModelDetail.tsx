@@ -71,6 +71,23 @@ const ModelDetail = () => {
   const [editIsOriginal, setEditIsOriginal] = useState(true);
   const [otherLangModels, setOtherLangModels] = useState<{ id: string; title: string }[]>([]);
 
+  // Versions
+  interface ModelVersion {
+    id: string;
+    version: string;
+    title: string;
+    summary: string;
+    description: string;
+    author_name: string;
+    type: string;
+    status: string;
+    complexity: string;
+    tags: string[];
+    created_at: string;
+  }
+  const [versions, setVersions] = useState<ModelVersion[]>([]);
+  const [viewingVersion, setViewingVersion] = useState<ModelVersion | null>(null);
+
   // Approche sync popup
   const [approcheSyncPopup, setApprocheSyncPopup] = useState<{
     type: 'both_exist' | 'missing_model' | 'missing_approche' | 'missing_both';
@@ -125,6 +142,14 @@ const ModelDetail = () => {
         childProfs?.forEach((p: any) => { childProfMap[p.user_id] = p.display_name; });
         setChildModels(childData.map((c: any) => ({ id: c.id, title: c.title, author_name: childProfMap[c.user_id] || t('common.anonymous'), created_at: c.created_at })));
       }
+
+      // Fetch versions
+      const { data: versionsData } = await supabase
+        .from('model_versions')
+        .select('*')
+        .eq('model_id', id!)
+        .order('created_at', { ascending: false });
+      if (versionsData) setVersions(versionsData as any);
 
       // Fetch linked forum posts (M:N table + legacy model_id)
       const postIds = new Set<string>();
@@ -289,6 +314,26 @@ const ModelDetail = () => {
       return;
     }
     setEditSubmitting(true);
+
+    // Snapshot current version before saving changes
+    if (model.version !== editVersion.trim() || model.description !== editDescription.trim() || model.summary !== editSummary.trim() || model.title !== editTitle.trim()) {
+      await supabase.from('model_versions').insert({
+        model_id: model.id,
+        version: model.version,
+        title: model.title,
+        summary: model.summary || '',
+        description: model.description || '',
+        author_name: model.author_name || '',
+        type: model.type,
+        status: model.status,
+        complexity: model.complexity || '',
+        tags: model.tags || [],
+        links: model.links || [],
+        changelog: model.changelog || [],
+        created_by: user?.id,
+      });
+    }
+
     const tags = editTagsInput.split(',').map(t => t.trim()).filter(Boolean);
     const savedLinks = editLinks.filter(l => l.url.trim() && l.title.trim());
 
@@ -1062,6 +1107,11 @@ const ModelDetail = () => {
           <TabsTrigger value="historique" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             {t('modelDetail.history')}
           </TabsTrigger>
+          {versions.length > 0 && (
+            <TabsTrigger value="versions" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
+              Versions ({versions.length})
+            </TabsTrigger>
+          )}
           <TabsTrigger value="variations" className="whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent data-[state=active]:text-secondary">
             {t('modelDetail.variants')} ({childModels.length})
           </TabsTrigger>
@@ -1254,6 +1304,32 @@ const ModelDetail = () => {
           </div>
         </TabsContent>
 
+        {/* Versions */}
+        {versions.length > 0 && (
+          <TabsContent value="versions">
+            <div className="space-y-3">
+              <div className="rounded-lg border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="rounded-full bg-secondary/10 px-2.5 py-0.5 font-mono text-xs font-semibold text-secondary">v{model.version}</span>
+                  <span className="text-xs font-medium text-foreground">{t('modelDetail.currentVersion')}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{model.title}</p>
+              </div>
+              {versions.map(v => (
+                <button key={v.id} onClick={() => setViewingVersion(v)}
+                  className="w-full text-left rounded-lg border border-border bg-card p-4 hover:border-secondary/30 transition-colors">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs font-medium text-muted-foreground">v{v.version}</span>
+                    <span className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
+                  </div>
+                  <p className="text-sm text-foreground">{v.title}</p>
+                  {v.summary && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{v.summary}</p>}
+                </button>
+              ))}
+            </div>
+          </TabsContent>
+        )}
+
         {/* Variantes (modèles dérivés) */}
         <TabsContent value="variations">
           {user && (
@@ -1366,6 +1442,52 @@ const ModelDetail = () => {
           {t('modelDetail.donationSuffix')}
         </p>
       </div>
+
+      {/* Version detail modal */}
+      {viewingVersion && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:p-8" onClick={() => setViewingVersion(null)}>
+          <div className="relative my-8 w-full max-w-3xl rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setViewingVersion(null)} className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="mb-2 flex items-center gap-2">
+              <span className="rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs font-semibold text-muted-foreground">v{viewingVersion.version}</span>
+              <span className="text-xs text-muted-foreground">{new Date(viewingVersion.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
+              <TypeBadge type={viewingVersion.type as any} />
+              <span className="text-xs text-muted-foreground">{viewingVersion.complexity}</span>
+            </div>
+
+            <h2 className="mb-3 font-display text-2xl font-bold text-foreground">{viewingVersion.title}</h2>
+
+            {viewingVersion.author_name && (
+              <p className="mb-3 flex items-center gap-1.5 text-sm font-medium text-foreground">
+                <User className="h-4 w-4" /> {t('modelDetail.authorLabel')} : {viewingVersion.author_name}
+              </p>
+            )}
+
+            {viewingVersion.summary && (
+              <div className="mb-5 prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingVersion.summary}</ReactMarkdown>
+              </div>
+            )}
+
+            {viewingVersion.tags && viewingVersion.tags.length > 0 && (
+              <div className="mb-5 flex flex-wrap gap-1.5">
+                {viewingVersion.tags.map(tag => (
+                  <span key={tag} className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">{tag}</span>
+                ))}
+              </div>
+            )}
+
+            {viewingVersion.description && (
+              <div className="prose prose-sm dark:prose-invert max-w-none border-t border-border pt-5">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingVersion.description}</ReactMarkdown>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Preview modal */}
       {previewing && (

@@ -79,11 +79,11 @@ export function parseModelFiche(markdown: string): ParsedFiche {
   // --- Parse body ---
   const body = lines.slice(frontmatterEnd + 1).join('\n');
 
-  // Extract summary (## Summary or ## Description section)
-  const summaryMatch = body.match(/##\s+(?:Summary|Description)\s*\n([\s\S]*?)(?=\n##\s|$)/);
+  // Extract summary (## Summary section only)
+  const summaryMatch = body.match(/##\s+Summary\s*\n([\s\S]*?)(?=\n##\s|$)/);
   const summary = summaryMatch ? summaryMatch[1].trim() : '';
 
-  // Everything after the summary heading block is the description
+  // Everything after the summary section is the description
   let description = '';
   if (summaryMatch) {
     const afterSummary = body.slice(body.indexOf(summaryMatch[0]) + summaryMatch[0].length).trim();

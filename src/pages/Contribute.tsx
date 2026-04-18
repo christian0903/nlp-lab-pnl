@@ -31,7 +31,31 @@ const Contribute = () => {
   const [type, setType] = useState<ModelType>('outil');
   const [complexity, setComplexity] = useState('intermédiaire');
   const [summary, setSummary] = useState(fromVariationDesc || '');
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(
+`## Description
+
+<!-- Décrivez le modèle : de quoi s'agit-il, dans quel contexte l'utiliser -->
+
+## Protocole détaillé
+
+<!-- Les étapes concrètes du protocole, numérotées -->
+
+## Principe actif
+
+<!-- Le mécanisme central qui fait que ce modèle fonctionne -->
+
+## Points de vigilance
+
+<!-- Ce qu'il faut surveiller, les contre-indications éventuelles -->
+
+## Prérequis
+
+<!-- Connaissances, compétences ou conditions nécessaires -->
+
+## Sources
+
+<!-- Références, auteurs, publications, liens -->`
+  );
   const [authorNameInput, setAuthorNameInput] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [submitting, setSubmitting] = useState(false);

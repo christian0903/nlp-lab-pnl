@@ -29,15 +29,31 @@ tags:
 
 Description concise du modèle en 1 à 3 phrases.
 
+## Description
+
+De quoi s'agit-il, dans quel contexte l'utiliser.
+
 ## Protocole détaillé
 
 1. Étape 1
 2. Étape 2
 3. Étape 3
 
+## Principe actif
+
+Le mécanisme central qui fait que ce modèle fonctionne.
+
 ## Points de vigilance
 
-Points importants à surveiller.`;
+Points importants à surveiller, contre-indications éventuelles.
+
+## Prérequis
+
+Connaissances, compétences ou conditions nécessaires.
+
+## Sources
+
+Références, auteurs, publications.`;
 
 const ImportModel = () => {
   const { t, i18n } = useTranslation();

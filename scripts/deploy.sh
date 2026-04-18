@@ -15,8 +15,8 @@ rsync -avz --delete dist/ "${VPS_USER}@${VPS_HOST}:${TMP_PATH}/"
 
 echo "🚀 Mise en production..."
 ssh "${VPS_USER}@${VPS_HOST}" "\
-  sudo rm -rf ${VPS_PATH}/* && \
-  sudo cp -r ${TMP_PATH}/* ${VPS_PATH}/ && \
+  sudo find ${VPS_PATH} -mindepth 1 -not -path '${VPS_PATH}/.git*' -not -path '${VPS_PATH}/.env*' -delete && \
+  sudo cp -r ${TMP_PATH}/* ${TMP_PATH}/.htaccess ${VPS_PATH}/ && \
   sudo chown -R www-data:www-data ${VPS_PATH} && \
   rm -rf ${TMP_PATH}"
 

@@ -2,9 +2,9 @@
 
 ## Contexte
 
-Ce dossier `nlp-lab-pnl` est une copie du projet `pnl-lab-collective` (PNL Lab R&D v2.1.3).
-L'objectif est de créer une version bilingue français/anglais du site.
-Le projet original (`pnl-lab-collective`) ne doit PAS être modifié.
+Ce dossier `nlp-lab-pnl` est le projet principal (PNL Lab R&D).
+L'ancien repo `pnl-lab-collective` est obsolète et archivé.
+Le site est déployé sur VPS OVH à https://lab.atelierpnl.eu.
 
 ## Ce qui est déjà fait
 

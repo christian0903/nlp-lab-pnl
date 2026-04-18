@@ -4,8 +4,8 @@ set -e
 
 VPS_USER="ubuntu"
 VPS_HOST="79.137.14.155"
-VPS_PATH="/var/www/pnl-lab"
-TMP_PATH="/tmp/pnl-lab-deploy"
+VPS_PATH="/var/www/nlp-lab-pnl"
+TMP_PATH="/tmp/nlp-lab-pnl-deploy"
 
 echo "🔨 Build du projet..."
 npm run build

@@ -1503,6 +1503,24 @@ const ModelDetail = () => {
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingVersion.description}</ReactMarkdown>
               </div>
             )}
+
+            {canManage && (
+              <div className="mt-6 flex justify-end border-t border-border pt-4">
+                <button
+                  onClick={async () => {
+                    if (!confirm(t('modelDetail.deleteVersionConfirm'))) return;
+                    const { error } = await supabase.from('model_versions').delete().eq('id', viewingVersion.id);
+                    if (error) { toast.error(error.message); return; }
+                    setVersions(prev => prev.filter(v => v.id !== viewingVersion.id));
+                    setViewingVersion(null);
+                    toast.success(t('modelDetail.versionDeleted'));
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> {t('modelDetail.deleteVersion')}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

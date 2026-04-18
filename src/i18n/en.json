@@ -563,6 +563,8 @@
     "derivedModels": "Derived models",
     "noHistory": "No history available.",
     "currentVersion": "Current version",
+    "versionNotes": "Version notes (what changed?)",
+    "versionNotesPlaceholder": "E.g.: Added detailed protocol, fixed prerequisites...",
     "variantExplanation": "A variant is a complete model, derived from this one, that adapts or enriches the protocol for a particular case.",
     "giveFeedback": "Give feedback",
     "feedbackExplanation": "Your feedback will be published as a post in the community, linked to this model.",

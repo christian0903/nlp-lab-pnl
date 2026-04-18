@@ -563,6 +563,8 @@
     "derivedModels": "Modèles dérivés",
     "noHistory": "Aucun historique disponible.",
     "currentVersion": "Version actuelle",
+    "versionNotes": "Notes de version (quoi de neuf ?)",
+    "versionNotesPlaceholder": "Ex : Ajout du protocole détaillé, correction des prérequis...",
     "variantExplanation": "Une variante est un modèle complet, dérivé de celui-ci, qui adapte ou enrichit le protocole pour un cas particulier.",
     "giveFeedback": "Donner un feedback",
     "feedbackExplanation": "Votre feedback sera publié comme un post dans la communauté, lié à ce modèle.",

@@ -56,6 +56,7 @@ const ModelDetail = () => {
   const [editComplexity, setEditComplexity] = useState('');
   const [editTagsInput, setEditTagsInput] = useState('');
   const [editVersion, setEditVersion] = useState('');
+  const [editVersionNotes, setEditVersionNotes] = useState('');
   const [editLinks, setEditLinks] = useState<ModelLink[]>([]);
   const [editJournalNote, setEditJournalNote] = useState('');
   const [editJournalAuthors, setEditJournalAuthors] = useState<string[]>([]);
@@ -83,6 +84,7 @@ const ModelDetail = () => {
     status: string;
     complexity: string;
     tags: string[];
+    notes: string | null;
     created_at: string;
   }
   const [versions, setVersions] = useState<ModelVersion[]>([]);
@@ -315,8 +317,8 @@ const ModelDetail = () => {
     }
     setEditSubmitting(true);
 
-    // Snapshot current version before saving changes
-    if (model.version !== editVersion.trim() || model.description !== editDescription.trim() || model.summary !== editSummary.trim() || model.title !== editTitle.trim()) {
+    // Snapshot current version before saving changes (only when version number changes)
+    if (model.version !== editVersion.trim()) {
       await supabase.from('model_versions').insert({
         model_id: model.id,
         version: model.version,
@@ -330,6 +332,7 @@ const ModelDetail = () => {
         tags: model.tags || [],
         links: model.links || [],
         changelog: model.changelog || [],
+        notes: editVersionNotes.trim() || null,
         created_by: user?.id,
       });
     }
@@ -890,6 +893,16 @@ const ModelDetail = () => {
                   placeholder="1.0.0" maxLength={20}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
               </div>
+              {/* Notes de version (visible seulement si version changée) */}
+              {editVersion.trim() !== (model?.version || '') && (
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-sm font-medium text-amber-600">{t('modelDetail.versionNotes')}</label>
+                  <input type="text" value={editVersionNotes} onChange={e => setEditVersionNotes(e.target.value)}
+                    placeholder={t('modelDetail.versionNotesPlaceholder')}
+                    maxLength={500}
+                    className="w-full rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2.5 text-sm outline-none ring-amber-500/50 focus:ring-2" />
+                </div>
+              )}
               {/* Traduction liée */}
               {canManage && (
                 <div>
@@ -1323,6 +1336,7 @@ const ModelDetail = () => {
                     <span className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
                   </div>
                   <p className="text-sm text-foreground">{v.title}</p>
+                  {v.notes && <p className="text-xs text-amber-600 mt-1 italic">{v.notes}</p>}
                   {v.summary && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{v.summary}</p>}
                 </button>
               ))}
@@ -1459,6 +1473,10 @@ const ModelDetail = () => {
             </div>
 
             <h2 className="mb-3 font-display text-2xl font-bold text-foreground">{viewingVersion.title}</h2>
+
+            {viewingVersion.notes && (
+              <p className="mb-3 rounded-lg bg-amber-500/5 border border-amber-500/20 px-3 py-2 text-sm text-amber-600 italic">{viewingVersion.notes}</p>
+            )}
 
             {viewingVersion.author_name && (
               <p className="mb-3 flex items-center gap-1.5 text-sm font-medium text-foreground">

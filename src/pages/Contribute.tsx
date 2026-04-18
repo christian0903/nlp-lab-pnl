@@ -21,28 +21,6 @@ const Contribute = () => {
     { value: 'avancé', label: t('contribute.complexityAdvanced') },
   ];
 
-  const sectionsByType: Record<ModelType, { label: string; key: string; placeholder: string }[]> = {
-    problematique: [
-      { label: t('contribute.sections.patterns'), key: 'patterns', placeholder: t('contribute.sections.patternsPlaceholder') },
-      { label: t('contribute.sections.signals'), key: 'signals', placeholder: t('contribute.sections.signalsPlaceholder') },
-      { label: t('contribute.sections.intervention_points'), key: 'intervention_points', placeholder: t('contribute.sections.intervention_pointsPlaceholder') },
-      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_problematique') },
-    ],
-    outil: [
-      { label: t('contribute.sections.protocol'), key: 'protocol', placeholder: t('contribute.sections.protocolPlaceholder') },
-      { label: t('contribute.sections.active_principle'), key: 'active_principle', placeholder: t('contribute.sections.active_principlePlaceholder') },
-      { label: t('contribute.sections.vigilance'), key: 'vigilance', placeholder: t('contribute.sections.vigilancePlaceholder') },
-      { label: t('contribute.sections.variants'), key: 'variants', placeholder: t('contribute.sections.variantsPlaceholder') },
-      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_outil') },
-    ],
-    approche: [
-      { label: t('contribute.sections.philosophy'), key: 'philosophy', placeholder: t('contribute.sections.philosophyPlaceholder') },
-      { label: t('contribute.sections.creators'), key: 'creators', placeholder: t('contribute.sections.creatorsPlaceholder') },
-      { label: t('contribute.sections.structure'), key: 'structure', placeholder: t('contribute.sections.structurePlaceholder') },
-      { label: t('contribute.sections.toolkit'), key: 'toolkit', placeholder: t('contribute.sections.toolkitPlaceholder') },
-      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_approche') },
-    ],
-  };
 
   const parentId = searchParams.get('parent');
   const fromPostId = searchParams.get('from_post');
@@ -52,9 +30,10 @@ const Contribute = () => {
   const [title, setTitle] = useState(fromVariationTitle || '');
   const [type, setType] = useState<ModelType>('outil');
   const [complexity, setComplexity] = useState('intermédiaire');
-  const [description, setDescription] = useState(fromVariationDesc || '');
+  const [summary, setSummary] = useState(fromVariationDesc || '');
+  const [description, setDescription] = useState('');
+  const [authorNameInput, setAuthorNameInput] = useState('');
   const [tagsInput, setTagsInput] = useState('');
-  const [sectionValues, setSectionValues] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [parentTitle, setParentTitle] = useState('');
   const [sourcePostTitle, setSourcePostTitle] = useState('');
@@ -93,8 +72,8 @@ const Contribute = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedTitle = title.trim();
-    const trimmedDesc = description.trim();
-    if (!trimmedTitle || !trimmedDesc) {
+    const trimmedSummary = summary.trim();
+    if (!trimmedTitle || !trimmedSummary) {
       toast.error(t('contribute.titleDescRequired'));
       return;
     }
@@ -106,10 +85,11 @@ const Contribute = () => {
       user_id: user.id,
       title: trimmedTitle,
       type,
-      description: trimmedDesc,
+      summary: trimmedSummary,
+      description: description.trim(),
+      author_name: authorNameInput.trim(),
       complexity,
       tags,
-      sections: sectionValues,
       status: 'brouillon',
       approved: false,
     };
@@ -242,31 +222,42 @@ const Contribute = () => {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.description')}</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.authorName')}</label>
+          <input
+            type="text"
+            value={authorNameInput}
+            onChange={(e) => setAuthorNameInput(e.target.value)}
+            placeholder={t('contribute.authorNamePlaceholder')}
+            maxLength={200}
+            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.summary')}</label>
           <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder={t('contribute.descriptionPlaceholder')}
-            maxLength={5000}
-            rows={5}
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            placeholder={t('contribute.summaryPlaceholder')}
+            maxLength={2000}
+            rows={3}
             className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
             required
           />
         </div>
 
-        {sectionsByType[type].map((section) => (
-          <div key={section.key}>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">{section.label}</label>
-            <textarea
-              value={sectionValues[section.key] || ''}
-              onChange={(e) => setSectionValues(prev => ({ ...prev, [section.key]: e.target.value }))}
-              placeholder={section.placeholder}
-              maxLength={3000}
-              rows={4}
-              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
-            />
-          </div>
-        ))}
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.description')}</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder={t('contribute.descriptionPlaceholder')}
+            maxLength={50000}
+            rows={10}
+            className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
+          />
+          <p className="mt-1 text-[10px] text-muted-foreground">{t('common.markdownSupported')}</p>
+        </div>
 
         <div>
           <label className="mb-1.5 block text-sm font-medium text-foreground">{t('contribute.tags')}</label>

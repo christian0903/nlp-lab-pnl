@@ -1,10 +1,25 @@
 /**
- * Parse une fiche modèle PNL au format markdown (frontmatter YAML + sections)
+ * Parse une fiche modèle PNL au format markdown (frontmatter YAML + description)
  * et retourne un objet prêt à être inséré/mis à jour dans Supabase.
  *
- * Supporte deux formats de sections :
- * 1. Format structuré : ## Sections / ### clé_technique
- * 2. Format libre : ## Titre lisible (mappé automatiquement à la clé technique)
+ * Format attendu :
+ * ---
+ * action: create
+ * title: "Nom"
+ * type: outil
+ * ...
+ * author: "Nom de l'auteur"
+ * ---
+ * ## Summary
+ * Résumé court
+ *
+ * ## Protocole détaillé
+ * contenu markdown...
+ *
+ * ## Points de vigilance
+ * contenu markdown...
+ *
+ * Tout le markdown après Summary est stocké dans description.
  */
 
 export interface ParsedFiche {
@@ -15,49 +30,9 @@ export interface ParsedFiche {
   version: string;
   complexity: string;
   tags: string[];
+  author: string;
+  summary: string;
   description: string;
-  sections: Record<string, string>;
-}
-
-// Mapping des titres lisibles vers les clés techniques
-const SECTION_TITLE_MAP: Record<string, string> = {
-  // Clés techniques (déjà valides)
-  'structure': 'structure',
-  'protocol': 'protocol',
-  'active_principle': 'active_principle',
-  'patterns': 'patterns',
-  'signals': 'signals',
-  'intervention_points': 'intervention_points',
-  'vigilance': 'vigilance',
-  'variants': 'variants',
-  'philosophy': 'philosophy',
-  'creators': 'creators',
-  'prerequisites': 'prerequisites',
-  'toolkit': 'toolkit',
-  // Titres lisibles français
-  'structure du modèle': 'structure',
-  'protocole détaillé': 'protocol',
-  'protocole': 'protocol',
-  'principe actif': 'active_principle',
-  'patterns identifiés': 'patterns',
-  'signaux reconnaissables': 'signals',
-  'signaux': 'signals',
-  "points d'intervention": 'intervention_points',
-  'points de vigilance': 'vigilance',
-  'variantes connues': 'variants',
-  'variantes': 'variants',
-  'philosophie et principes': 'philosophy',
-  'philosophie': 'philosophy',
-  'créateurs': 'creators',
-  'prérequis': 'prerequisites',
-  'boîte à outils': 'toolkit',
-  'boite à outils': 'toolkit',
-  'boite a outils': 'toolkit',
-};
-
-function normalizeSectionKey(title: string): string {
-  const lower = title.toLowerCase().trim();
-  return SECTION_TITLE_MAP[lower] || lower.replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 }
 
 export function parseModelFiche(markdown: string): ParsedFiche {
@@ -101,45 +76,21 @@ export function parseModelFiche(markdown: string): ParsedFiche {
     }
   }
 
-  // --- Parse body (description + sections) ---
+  // --- Parse body ---
   const body = lines.slice(frontmatterEnd + 1).join('\n');
 
-  // Extract description
-  const descMatch = body.match(/##\s+Description\s*\n([\s\S]*?)(?=\n##\s|$)/);
-  const description = descMatch ? descMatch[1].trim() : '';
+  // Extract summary (## Summary or ## Description section)
+  const summaryMatch = body.match(/##\s+(?:Summary|Description)\s*\n([\s\S]*?)(?=\n##\s|$)/);
+  const summary = summaryMatch ? summaryMatch[1].trim() : '';
 
-  const sections: Record<string, string> = {};
-
-  // Try Format 1: ## Sections / ### key
-  const sectionsMatch = body.match(/##\s+Sections\s*\n([\s\S]*?)$/);
-
-  if (sectionsMatch) {
-    const sectionsBlock = sectionsMatch[1];
-    const sectionRegex = /###\s+(.+?)\s*\n([\s\S]*?)(?=\n###\s|\s*$)/g;
-    let m: RegExpExecArray | null;
-    while ((m = sectionRegex.exec(sectionsBlock)) !== null) {
-      const key = normalizeSectionKey(m[1]);
-      const content = m[2].trim();
-      if (content) {
-        sections[key] = content;
-      }
-    }
-  }
-
-  // Format 2: All ## headings (except Description and Sections) are treated as sections
-  if (Object.keys(sections).length === 0) {
-    const h2Regex = /\n##\s+(.+?)\s*\n([\s\S]*?)(?=\n##\s|$)/g;
-    let m: RegExpExecArray | null;
-    const bodyWithLeadingNewline = '\n' + body;
-    while ((m = h2Regex.exec(bodyWithLeadingNewline)) !== null) {
-      const title = m[1].trim();
-      if (title.toLowerCase() === 'description' || title.toLowerCase() === 'sections') continue;
-      const key = normalizeSectionKey(title);
-      const content = m[2].trim();
-      if (content) {
-        sections[key] = content;
-      }
-    }
+  // Everything after the summary heading block is the description
+  let description = '';
+  if (summaryMatch) {
+    const afterSummary = body.slice(body.indexOf(summaryMatch[0]) + summaryMatch[0].length).trim();
+    description = afterSummary;
+  } else {
+    // No summary heading — treat entire body as description
+    description = body.trim();
   }
 
   // --- Validate ---
@@ -170,9 +121,10 @@ export function parseModelFiche(markdown: string): ParsedFiche {
   }
 
   const tags = Array.isArray(meta.tags) ? meta.tags : [];
+  const author = (meta.author as string) || '';
 
-  if (!description) {
-    throw new Error('La section "## Description" est requise');
+  if (!summary && !description) {
+    throw new Error('Le contenu du modèle est vide (ni summary ni description)');
   }
 
   return {
@@ -183,7 +135,8 @@ export function parseModelFiche(markdown: string): ParsedFiche {
     version: (meta.version as string) || '1.0.0',
     complexity,
     tags,
+    author,
+    summary,
     description,
-    sections,
   };
 }

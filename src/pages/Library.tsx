@@ -254,7 +254,7 @@ const Library = () => {
                           <h3 className="font-display text-base font-semibold text-foreground">{approche.title}</h3>
                           <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{t('library.modelCount', { count: children.length })}</span>
                         </div>
-                        <p className="mt-0.5 text-sm text-muted-foreground line-clamp-1">{approche.description}</p>
+                        <p className="mt-0.5 text-sm text-muted-foreground line-clamp-1">{approche.summary || approche.description}</p>
                       </div>
                       <Link
                         to={`/model/${approche.id}`}
@@ -274,7 +274,7 @@ const Library = () => {
                                 <TypeBadge type={model.type as any} />
                                 <div className="min-w-0 flex-1">
                                   <p className="text-sm font-medium text-foreground truncate">{model.title}</p>
-                                  <p className="text-xs text-muted-foreground">v{model.version} · {profiles[model.user_id] || t('common.anonymous')}</p>
+                                  <p className="text-xs text-muted-foreground">v{model.version} · {model.author_name || profiles[model.user_id] || t('common.anonymous')}</p>
                                 </div>
                               </Link>
                             ))}
@@ -370,7 +370,7 @@ const ModelCardDB = ({ model, authorName, approcheName, index = 0, canManage, on
         <h3 className="mb-1.5 font-display text-lg font-semibold text-foreground leading-snug">
           {model.title}
         </h3>
-        <p className="mb-3 text-sm text-muted-foreground line-clamp-2">{model.description}</p>
+        <p className="mb-3 text-sm text-muted-foreground line-clamp-2">{model.summary || model.description}</p>
 
         {approcheName && (
           <p className="mb-2 inline-flex items-center gap-1 text-xs text-secondary">
@@ -391,7 +391,7 @@ const ModelCardDB = ({ model, authorName, approcheName, index = 0, canManage, on
 
         <div className="flex items-center justify-between border-t border-border pt-3">
           <span className="text-xs text-muted-foreground">
-            v{model.version} · <Link to={`/profil/${model.user_id}`} onClick={e => e.stopPropagation()} className="hover:text-secondary">{authorName || t('common.anonymous')}</Link>
+            v{model.version} · {model.author_name || authorName || t('common.anonymous')}
           </span>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">

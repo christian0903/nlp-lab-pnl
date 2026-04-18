@@ -33,7 +33,7 @@ const ModelDetail = () => {
   const { isAdmin, canManage } = useAdmin();
   const [model, setModel] = useState<DBModel | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [authorName, setAuthorName] = useState('');
+  const [uploaderName, setUploaderName] = useState('');
   const [loading, setLoading] = useState(true);
   const [parentModel, setParentModel] = useState<{ id: string; title: string } | null>(null);
   const [childModels, setChildModels] = useState<{ id: string; title: string; author_name: string; created_at: string }[]>([]);
@@ -49,12 +49,13 @@ const ModelDetail = () => {
   // Edit mode
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
+  const [editSummary, setEditSummary] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editAuthorName, setEditAuthorName] = useState('');
   const [editType, setEditType] = useState<ModelType>('outil');
   const [editComplexity, setEditComplexity] = useState('');
   const [editTagsInput, setEditTagsInput] = useState('');
   const [editVersion, setEditVersion] = useState('');
-  const [editSections, setEditSections] = useState<Record<string, string>>({});
   const [editLinks, setEditLinks] = useState<ModelLink[]>([]);
   const [editJournalNote, setEditJournalNote] = useState('');
   const [editJournalAuthors, setEditJournalAuthors] = useState<string[]>([]);
@@ -97,7 +98,7 @@ const ModelDetail = () => {
         supabase.from('profiles').select('user_id, display_name').eq('user_id', m.user_id),
       ]);
 
-      if (profRes.data?.[0]) setAuthorName(profRes.data[0].display_name);
+      if (profRes.data?.[0]) setUploaderName(profRes.data[0].display_name);
 
       const allUserIds = new Set<string>([m.user_id]);
       const fbs = (fbsRes.data || []) as unknown as Feedback[];
@@ -235,12 +236,13 @@ const ModelDetail = () => {
   const startEditing = async () => {
     if (!model) return;
     setEditTitle(model.title);
+    setEditSummary(model.summary || '');
     setEditDescription(model.description);
+    setEditAuthorName(model.author_name || '');
     setEditType(model.type as ModelType);
     setEditComplexity(model.complexity);
     setEditTagsInput(model.tags.join(', '));
     setEditVersion(model.version);
-    setEditSections((model.sections || {}) as Record<string, string>);
     setEditLinks((model.links || []) as ModelLink[]);
     setEditJournalNote('');
     setEditJournalAuthors([profiles[user?.id || ''] || t('common.anonymous')]);
@@ -304,12 +306,13 @@ const ModelDetail = () => {
 
     const updateData: any = {
       title: editTitle.trim(),
+      summary: editSummary.trim(),
       description: editDescription.trim(),
+      author_name: editAuthorName.trim(),
       type: editType,
       complexity: editComplexity,
       tags,
       version: editVersion.trim(),
-      sections: editSections,
       links: savedLinks,
       changelog: updatedChangelog,
       approche_id: editApprocheId || null,
@@ -372,12 +375,13 @@ const ModelDetail = () => {
     setModel({
       ...model,
       title: editTitle.trim(),
+      summary: editSummary.trim(),
       description: editDescription.trim(),
+      author_name: editAuthorName.trim(),
       type: editType,
       complexity: editComplexity,
       tags,
       version: editVersion.trim(),
-      sections: editSections,
       links: savedLinks,
       changelog: updatedChangelog,
       approche_id: editApprocheId || null,
@@ -392,7 +396,7 @@ const ModelDetail = () => {
       setApprocheName('');
     }
     if (isAdmin && editOwnerId && editOwnerId !== model.user_id) {
-      setAuthorName(allUsers.find(u => u.user_id === editOwnerId)?.display_name || '');
+      setUploaderName(allUsers.find(u => u.user_id === editOwnerId)?.display_name || '');
     }
     setEditing(false);
     toast.success(t('modelDetail.saveSuccess'));
@@ -466,8 +470,9 @@ const ModelDetail = () => {
       version: '1.0.0',
       complexity: model.complexity,
       tags: model.tags,
+      summary: '',
       description: '',
-      sections: {},
+      author_name: model.author_name || '',
       links: [],
       lang: targetLang,
       translation_of: model.id,
@@ -485,16 +490,8 @@ const ModelDetail = () => {
 
   const handleExport = () => {
     if (!model) return;
-    const sections = (model.sections || {}) as Record<string, string>;
     const tags = model.tags.map(t => `  - ${t}`).join('\n');
-    let md = `---\naction: update\ntitle: "${model.title}"\ntype: ${model.type}\nstatus: ${model.status}\nversion: "${model.version}"\ncomplexity: ${model.complexity}\ntags:\n${tags}\n---\n\n## Description\n\n${model.description}\n`;
-    const filledSections = Object.entries(sections).filter(([_, v]) => v);
-    if (filledSections.length > 0) {
-      md += '\n## Sections\n';
-      for (const [key, content] of filledSections) {
-        md += `\n### ${key}\n\n${content}\n`;
-      }
-    }
+    let md = `---\naction: update\ntitle: "${model.title}"\ntype: ${model.type}\nstatus: ${model.status}\nversion: "${model.version}"\ncomplexity: ${model.complexity}\nauthor: "${model.author_name || ''}"\ntags:\n${tags}\n---\n\n## Summary\n\n${model.summary || ''}\n\n${model.description}\n`;
     const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -517,12 +514,13 @@ const ModelDetail = () => {
         const { parseModelFiche } = await import('@/lib/parseModelFiche');
         const result = parseModelFiche(text);
         setEditTitle(result.title);
+        setEditSummary(result.summary || '');
         setEditDescription(result.description);
+        setEditAuthorName(result.author || '');
         setEditType(result.type as ModelType);
         setEditComplexity(result.complexity);
         setEditVersion(result.version);
         setEditTagsInput(result.tags.join(', '));
-        setEditSections(result.sections);
         toast.success('Fiche importée — vérifiez puis sauvegardez');
       } catch (err: any) {
         toast.error('Erreur de parsing : ' + err.message);
@@ -537,34 +535,6 @@ const ModelDetail = () => {
     { value: 'avancé', label: t('contribute.complexityAdvanced') },
   ];
 
-  const sectionsByType: Record<ModelType, { label: string; key: string; placeholder: string }[]> = {
-    problematique: [
-      { label: t('modelDetail.sectionLabels.description'), key: 'description', placeholder: t('contribute.sections.patternsPlaceholder') },
-      { label: t('contribute.sections.patterns'), key: 'patterns', placeholder: t('contribute.sections.patternsPlaceholder') },
-      { label: t('contribute.sections.signals'), key: 'signals', placeholder: t('contribute.sections.signalsPlaceholder') },
-      { label: t('contribute.sections.intervention_points'), key: 'intervention_points', placeholder: t('contribute.sections.intervention_pointsPlaceholder') },
-      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_problematique') },
-    ],
-    outil: [
-      { label: t('contribute.sections.structure'), key: 'structure', placeholder: t('contribute.sections.structurePlaceholder') },
-      { label: t('contribute.sections.protocol'), key: 'protocol', placeholder: t('contribute.sections.protocolPlaceholder') },
-      { label: t('contribute.sections.active_principle'), key: 'active_principle', placeholder: t('contribute.sections.active_principlePlaceholder') },
-      { label: t('contribute.sections.vigilance'), key: 'vigilance', placeholder: t('contribute.sections.vigilancePlaceholder') },
-      { label: t('contribute.sections.variants'), key: 'variants', placeholder: t('contribute.sections.variantsPlaceholder') },
-      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_outil') },
-    ],
-    approche: [
-      { label: t('contribute.sections.philosophy'), key: 'philosophy', placeholder: t('contribute.sections.philosophyPlaceholder') },
-      { label: t('contribute.sections.creators'), key: 'creators', placeholder: t('contribute.sections.creatorsPlaceholder') },
-      { label: t('contribute.sections.structure'), key: 'structure', placeholder: t('contribute.sections.structurePlaceholder') },
-      { label: t('contribute.sections.toolkit'), key: 'toolkit', placeholder: t('contribute.sections.toolkitPlaceholder') },
-      { label: t('contribute.sections.prerequisites'), key: 'prerequisites', placeholder: t('contribute.sections.prerequisitesPlaceholder_approche') },
-    ],
-  };
-
-  const sectionLabel = (key: string) => {
-    return t(`modelDetail.sectionLabels.${key}`, key);
-  };
 
   if (loading) {
     return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>;
@@ -580,7 +550,6 @@ const ModelDetail = () => {
   }
 
   const canEdit = canManage || (user && user.id === model.user_id);
-  const sections = (model.sections || {}) as Record<string, string>;
   const statusFlow = ['brouillon', 'en_revision', 'en_test', 'publie', 'en_evolution'];
 
   return (
@@ -693,7 +662,7 @@ const ModelDetail = () => {
                   const { data: newModel } = await supabase.from('models').insert({
                     user_id: user!.id, title: model.title, type: model.type, status: 'brouillon',
                     version: '1.0.0', complexity: model.complexity, tags: model.tags,
-                    description: '', sections: {}, links: [], lang: otherLang,
+                    summary: '', description: '', links: [], lang: otherLang,
                     translation_of: model.id, approved: true,
                     approche_id: approcheSyncPopup.otherApprocheId,
                   } as any).select('id').single();
@@ -712,7 +681,7 @@ const ModelDetail = () => {
                   const { data: newApproche } = await supabase.from('models').insert({
                     user_id: user!.id, title: approcheSyncPopup.approcheTitle, type: 'approche', status: 'brouillon',
                     version: '1.0.0', complexity: 'intermédiaire', tags: [],
-                    description: '', sections: {}, links: [], lang: otherLang,
+                    summary: '', description: '', links: [], lang: otherLang,
                     translation_of: editApprocheId, approved: true,
                   } as any).select('id').single();
                   if (newApproche) {
@@ -757,12 +726,19 @@ const ModelDetail = () => {
               )}
             </div>
             <h1 className="mb-2 font-display text-2xl sm:text-3xl font-bold text-foreground">{model.title}</h1>
-            <div className="mb-5 prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{model.description}</ReactMarkdown>
-            </div>
+            {model.summary && (
+              <div className="mb-5 prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{model.summary}</ReactMarkdown>
+              </div>
+            )}
             <div className="flex flex-wrap gap-3 sm:gap-5 text-sm text-muted-foreground">
-              <Link to={`/profil/${model.user_id}`} className="flex items-center gap-1.5 hover:text-secondary transition-colors">
-                <User className="h-4 w-4" /> {authorName || t('common.anonymous')}
+              {model.author_name && (
+                <span className="flex items-center gap-1.5 font-medium text-foreground">
+                  <User className="h-4 w-4" /> {model.author_name}
+                </span>
+              )}
+              <Link to={`/profil/${model.user_id}`} className="flex items-center gap-1.5 hover:text-secondary transition-colors text-xs">
+                {t('modelDetail.uploadedBy')} {uploaderName || t('common.anonymous')}
               </Link>
               {approcheName && (
                 <Link to={`/model/${model.approche_id}`} className="flex items-center gap-1.5 text-secondary hover:underline">
@@ -917,25 +893,29 @@ const ModelDetail = () => {
               )}
             </div>
 
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.authorLabel')}</label>
+              <input type="text" value={editAuthorName} onChange={e => setEditAuthorName(e.target.value)}
+                placeholder={t('modelDetail.authorPlaceholder')}
+                maxLength={200} className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
+            </div>
+
+            <MarkdownField
+              label={t('modelDetail.summaryLabel')}
+              value={editSummary}
+              onChange={setEditSummary}
+              placeholder={t('modelDetail.summaryPlaceholder')}
+              maxLength={2000}
+              modelId={model?.id}
+            />
+
             <MarkdownField
               label={t('modelDetail.descriptionLabel')}
               value={editDescription}
               onChange={setEditDescription}
-              maxLength={5000}
+              maxLength={50000}
               modelId={model?.id}
             />
-
-            {sectionsByType[editType].map(section => (
-              <MarkdownField
-                key={section.key}
-                label={section.label}
-                value={editSections[section.key] || ''}
-                onChange={v => setEditSections(prev => ({ ...prev, [section.key]: v }))}
-                placeholder={section.placeholder}
-                maxLength={3000}
-                modelId={model?.id}
-              />
-            ))}
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-foreground">{t('modelDetail.tagsLabel')}</label>
@@ -1082,64 +1062,31 @@ const ModelDetail = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Présentation — chaque section dans son propre bloc navigable */}
+        {/* Présentation — description markdown complète */}
         <TabsContent value="presentation">
-          {(() => {
-            const filledSections = Object.entries(sections).filter(([_, v]) => v);
-            if (filledSections.length === 0 && !model.description) {
-              return (
-                <div className="rounded-lg border border-dashed border-border p-10 text-center">
-                  <p className="text-muted-foreground mb-4">{t('modelDetail.noContent')}</p>
-                  {canManage && (
-                    <div className="flex items-center justify-center gap-3">
-                      <button onClick={startEditing}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground hover:brightness-110">
-                        <Pencil className="h-3.5 w-3.5" /> {t('common.edit')}
-                      </button>
-                      <Link to={`/admin/import?lang=${model.lang || 'fr'}`}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                        <Upload className="h-3.5 w-3.5" /> {t('contribute.importSheet')}
-                      </Link>
-                    </div>
-                  )}
+          {model.description ? (
+            <div className="rounded-lg border border-border bg-card p-5">
+              <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{model.description}</ReactMarkdown>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-border p-10 text-center">
+              <p className="text-muted-foreground mb-4">{t('modelDetail.noContent')}</p>
+              {canManage && (
+                <div className="flex items-center justify-center gap-3">
+                  <button onClick={startEditing}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground hover:brightness-110">
+                    <Pencil className="h-3.5 w-3.5" /> {t('common.edit')}
+                  </button>
+                  <Link to={`/admin/import?lang=${model.lang || 'fr'}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    <Upload className="h-3.5 w-3.5" /> {t('contribute.importSheet')}
+                  </Link>
                 </div>
-              );
-            }
-            if (filledSections.length === 0) {
-              return (
-                <div className="rounded-lg border border-dashed border-border p-10 text-center text-muted-foreground">
-                  {t('modelDetail.noContent')}
-                </div>
-              );
-            }
-            if (filledSections.length <= 2) {
-              return (
-                <div className="space-y-6">
-                  {filledSections.map(([key, content]) => (
-                    <SectionBlock key={key} title={sectionLabel(key)} content={content} />
-                  ))}
-                </div>
-              );
-            }
-            // Plus de 2 sections → sous-tabs pour naviguer
-            return (
-              <Tabs defaultValue={filledSections[0][0]} className="w-full">
-                <TabsList className="mb-4 flex gap-1.5 overflow-x-auto bg-transparent p-0 pb-2">
-                  {filledSections.map(([key]) => (
-                    <TabsTrigger key={key} value={key}
-                      className="shrink-0 whitespace-nowrap rounded-lg border border-border px-3 py-1.5 text-xs font-medium data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:border-secondary">
-                      {sectionLabel(key)}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                {filledSections.map(([key, content]) => (
-                  <TabsContent key={key} value={key}>
-                    <SectionBlock title={sectionLabel(key)} content={content} />
-                  </TabsContent>
-                ))}
-              </Tabs>
-            );
-          })()}
+              )}
+            </div>
+          )}
         </TabsContent>
 
         {/* Liens & ressources */}
@@ -1414,17 +1361,6 @@ const ModelDetail = () => {
     </div>
   );
 };
-
-// sectionLabel is now defined inside the component as it needs t()
-
-const SectionBlock = ({ title, content }: { title: string; content: string }) => (
-  <div className="rounded-lg border border-border bg-card p-5">
-    <h3 className="mb-3 font-display text-base font-semibold text-foreground">{title}</h3>
-    <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-    </div>
-  </div>
-);
 
 const Placeholder = ({ text }: { text: string }) => (
   <div className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">{text}</div>

@@ -19,29 +19,25 @@ type: outil
 status: brouillon
 version: "1.0.0"
 complexity: intermédiaire
+author: "Nom de l'auteur"
 tags:
   - tag1
   - tag2
 ---
 
-## Description
+## Summary
 
 Description concise du modèle en 1 à 3 phrases.
 
-## Sections
-
-### structure
-
-Structure et composants du modèle.
-
-### protocol
+## Protocole détaillé
 
 1. Étape 1
 2. Étape 2
+3. Étape 3
 
-### prerequisites
+## Points de vigilance
 
-Prérequis pour utiliser ce modèle.`;
+Points importants à surveiller.`;
 
 const ImportModel = () => {
   const { t, i18n } = useTranslation();
@@ -131,8 +127,9 @@ const ImportModel = () => {
       version: parsed.version,
       complexity: parsed.complexity,
       tags: parsed.tags,
+      author_name: parsed.author,
+      summary: parsed.summary,
       description: parsed.description,
-      sections: parsed.sections,
     };
 
     let error: any = null;
@@ -314,7 +311,11 @@ const ImportModel = () => {
                   <span className="text-xs text-muted-foreground">{parsed.complexity}</span>
                 </div>
 
-                <p className="mb-3 text-sm text-muted-foreground leading-relaxed">{parsed.description}</p>
+                {parsed.author && (
+                  <p className="mb-2 text-sm text-foreground font-medium">Auteur : {parsed.author}</p>
+                )}
+
+                <p className="mb-3 text-sm text-muted-foreground leading-relaxed">{parsed.summary}</p>
 
                 <div className="mb-4 flex flex-wrap gap-1.5">
                   {parsed.tags.map(tag => (
@@ -322,15 +323,12 @@ const ImportModel = () => {
                   ))}
                 </div>
 
-                {Object.entries(parsed.sections).length > 0 && (
+                {parsed.description && (
                   <div className="space-y-3 border-t border-border pt-4">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sections</p>
-                    {Object.entries(parsed.sections).map(([key, content]) => (
-                      <div key={key} className="rounded-lg bg-muted/50 p-3">
-                        <p className="mb-1 text-xs font-semibold text-foreground">{key}</p>
-                        <p className="whitespace-pre-line text-xs text-muted-foreground leading-relaxed">{content.slice(0, 200)}{content.length > 200 ? '...' : ''}</p>
-                      </div>
-                    ))}
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description</p>
+                    <div className="rounded-lg bg-muted/50 p-3">
+                      <p className="whitespace-pre-line text-xs text-muted-foreground leading-relaxed">{parsed.description.slice(0, 500)}{parsed.description.length > 500 ? '...' : ''}</p>
+                    </div>
                   </div>
                 )}
               </div>

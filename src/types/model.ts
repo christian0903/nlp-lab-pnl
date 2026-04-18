@@ -32,10 +32,11 @@ export interface DBModel {
   type: string;
   status: string;
   version: string;
+  summary: string;
   description: string;
+  author_name: string;
   complexity: string;
   tags: string[];
-  sections: Record<string, string> | null;
   links: ModelLink[] | null;
   parent_model_id: string | null;
   approche_id: string | null;
@@ -48,8 +49,8 @@ export interface DBModel {
   updated_at: string;
   lang: string;
   translation_of: string | null;
-  // joined
-  author_name?: string;
+  // joined from profiles
+  uploader_name?: string;
 }
 
 export const MODEL_TYPE_LABELS: Record<ModelType, string> = {

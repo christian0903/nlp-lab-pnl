@@ -83,7 +83,7 @@ const Admin = () => {
       setPostsCount(pCount || 0);
 
       if (modelsData) {
-        setModels(modelsData.map((m: any) => ({ ...m, author_name: map[m.user_id] })) as any);
+        setModels(modelsData.map((m: any) => ({ ...m, uploader_name: map[m.user_id] })) as any);
       }
       setLoading(false);
     };
@@ -183,8 +183,8 @@ const Admin = () => {
   };
 
   const exportModels = () => {
-    const headers = ['ID', 'Titre', 'Type', 'Statut', 'Version', 'Complexité', 'Approuvé', 'Auteur', 'Vues', 'Feedbacks', 'Variations', 'Tags', 'Créé le', 'Mis à jour'];
-    const rows = models.map(m => [m.id, m.title, m.type, m.status, m.version, m.complexity, m.approved ? 'Oui' : 'Non', m.author_name || '', String(m.views_count), String(m.feedback_count), String(m.variations_count), m.tags.join('; '), m.created_at, m.updated_at]);
+    const headers = ['ID', 'Titre', 'Type', 'Statut', 'Version', 'Complexité', 'Approuvé', 'Auteur', 'Chargé par', 'Vues', 'Feedbacks', 'Variations', 'Tags', 'Créé le', 'Mis à jour'];
+    const rows = models.map(m => [m.id, m.title, m.type, m.status, m.version, m.complexity, m.approved ? 'Oui' : 'Non', m.author_name || '', (m as any).uploader_name || '', String(m.views_count), String(m.feedback_count), String(m.variations_count), m.tags.join('; '), m.created_at, m.updated_at]);
     downloadCSV('models_export.csv', headers, rows);
   };
 
@@ -338,7 +338,7 @@ const Admin = () => {
                   <TypeBadge type={model.type as any} />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground truncate">{model.title}</p>
-                    <p className="text-xs text-muted-foreground">par {model.author_name || t('common.anonymous')} · {t('modelStatuses.' + model.status)}</p>
+                    <p className="text-xs text-muted-foreground">par {model.author_name || (model as any).uploader_name || t('common.anonymous')} · {t('modelStatuses.' + model.status)}</p>
                   </div>
                   <div className="hidden text-right sm:block">
                     <p className="text-xs text-muted-foreground">{model.views_count} vues · {model.feedback_count} feedbacks</p>
@@ -475,14 +475,14 @@ const PendingCard = ({ model, onApprove, onReject, t, i18n }: {
       <span className="text-xs text-muted-foreground">{new Date(model.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
     </div>
     <h3 className="mb-1 font-display text-lg font-semibold text-foreground">{model.title}</h3>
-    <p className="mb-3 text-sm text-muted-foreground line-clamp-3">{model.description}</p>
+    <p className="mb-3 text-sm text-muted-foreground line-clamp-3">{model.summary || model.description}</p>
     <div className="mb-4 flex flex-wrap gap-1.5">
       {model.tags.slice(0, 5).map(tag => (
         <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{tag}</span>
       ))}
     </div>
     <div className="flex items-center justify-between border-t border-border pt-4">
-      <span className="text-xs text-muted-foreground">par {model.author_name || t('common.anonymous')} · {model.complexity}</span>
+      <span className="text-xs text-muted-foreground">par {model.author_name || (model as any).uploader_name || t('common.anonymous')} · {model.complexity}</span>
       <div className="flex gap-2">
         <Link to={`/model/${model.id}`}
           className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">

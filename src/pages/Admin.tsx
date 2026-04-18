@@ -13,6 +13,17 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 
+const stripMd = (md: string) =>
+  md.replace(/#{1,6}\s+/g, '')
+    .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^[-*]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/\n{2,}/g, ' ')
+    .trim();
+
 interface ProfileRow {
   user_id: string;
   display_name: string;
@@ -475,7 +486,7 @@ const PendingCard = ({ model, onApprove, onReject, t, i18n }: {
       <span className="text-xs text-muted-foreground">{new Date(model.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
     </div>
     <h3 className="mb-1 font-display text-lg font-semibold text-foreground">{model.title}</h3>
-    <p className="mb-3 text-sm text-muted-foreground line-clamp-3">{model.summary || model.description}</p>
+    <p className="mb-3 text-sm text-muted-foreground line-clamp-3">{stripMd(model.summary || model.description || '')}</p>
     <div className="mb-4 flex flex-wrap gap-1.5">
       {model.tags.slice(0, 5).map(tag => (
         <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{tag}</span>

@@ -13,6 +13,18 @@ import { Eye, GitBranch, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LangBadge from '@/components/lab/LangBadge';
 
+/** Strip markdown syntax for plain-text preview */
+const stripMd = (md: string) =>
+  md.replace(/#{1,6}\s+/g, '')
+    .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^[-*]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/\n{2,}/g, ' ')
+    .trim();
+
 const Library = () => {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language?.startsWith('en') ? 'en' : 'fr';
@@ -254,7 +266,7 @@ const Library = () => {
                           <h3 className="font-display text-base font-semibold text-foreground">{approche.title}</h3>
                           <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{t('library.modelCount', { count: children.length })}</span>
                         </div>
-                        <p className="mt-0.5 text-sm text-muted-foreground line-clamp-1">{approche.summary || approche.description}</p>
+                        <p className="mt-0.5 text-sm text-muted-foreground line-clamp-1">{stripMd(approche.summary || approche.description || '')}</p>
                       </div>
                       <Link
                         to={`/model/${approche.id}`}
@@ -370,7 +382,7 @@ const ModelCardDB = ({ model, authorName, approcheName, index = 0, canManage, on
         <h3 className="mb-1.5 font-display text-lg font-semibold text-foreground leading-snug">
           {model.title}
         </h3>
-        <p className="mb-3 text-sm text-muted-foreground line-clamp-2">{model.summary || model.description}</p>
+        <p className="mb-3 text-sm text-muted-foreground line-clamp-2">{stripMd(model.summary || model.description || '')}</p>
 
         {approcheName && (
           <p className="mb-2 inline-flex items-center gap-1 text-xs text-secondary">

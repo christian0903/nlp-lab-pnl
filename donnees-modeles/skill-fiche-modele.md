@@ -50,173 +50,93 @@ Une fois les informations collectées, produis la fiche markdown structurée.
 
 ## Format de sortie
 
-**IMPORTANT** : utilise EXACTEMENT cette structure. Les sections doivent être sous `## Sections` avec des `### clé_technique` (pas des titres libres). Les clés techniques sont listées dans les tableaux ci-dessous.
+**IMPORTANT** : La fiche utilise un frontmatter YAML suivi d'un `## Summary` et de rubriques en markdown libre. Les rubriques recommandées varient selon le type (voir tableaux ci-dessous), mais l'auteur peut les adapter.
 
-### Pour un Outil :
+### Structure générale :
 
 ```markdown
 ---
 action: create
-title: "Nom de l'outil"
+title: "Nom du modèle"
 type: outil
 status: brouillon
 version: "1.0.0"
 complexity: débutant | intermédiaire | avancé
+author: "Nom de l'auteur"
 tags:
   - tag1
   - tag2
 ---
 
-## Description
+## Summary
 
-[1 à 3 phrases]
-
-## Sections
-
-### structure
-
-[Architecture ou composants]
-
-### protocol
-
-[Étapes concrètes numérotées]
-
-### active_principle
-
-[Le mécanisme central qui produit le changement]
-
-### vigilance
-
-[Contre-indications, erreurs fréquentes, limites]
-
-### variants
-
-[Adaptations connues]
-
-### prerequisites
-
-[Prérequis pour utiliser l'outil]
-```
-
-### Pour une Problématique / Expérience :
-
-```markdown
----
-action: create
-title: "Nom de l'expérience"
-type: problematique
-status: brouillon
-version: "1.0.0"
-complexity: débutant | intermédiaire | avancé
-tags:
-  - tag1
-  - tag2
----
+Présentation courte (1 à 3 phrases).
 
 ## Description
 
-[1 à 3 phrases]
+Ce que c'est, contexte d'utilisation.
 
-## Sections
+## Protocole détaillé
 
-### patterns
+Étapes concrètes numérotées.
 
-[Patterns comportementaux observés]
+## Principe actif
 
-### signals
+Le mécanisme central qui produit le changement.
 
-[Signaux reconnaissables : corporels, verbaux, comportementaux]
+## Points de vigilance
 
-### intervention_points
+Contre-indications, erreurs fréquentes, limites.
 
-[Points d'intervention pour modifier l'expérience]
+## Prérequis
 
-### structure
+Connaissances ou compétences nécessaires.
 
-[Architecture identifiable si pertinent]
+## Sources
 
-### prerequisites
-
-[Compétences nécessaires]
+Références, publications.
 ```
 
-### Pour une Approche :
+Les rubriques recommandées sont : Description, Protocole détaillé, Principe actif, Points de vigilance, Prérequis, Sources. Elles sont flexibles — l'auteur peut en ajouter ou en retirer selon le contenu.
 
-```markdown
----
-action: create
-title: "Nom de l'approche"
-type: approche
-status: brouillon
-version: "1.0.0"
-complexity: débutant | intermédiaire | avancé
-tags:
-  - tag1
-  - tag2
----
+N'inclure que les rubriques pour lesquelles il y a du contenu réel. Mieux vaut 3 rubriques bien remplies que 6 rubriques creuses.
 
-## Description
-
-[1 à 3 phrases]
-
-## Sections
-
-### philosophy
-
-[Vision fondatrice, principes, axiomes]
-
-### creators
-
-[Qui, quand, contexte de création, influences]
-
-### structure
-
-[Comment l'approche s'articule, ses composants]
-
-### toolkit
-
-[Outils et modèles associés]
-
-### prerequisites
-
-[Formations ou expériences recommandées]
-```
-
-N'inclure que les sections pour lesquelles il y a du contenu réel. Mieux vaut 3 sections bien remplies que 6 sections creuses.
-
-## Sections par type
+## Rubriques conseillées par type
 
 ### Outil
 
-| Section | Clé | Quand l'inclure |
-|---------|-----|-----------------|
-| Structure du modèle | `structure` | Si l'outil a des composants ou une architecture |
-| Protocole détaillé | `protocol` | **Essentiel** — les étapes concrètes |
-| Principe actif | `active_principle` | **Essentiel** — le mécanisme de changement |
-| Points de vigilance | `vigilance` | **Essentiel** — contre-indications, erreurs, limites |
-| Variantes connues | `variants` | Si des adaptations existent |
-| Prérequis | `prerequisites` | Conditions nécessaires pour utiliser l'outil |
+| Rubrique | Quand l'inclure |
+|----------|-----------------|
+| Description | Ce que c'est, contexte d'utilisation |
+| Protocole détaillé | **Essentiel** — les étapes concrètes |
+| Principe actif | **Essentiel** — le mécanisme de changement |
+| Points de vigilance | **Essentiel** — contre-indications, erreurs, limites |
+| Variantes | Si des adaptations existent |
+| Prérequis | Conditions nécessaires pour utiliser l'outil |
+| Sources | Références, publications |
 
 ### Problématique / Expérience
 
-| Section | Clé | Quand l'inclure |
-|---------|-----|-----------------|
-| Description du phénomène | `description` | Décrire l'expérience telle qu'elle se présente |
-| Patterns identifiés | `patterns` | **Essentiel** — ce qu'on observe concrètement |
-| Signaux reconnaissables | `signals` | **Essentiel** — indices corporels, verbaux, comportementaux |
-| Points d'intervention | `intervention_points` | **Essentiel** — où agir pour modifier l'expérience |
-| Structure | `structure` | Si la problématique a une architecture identifiable |
-| Prérequis | `prerequisites` | Compétences nécessaires pour travailler avec |
+| Rubrique | Quand l'inclure |
+|----------|-----------------|
+| Description | Décrire l'expérience telle qu'elle se présente |
+| Patterns identifiés | **Essentiel** — ce qu'on observe concrètement |
+| Signaux reconnaissables | **Essentiel** — indices corporels, verbaux, comportementaux |
+| Points d'intervention | **Essentiel** — où agir pour modifier l'expérience |
+| Structure | Si la problématique a une architecture identifiable |
+| Prérequis | Compétences nécessaires pour travailler avec |
+| Sources | Références, publications |
 
 ### Approche
 
-| Section | Clé | Quand l'inclure |
-|---------|-----|-----------------|
-| Philosophie et principes | `philosophy` | **Essentiel** — la vision fondatrice |
-| Créateurs | `creators` | **Essentiel** — qui, quand, pourquoi |
-| Boîte à outils | `toolkit` | **Essentiel** — les modèles et techniques associés |
-| Structure | `structure` | Comment l'approche s'articule |
-| Prérequis | `prerequisites` | Formations ou expériences recommandées |
+| Rubrique | Quand l'inclure |
+|----------|-----------------|
+| Description | La vision d'ensemble de l'approche |
+| Philosophie et principes | **Essentiel** — la vision fondatrice |
+| Créateurs | **Essentiel** — qui, quand, pourquoi |
+| Boîte à outils | **Essentiel** — les modèles et techniques associés |
+| Prérequis | Formations ou expériences recommandées |
+| Sources | Références, publications |
 
 ## Règles de rédaction
 
@@ -229,13 +149,13 @@ N'inclure que les sections pour lesquelles il y a du contenu réel. Mieux vaut 3
 - **Garder un ton professionnel et neutre**, orienté praticien
 
 ### Ce qu'il ne faut PAS faire
-- **Ne pas inventer de contenu** : si l'info n'est pas dans la source, omettre la section. Ne JAMAIS fabriquer un protocole, des prérequis ou des fondements théoriques.
+- **Ne pas inventer de contenu** : si l'info n'est pas dans la source, omettre la rubrique. Ne JAMAIS fabriquer un protocole, des prérequis ou des fondements théoriques.
 - **Ne pas sur-rédiger** : pas d'introductions, pas de conclusions, pas de "En résumé..."
-- **Ne pas dupliquer l'information** entre sections
+- **Ne pas dupliquer l'information** entre rubriques
 
 ### Longueur cible
-- **Description** : 1 à 3 phrases (~100-500 caractères)
-- **Sections** : 3 à 15 lignes chacune
+- **Summary** : 1 à 3 phrases (~100-500 caractères)
+- **Rubriques** : 3 à 15 lignes chacune
 
 ### Tags
 - 3 à 8 tags maximum
@@ -269,6 +189,7 @@ type: outil
 status: brouillon
 version: "1.0.0"
 complexity: avancé
+author: "Nom de l'auteur"
 tags:
   - SCORE
   - systémique
@@ -277,13 +198,11 @@ tags:
   - autopoïèse
 ---
 
-## Description
+## Summary
 
 Variante du SCORE qui remplace la notion de cause par deux types de conditions (initiales et de maintien), passant d'un paradigme de causalité linéaire à un paradigme systémique autopoïétique.
 
-## Sections
-
-### structure
+## Description
 
 Le SOCCER remplace le C (Cause) du SCORE par deux types de conditions :
 
@@ -292,7 +211,7 @@ Le SOCCER remplace le C (Cause) du SCORE par deux types de conditions :
 
 Ce passage de la cause aux conditions opère un changement de paradigme : de la causalité linéaire (niveau d'apprentissage 1 de Bateson) vers un paradigme systémique autopoïétique (niveau 2).
 
-### protocol
+## Protocole détaillé
 
 1. **S — Symptôme** : Quel est le problème ?
 2. **O — Objectif** : Que voulez-vous à la place ?
@@ -301,11 +220,11 @@ Ce passage de la cause aux conditions opère un changement de paradigme : de la 
 5. **E — Effets** : Quels effets le changement produira-t-il ?
 6. **R — Ressources** : De quoi avez-vous besoin pour changer ?
 
-### active_principle
+## Principe actif
 
 Le déplacement de la cause vers les conditions de maintien restitue au système sa capacité d'auto-organisation. Au lieu de chercher "pourquoi" (causalité linéaire), on cherche "qu'est-ce qui maintient" (homéostasie), ce qui ouvre directement des leviers d'intervention.
 
-### prerequisites
+## Prérequis
 
 Connaissance du modèle SCORE. Notions de systémique et d'homéostasie. Familiarité avec les niveaux d'apprentissage de Gregory Bateson.
 ```

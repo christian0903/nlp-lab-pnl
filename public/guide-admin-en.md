@@ -161,7 +161,7 @@ Note: you cannot change your own role from this page.
 
 1. Paste the markdown file (or click **Load example**)
 2. Click **Preview**
-3. Verify: Create/Update badge, metadata, sections
+3. Verify: Create/Update badge, metadata, summary and description
 4. Click **Create** or **Update**
 
 ### Automatic detection
@@ -186,56 +186,49 @@ type: problematique | outil | approche
 status: brouillon | en_revision | en_test | publie | en_evolution
 version: "1.0.0"
 complexity: débutant | intermédiaire | avancé
+author: "Author name"
 tags:
   - tag1
   - tag2
 ---
 
+## Summary
+
+Short presentation of the model (1-3 sentences).
+
 ## Description
 
-Concise description of the model.
+What it is, when to use it.
 
-## Sections
+## Protocole détaillé
 
-### protocol
+Concrete numbered steps.
 
-Protocol steps.
+## Principe actif
 
-### active_principle
+Core mechanism that makes it work.
 
-Core mechanism of change.
+## Points de vigilance
+
+What to watch for, contraindications.
+
+## Prérequis
+
+Required knowledge or conditions.
+
+## Sources
+
+References, authors, publications.
 ```
 
-### Available sections
+### File content
 
-| Section | When to use |
-|---------|------------|
-| `structure` | Architecture or components of the model |
-| `protocol` | Execution steps |
-| `active_principle` | Core mechanism that produces change |
-| `patterns` | Observed behavioral patterns |
-| `signals` | Recognizable signals (body language, verbal) |
-| `intervention_points` | Intervention points |
-| `vigilance` | Contraindications, common mistakes |
-| `variants` | Known variants and adaptations |
-| `philosophy` | Theoretical foundations |
-| `creators` | Creators of the approach |
-| `prerequisites` | Prerequisites |
-| `toolkit` | Associated tools and techniques |
+The content of a file consists of two parts:
 
-### Relevance by type
+- **`## Summary`**: short presentation (1-3 sentences), displayed as the model's summary.
+- **Description**: all remaining markdown content after the Summary. The headings above (Description, Protocole détaillé, Principe actif, etc.) are **suggestions** — users can add, remove or modify them freely to suit the model's needs.
 
-| Section | Experience | Tool | Approach |
-|---------|:---:|:---:|:---:|
-| `protocol` | Rare | **Essential** | Optional |
-| `active_principle` | Rare | **Essential** | Optional |
-| `patterns` | **Essential** | Optional | Optional |
-| `signals` | **Essential** | Optional | Rare |
-| `intervention_points` | **Essential** | Optional | Rare |
-| `vigilance` | Optional | **Essential** | Optional |
-| `philosophy` | Optional | Rare | **Essential** |
-| `creators` | Rare | Rare | **Essential** |
-| `toolkit` | Rare | Optional | **Essential** |
+The description is a single markdown field with no imposed structure. The recommended headings serve as a guide to organize content, but are not mandatory.
 
 ### Versioning
 
@@ -393,6 +386,18 @@ Four mechanisms protect the registration form:
 | **Name validation** | Rejects suspicious names (numbers only, URLs, special characters) |
 | **Email confirmation** | The account is only active after clicking the confirmation link in the email (setting "Confirm email" in Supabase → Authentication → Providers → Email) |
 | **Restricted access** | Only the homepage, login page and donation page are accessible without an account. All other pages redirect to login |
+
+### Author vs Uploader
+
+The `author_name` field identifies the model's author (free text), distinct from the uploader (the person who loaded the model, identified by `user_id`). Both are displayed on the model page.
+
+### Preview popup
+
+In edit mode, a **Preview** button opens a modal showing how the model will look with rendered markdown. This allows checking the formatting before saving.
+
+### Version management
+
+When saving with a changed version number, the previous version is archived as a snapshot. An optional **"Version notes"** field describes what changed. Archived versions are viewable in a **Versions** tab. Admins can delete archived versions.
 
 ### Resources article management
 

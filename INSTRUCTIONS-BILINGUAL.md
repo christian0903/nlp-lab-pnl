@@ -136,7 +136,7 @@ Dans `Auth.tsx`, adapter la question anti-bot :
 |---------|------|
 | `supabase/migrations/00_full_schema.sql` | Schéma complet avec colonnes bilingues |
 | `donnees-modeles/skill-fiche-modele.md` | Skill de création de fiches |
-| `src/lib/parseModelFiche.ts` | Parser d'import (accepte titres FR et clés techniques) |
+| `src/lib/parseModelFiche.ts` | Parser d'import (Summary + description markdown) |
 | `public/guide-utilisateur.md` | Doc utilisateur FR (à dupliquer en EN) |
 | `public/guide-admin.md` | Doc admin FR (à dupliquer en EN) |
 

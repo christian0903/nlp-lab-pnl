@@ -190,11 +190,11 @@ La page de détail d'un modèle est organisée en onglets.
 
 ### En-tête
 
-Affiche le titre, la description, les badges (type, langue, statut, version), les tags, l'auteur (cliquable pour voir son profil), l'approche associée et les compteurs (vues, variantes, discussions).
+Affiche le titre, la description, les badges (type, langue, statut, version), les tags, le nom de l'auteur du modèle (`author_name`) affiché en évidence, puis **"Chargé par"** (le membre qui a publié la fiche) avec la date en dessous. L'approche associée et les compteurs (vues, variantes, discussions) complètent l'en-tête.
 
 Pour les modèles de type **Approche**, un bloc liste tous les outils et expériences rattachés à cette approche.
 
-Si vous êtes l'auteur du modèle, un bouton **Modifier** apparaît pour éditer les champs.
+Si vous êtes l'auteur du modèle, un bouton **Modifier** apparaît pour éditer les champs. En mode édition, un bouton **Prévisualiser** ouvre une popup affichant le rendu complet du modèle avant de sauvegarder.
 
 ### Traductions
 
@@ -202,15 +202,11 @@ Si le modèle existe dans l'autre langue, un lien **"View in English"** ou **"Vo
 
 ### Onglet Présentation
 
-Affiche les sections du modèle avec **rendu Markdown**. Quand un modèle a 3 sections ou plus, elles sont organisées en **sous-onglets cliquables** pour faciliter la lecture.
+Affiche la description complète du modèle avec **rendu Markdown**. La description peut inclure des titres comme Description, Protocole détaillé, Principe actif, Points de vigilance, Prérequis, Sources.
 
-Les sections disponibles dépendent du type :
+### Onglet Versions
 
-| Type | Sections |
-|------|----------|
-| **Outil** | Protocole, Principe actif, Points de vigilance, Variantes, Prérequis |
-| **Problématique** | Patterns, Signaux reconnaissables, Points d'intervention, Prérequis |
-| **Approche** | Philosophie, Créateurs, Boîte à outils, Prérequis |
+Affiche les **versions archivées** du modèle. Cliquez sur une version pour consulter son contenu complet dans une popup. Les versions sont créées lorsque l'auteur change le numéro de version lors d'une modification.
 
 ### Onglet Liens
 
@@ -242,10 +238,11 @@ Accessible via le menu **Contribuer** (nécessite d'être connecté).
 |-------|-------------|:-----------:|
 | Titre | Nom du modèle (max 200 car.) | Oui |
 | Type | Problématique, Outil ou Approche | Oui |
+| Auteur | Nom de l'auteur du modèle (texte libre) | Non |
 | Complexité | Débutant, Intermédiaire ou Avancé | Non |
 | Approche associée | Rattacher à une approche existante (outils et problématiques) | Non |
-| Description | Présentation du modèle (max 5000 car.) | Oui |
-| Sections | Dépendent du type choisi | Non |
+| Présentation courte | Résumé du modèle (max 2000 car.) | Oui |
+| Description | Contenu complet avec titres recommandés pré-remplis (Description, Protocole détaillé, Principe actif, Points de vigilance, Prérequis, Sources). Supporte le Markdown (max 50000 car.) | Non |
 | Tags | Mots-clés séparés par des virgules | Non |
 
 ### Workflow de publication

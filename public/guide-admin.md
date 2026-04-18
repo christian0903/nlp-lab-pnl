@@ -161,7 +161,7 @@ Note : impossible de modifier son propre rôle depuis cette page.
 
 1. Collez la fiche markdown (ou cliquez **Charger l'exemple**)
 2. Cliquez **Prévisualiser**
-3. Vérifiez : badge Création/Mise à jour, métadonnées, sections
+3. Vérifiez : badge Création/Mise à jour, métadonnées, résumé et description
 4. Cliquez **Créer** ou **Mettre à jour**
 
 ### Détection automatique
@@ -186,56 +186,49 @@ type: problematique | outil | approche
 status: brouillon | en_revision | en_test | publie | en_evolution
 version: "1.0.0"
 complexity: débutant | intermédiaire | avancé
+author: "Nom de l'auteur"
 tags:
   - tag1
   - tag2
 ---
 
+## Summary
+
+Présentation courte du modèle (1 à 3 phrases).
+
 ## Description
 
-Description concise du modèle.
+Ce que c'est, quand l'utiliser.
 
-## Sections
+## Protocole détaillé
 
-### protocol
+Étapes concrètes numérotées.
 
-Étapes du protocole.
+## Principe actif
 
-### active_principle
+Mécanisme central qui fait que ça fonctionne.
 
-Mécanisme central du changement.
+## Points de vigilance
+
+Ce à quoi faire attention, contre-indications.
+
+## Prérequis
+
+Connaissances ou conditions nécessaires.
+
+## Sources
+
+Références, auteurs, publications.
 ```
 
-### Sections disponibles
+### Contenu des fiches
 
-| Section | Quand l'utiliser |
-|---------|-----------------|
-| `structure` | Architecture ou composants du modèle |
-| `protocol` | Étapes d'exécution |
-| `active_principle` | Mécanisme central qui produit le changement |
-| `patterns` | Patterns comportementaux observés |
-| `signals` | Signaux reconnaissables (corporels, verbaux) |
-| `intervention_points` | Points d'intervention |
-| `vigilance` | Contre-indications, erreurs fréquentes |
-| `variants` | Variantes connues et adaptations |
-| `philosophy` | Fondements théoriques |
-| `creators` | Créateurs de l'approche |
-| `prerequisites` | Conditions préalables |
-| `toolkit` | Outils et techniques associés |
+Le contenu d'une fiche se compose de deux parties :
 
-### Pertinence par type
+- **`## Summary`** : présentation courte (1 à 3 phrases), affichée comme résumé du modèle.
+- **Description** : tout le reste du contenu markdown après le Summary. Les titres ci-dessus (Description, Protocole détaillé, Principe actif, etc.) sont des **suggestions** — l'utilisateur peut les ajouter, retirer ou modifier librement selon les besoins du modèle.
 
-| Section | Problématique | Outil | Approche |
-|---------|:---:|:---:|:---:|
-| `protocol` | Rare | **Essentiel** | Optionnel |
-| `active_principle` | Rare | **Essentiel** | Optionnel |
-| `patterns` | **Essentiel** | Optionnel | Optionnel |
-| `signals` | **Essentiel** | Optionnel | Rare |
-| `intervention_points` | **Essentiel** | Optionnel | Rare |
-| `vigilance` | Optionnel | **Essentiel** | Optionnel |
-| `philosophy` | Optionnel | Rare | **Essentiel** |
-| `creators` | Rare | Rare | **Essentiel** |
-| `toolkit` | Rare | Optionnel | **Essentiel** |
+La description est un champ markdown unique, sans structure imposée. Les titres recommandés servent de guide pour organiser le contenu, mais ne sont pas obligatoires.
 
 ### Versionnement
 
@@ -393,6 +386,18 @@ Quatre mécanismes protègent le formulaire d'inscription :
 | **Validation du nom** | Rejette les noms suspects (chiffres seuls, URLs, caractères spéciaux) |
 | **Confirmation email** | Le compte n'est actif qu'après clic sur le lien de confirmation dans l'email (paramètre "Confirm email" dans Supabase → Authentication → Providers → Email) |
 | **Accès restreint** | Seules la page d'accueil, la page de connexion et la page de dons sont accessibles sans compte. Toutes les autres pages redirigent vers la connexion |
+
+### Auteur vs Chargeur
+
+Le champ `author_name` identifie l'auteur du modèle (texte libre), distinct du chargeur (la personne qui a importé le modèle, identifiée par `user_id`). Les deux sont affichés sur la page du modèle.
+
+### Popup de prévisualisation
+
+En mode édition, un bouton **Prévisualiser** ouvre une modale affichant le rendu final du modèle avec le markdown interprété. Cela permet de vérifier la mise en forme avant de sauvegarder.
+
+### Gestion des versions
+
+Lorsqu'on sauvegarde avec un numéro de version modifié, la version précédente est archivée sous forme de snapshot. Un champ optionnel **"Notes de version"** permet de décrire ce qui a changé. Les versions archivées sont consultables dans un onglet **Versions**. Les administrateurs peuvent supprimer les versions archivées.
 
 ### Gestion des articles Ressources
 

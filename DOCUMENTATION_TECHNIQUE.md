@@ -62,7 +62,7 @@ L'application est entièrement en **français** et cible un public de praticiens
 ## 3. Architecture du projet
 
 ```
-pnl-lab-collective/
+nlp-lab-pnl/
 ├── src/
 │   ├── App.tsx                    # Routage principal (React Router)
 │   ├── main.tsx                   # Point d'entrée React
@@ -103,7 +103,8 @@ pnl-lab-collective/
 │   │   └── use-toast.ts           # Gestion des toasts
 │   │
 │   ├── lib/
-│   │   └── utils.ts               # Utilitaire cn() (clsx + tailwind-merge)
+│   │   ├── utils.ts               # Utilitaire cn() (clsx + tailwind-merge)
+│   │   └── parseModelFiche.ts     # Parsing des fiches modèles
 │   │
 │   ├── types/
 │   │   └── model.ts               # Interfaces TypeScript des modèles
@@ -152,22 +153,31 @@ pnl-lab-collective/
 | Colonne | Type | Description |
 |---------|------|-------------|
 | `id` | UUID (PK) | Identifiant unique |
-| `user_id` | UUID (FK → auth.users) | Auteur |
+| `user_id` | UUID (FK → auth.users) | Utilisateur ayant créé/importé le modèle |
 | `title` | TEXT | Titre du modèle |
-| `description` | TEXT | Description |
+| `summary` | TEXT | Courte présentation du modèle (markdown) |
+| `description` | TEXT | Contenu complet en markdown (rubriques recommandées : Description, Protocole détaillé, Principe actif, Points de vigilance, Prérequis, Sources) |
+| `author_name` | TEXT | Auteur du modèle (texte libre, distinct de user_id) |
 | `type` | ENUM | `problematique` \| `outil` \| `approche` |
 | `status` | ENUM | `brouillon` \| `en_revision` \| `en_test` \| `publie` \| `en_evolution` |
 | `version` | TEXT | Version sémantique (ex: 1.0.0) |
 | `complexity` | TEXT | Niveau de complexité |
 | `tags` | TEXT[] | Étiquettes |
-| `sections` | JSONB | Contenu structuré du modèle |
+| `links` | JSONB | Liens externes associés |
+| `lang` | TEXT | Langue du modèle (`fr` ou `en`) |
+| `translation_of` | UUID (FK → models, nullable) | Référence au modèle original si c'est une traduction |
+| `approche_id` | UUID (FK → models, nullable) | Lien vers un modèle de type approche |
+| `parent_model_id` | UUID (FK → models, nullable) | Lien vers le modèle parent (pour les variantes) |
 | `changelog` | JSONB | Historique des versions |
 | `approved` | BOOLEAN | Approuvé par un admin |
 | `views_count` | INTEGER | Nombre de vues |
 | `variations_count` | INTEGER | Nombre de variations |
 | `feedback_count` | INTEGER | Nombre de feedbacks |
 
-**`model_variations`** — Variations de modèles
+**`model_variations`** — Variations de modèles (table historique)
+
+> **Note :** Les variantes sont désormais gérées comme des modèles à part entière avec le champ `parent_model_id` pointant vers le modèle parent. Cette table est conservée pour compatibilité mais n'est plus utilisée pour les nouvelles variantes.
+
 | Colonne | Type | Description |
 |---------|------|-------------|
 | `id` | UUID (PK) | Identifiant |
@@ -175,6 +185,28 @@ pnl-lab-collective/
 | `user_id` | UUID (FK → auth.users) | Auteur de la variation |
 | `title` | TEXT | Titre |
 | `description` | TEXT | Description de la variation |
+
+**`model_versions`** — Historique des versions (snapshots)
+| Colonne | Type | Description |
+|---------|------|-------------|
+| `id` | UUID (PK) | Identifiant |
+| `model_id` | UUID (FK → models) | Modèle concerné |
+| `version` | TEXT | Numéro de version (UNIQUE avec model_id) |
+| `title` | TEXT | Titre au moment du snapshot |
+| `summary` | TEXT | Résumé au moment du snapshot |
+| `description` | TEXT | Contenu complet au moment du snapshot |
+| `author_name` | TEXT | Auteur au moment du snapshot |
+| `type` | ENUM | Type du modèle |
+| `status` | ENUM | Statut au moment du snapshot |
+| `complexity` | TEXT | Complexité |
+| `tags` | TEXT[] | Étiquettes |
+| `links` | JSONB | Liens externes |
+| `changelog` | JSONB | Historique des changements |
+| `notes` | TEXT | Notes de version (ce qui a changé) |
+| `created_by` | UUID (FK → auth.users) | Auteur du snapshot |
+| `created_at` | TIMESTAMPTZ | Date de création du snapshot |
+
+Contrainte : `UNIQUE(model_id, version)` — un seul snapshot par numéro de version.
 
 **`model_feedbacks`** — Retours sur les modèles
 | Colonne | Type | Description |
@@ -215,6 +247,12 @@ pnl-lab-collective/
 | `user_id` | UUID (FK → auth.users) | Auteur |
 | `content` | TEXT | Contenu du commentaire |
 
+**`post_model_links`** — Liens M:N entre posts et modèles
+| Colonne | Type | Description |
+|---------|------|-------------|
+| `post_id` | UUID (FK → forum_posts) | Publication |
+| `model_id` | UUID (FK → models) | Modèle lié |
+
 **`post_likes`** — Likes des publications
 | Colonne | Type | Description |
 |---------|------|-------------|
@@ -249,11 +287,17 @@ pnl-lab-collective/
 
 ```
 auth.users ──┬── profiles (1:1)
-             ├── models (1:N) ──┬── model_variations (1:N)
+             ├── models (1:N) ──┬── model_variations (1:N, historique)
+             │                  ├── model_versions (1:N, snapshots)
              │                  ├── model_feedbacks (1:N)
-             │                  └── model_notifications (1:N)
+             │                  ├── model_notifications (1:N)
+             │                  └── post_model_links (M:N ↔ forum_posts)
+             │   models ──┬── parent_model_id (auto-référence, variantes)
+             │            ├── translation_of (auto-référence, traductions)
+             │            └── approche_id (auto-référence, lien approche)
              ├── forum_posts (1:N) ──┬── post_comments (1:N)
-             │                       └── post_likes (1:N)
+             │                       ├── post_likes (1:N)
+             │                       └── post_model_links (M:N ↔ models)
              ├── events (1:N) ── event_registrations (N:N)
              └── user_roles (1:N)
 ```
@@ -349,6 +393,7 @@ Vérifie le rôle admin via un appel RPC Supabase (`has_role('admin')`) et retou
 | `/events` | `Events` | Public | Événements avec inscription |
 | `/resources` | `Resources` | Public | Glossaire PNL, guide de modélisation, critères qualité |
 | `/admin` | `Admin` | Admin | Approbation modèles, gestion rôles, statistiques |
+| `/admin/import` | `ImportModel` | Admin | Import de modèles |
 | `/auth` | `Auth` | Public | Connexion / inscription / mot de passe oublié |
 | `/profile` | `Profile` | Authentifié | Profil utilisateur (avatar, bio, expertise) |
 | `/reset-password` | `ResetPassword` | Public | Réinitialisation de mot de passe |
@@ -369,6 +414,8 @@ Vérifie le rôle admin via un appel RPC Supabase (`has_role('admin')`) et retou
 | **StatCard** | Carte statistique (icône + label + valeur). Utilisée sur la page d'accueil et le dashboard admin. |
 | **StatusBadge** | Badge coloré indiquant le statut d'un modèle. |
 | **TypeBadge** | Badge coloré indiquant le type d'un modèle (Problématique, Outil, Approche). |
+| **ImageUploader** | Composant d'upload d'images (avatars, illustrations). |
+| **LangBadge** | Badge indiquant la langue du modèle (FR / EN). |
 
 ### Composants UI (`src/components/ui/`)
 
@@ -478,12 +525,15 @@ Action utilisateur (feedback, variation, post, changement statut)
 ### Versionnement
 
 - Format **sémantique** (ex: `1.0.0`, `1.1.0`, `2.0.0`)
-- **Changelog** stocké en JSONB : version, date, description des changements, auteur
+- Les versions sont stockées comme **snapshots** dans la table `model_versions`. Un snapshot est créé uniquement lorsque le numéro de version est modifié.
+- Chaque snapshot inclut l'intégralité des champs du modèle à cet instant, ainsi que des **notes de version** optionnelles décrivant ce qui a changé.
 - Historique complet consultable sur la page de détail
 
 ### Système de contribution
 
-Le formulaire de contribution (`Contribute.tsx`) adapte dynamiquement ses sections en fonction du type de modèle sélectionné. Les sections sont stockées en JSONB.
+Le formulaire de contribution (`Contribute.tsx`) utilise un champ `description` en markdown. Ce champ est pré-rempli avec les rubriques recommandées (Description, Protocole détaillé, Principe actif, Points de vigilance, Prérequis, Sources). Le nom de l'auteur (`author_name`) est un champ texte libre, distinct de l'utilisateur connecté qui est l'importateur/créateur de la fiche.
+
+**Preview :** Le mode édition dispose d'une popup de prévisualisation permettant de voir le rendu markdown avant de sauvegarder.
 
 ### Forum communautaire
 
@@ -564,7 +614,9 @@ npm run deploy:zip   # Script de déploiement
 
 ### Déploiement
 
-L'application est déployée sur **O2Switch** (hébergement mutualisé). La procédure est documentée dans `DEPLOY_O2SWITCH.md`.
+L'application est déployée sur un **VPS OVH** avec **Nginx**. Le déploiement s'effectue via le script `scripts/deploy.sh` (build + rsync + copie vers `/var/www/nlp-lab-pnl`).
+
+**URL de production :** https://lab.atelierpnl.eu
 
 ---
 
@@ -621,4 +673,4 @@ npm run test:watch   # Mode surveillance
 
 ---
 
-*Documentation générée le 13 mars 2026 — PNL Lab R&D Collective*
+*Documentation générée le 18 avril 2026 — PNL Lab R&D Collective*

@@ -190,11 +190,11 @@ The model detail page is organized into tabs.
 
 ### Header
 
-Displays the title, description, badges (type, language, status, version), tags, author (clickable to view their profile), associated approach and counters (views, variants, discussions).
+Displays the title, description, badges (type, language, status, version), tags, the model's author name (`author_name`) shown prominently, then **"Uploaded by"** (the member who published the sheet) with the date below. The associated approach and counters (views, variants, discussions) complete the header.
 
 For **Approach** type models, a block lists all tools and experiences linked to that approach.
 
-If you are the model's author, an **Edit** button appears to edit the fields.
+If you are the model's author, an **Edit** button appears to edit the fields. In edit mode, a **Preview** button opens a popup showing the fully rendered model before saving.
 
 ### Translations
 
@@ -202,15 +202,11 @@ If the model exists in the other language, a **"View in English"** or **"Voir en
 
 ### Presentation tab
 
-Displays the model's sections with **Markdown rendering**. When a model has 3 or more sections, they are organized into **clickable sub-tabs** for easier reading.
+Displays the full description with **Markdown rendering**. The description may include headings like Description, Detailed protocol, Active principle, Points of vigilance, Prerequisites, Sources.
 
-The available sections depend on the type:
+### Versions tab
 
-| Type | Sections |
-|------|----------|
-| **Tool** | Protocol, Active principle, Points of vigilance, Known variants, Prerequisites |
-| **Experience** | Patterns, Recognizable signals, Intervention points, Prerequisites |
-| **Approach** | Philosophy, Creators, Toolkit, Prerequisites |
+Displays **archived versions** of the model. Click on a version to view its full content in a popup. Versions are created when the author changes the version number during editing.
 
 ### Links tab
 
@@ -242,10 +238,11 @@ Accessible via the **Contribute** menu (requires being signed in).
 |-------|-------------|:--------:|
 | Title | Model name (max 200 chars.) | Yes |
 | Type | Experience, Tool or Approach | Yes |
+| Author | Name of the model's author (free text) | No |
 | Complexity | Beginner, Intermediate or Advanced | No |
 | Associated approach | Link to an existing approach (tools and experiences) | No |
-| Description | Model overview (max 5000 chars.) | Yes |
-| Sections | Depend on the chosen type | No |
+| Short presentation | Summary of the model (max 2000 chars.) | Yes |
+| Description | Full content with pre-filled recommended headings (Description, Detailed protocol, Active principle, Points of vigilance, Prerequisites, Sources). Supports Markdown (max 50000 chars.) | No |
 | Tags | Keywords separated by commas | No |
 
 ### Publication workflow

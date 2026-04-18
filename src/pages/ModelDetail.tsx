@@ -66,6 +66,7 @@ const ModelDetail = () => {
   const [approcheName, setApprocheName] = useState('');
   const [allUsers, setAllUsers] = useState<{ user_id: string; display_name: string }[]>([]);
   const [editSubmitting, setEditSubmitting] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const [editTranslationId, setEditTranslationId] = useState<string>('');
   const [editIsOriginal, setEditIsOriginal] = useState(true);
   const [otherLangModels, setOtherLangModels] = useState<{ id: string; title: string }[]>([]);
@@ -734,21 +735,23 @@ const ModelDetail = () => {
             <div className="flex flex-wrap gap-3 sm:gap-5 text-sm text-muted-foreground">
               {model.author_name && (
                 <span className="flex items-center gap-1.5 font-medium text-foreground">
-                  <User className="h-4 w-4" /> {model.author_name}
+                  <User className="h-4 w-4" /> {t('modelDetail.authorLabel')} : {model.author_name}
                 </span>
               )}
-              <Link to={`/profil/${model.user_id}`} className="flex items-center gap-1.5 hover:text-secondary transition-colors text-xs">
-                {t('modelDetail.uploadedBy')} {uploaderName || t('common.anonymous')}
-              </Link>
               {approcheName && (
                 <Link to={`/model/${model.approche_id}`} className="flex items-center gap-1.5 text-secondary hover:underline">
                   <Sparkles className="h-4 w-4" /> {approcheName}
                 </Link>
               )}
-              <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {new Date(model.updated_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
               <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> {model.views_count}</span>
               <span className="flex items-center gap-1.5"><GitBranch className="h-4 w-4" /> {childModels.length} {t('modelDetail.variants').toLowerCase()}</span>
               <span className="flex items-center gap-1.5"><MessageSquare className="h-4 w-4" /> {linkedPosts.length + feedbacks.length} {t('modelDetail.discussions').toLowerCase()}</span>
+            </div>
+            <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
+              <Link to={`/profil/${model.user_id}`} className="flex items-center gap-1.5 hover:text-secondary transition-colors">
+                <Upload className="h-3.5 w-3.5" /> {t('modelDetail.uploadedBy')} {uploaderName || t('common.anonymous')}
+              </Link>
+              <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {new Date(model.updated_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR')}</span>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-1.5">
               {model.tags.map(tag => (
@@ -799,6 +802,10 @@ const ModelDetail = () => {
                 <button onClick={cancelEditing}
                   className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
                   {t('common.cancel')}
+                </button>
+                <button onClick={() => setPreviewing(p => !p)}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${previewing ? 'border-secondary bg-secondary/10 text-secondary' : 'border-border text-muted-foreground hover:text-foreground'}`}>
+                  <Eye className="h-4 w-4" /> {t('common.preview')}
                 </button>
                 <button onClick={saveEditing} disabled={editSubmitting}
                   className="inline-flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-all hover:brightness-110 disabled:opacity-50">
@@ -914,6 +921,7 @@ const ModelDetail = () => {
               value={editDescription}
               onChange={setEditDescription}
               maxLength={50000}
+              rows={25}
               modelId={model?.id}
             />
 
@@ -1358,6 +1366,54 @@ const ModelDetail = () => {
           {t('modelDetail.donationSuffix')}
         </p>
       </div>
+
+      {/* Preview modal */}
+      {previewing && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:p-8" onClick={() => setPreviewing(false)}>
+          <div className="relative my-8 w-full max-w-3xl rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setPreviewing(false)} className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <TypeBadge type={editType as any} />
+              <LangBadge lang={model.lang || 'fr'} />
+              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-mono font-medium text-muted-foreground">v{editVersion}</span>
+              <span className="text-xs text-muted-foreground">{editComplexity}</span>
+            </div>
+
+            <h2 className="mb-3 font-display text-2xl sm:text-3xl font-bold text-foreground">{editTitle || t('modelDetail.titleLabel')}</h2>
+
+            {editSummary && (
+              <div className="mb-5 prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{editSummary}</ReactMarkdown>
+              </div>
+            )}
+
+            <div className="mb-4 flex flex-wrap gap-3 text-sm text-muted-foreground">
+              {editAuthorName && (
+                <span className="flex items-center gap-1.5 font-medium text-foreground">
+                  <User className="h-4 w-4" /> {t('modelDetail.authorLabel')} : {editAuthorName}
+                </span>
+              )}
+            </div>
+
+            {editTagsInput && (
+              <div className="mb-5 flex flex-wrap gap-1.5">
+                {editTagsInput.split(',').map(tag => tag.trim()).filter(Boolean).map(tag => (
+                  <span key={tag} className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">{tag}</span>
+                ))}
+              </div>
+            )}
+
+            {editDescription && (
+              <div className="prose prose-sm dark:prose-invert max-w-none border-t border-border pt-5">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{editDescription}</ReactMarkdown>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1366,13 +1422,14 @@ const Placeholder = ({ text }: { text: string }) => (
   <div className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">{text}</div>
 );
 
-const MarkdownField = ({ label, value, onChange, placeholder, maxLength, modelId }: {
+const MarkdownField = ({ label, value, onChange, placeholder, maxLength, modelId, rows = 4 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   maxLength?: number;
   modelId?: string;
+  rows?: number;
 }) => {
   const { t } = useTranslation();
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -1391,8 +1448,8 @@ const MarkdownField = ({ label, value, onChange, placeholder, maxLength, modelId
     <div>
       <label className="mb-1.5 block text-sm font-medium text-foreground">{label}</label>
       <textarea ref={ref} value={value} onChange={e => onChange(e.target.value)}
-        placeholder={placeholder} rows={4} maxLength={maxLength}
-        className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2" />
+        placeholder={placeholder} rows={rows} maxLength={maxLength}
+        className="w-full resize-y rounded-lg border border-input bg-background px-3 py-2.5 text-sm font-mono outline-none ring-ring focus:ring-2" />
       <div className="mt-1 flex items-center gap-2">
         <ImageUploader modelId={modelId} textareaRef={ref} onInsert={handleInsert} />
         <span className="text-[10px] text-muted-foreground">{t('common.markdownSupported')}</span>

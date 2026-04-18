@@ -253,8 +253,8 @@ const Contribute = () => {
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t('contribute.descriptionPlaceholder')}
             maxLength={50000}
-            rows={10}
-            className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-ring focus:ring-2"
+            rows={20}
+            className="w-full resize-y rounded-lg border border-input bg-background px-3 py-2.5 text-sm font-mono outline-none ring-ring focus:ring-2"
           />
           <p className="mt-1 text-[10px] text-muted-foreground">{t('common.markdownSupported')}</p>
         </div>
